@@ -5,6 +5,59 @@ void main() {
   runApp(MPify());
 }
 
+class HoverButton  extends StatefulWidget{
+  final String text;
+  final VoidCallback onPressed;
+  final TextStyle? textStyle;
+  final double width;
+  final double height;
+  final double borderRadius;
+
+  const HoverButton({
+    super.key,
+    required this.text,
+    required this.textStyle,
+    required this.borderRadius,
+    required this.onPressed,
+    required this.width,
+    required this.height,
+  });
+  
+  @override
+  State<HoverButton> createState() => _HoverButtonState();
+}
+class _HoverButtonState extends State<HoverButton>{
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context){
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: Material(
+        color: _hovering ? Colors.grey : Colors.transparent,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          onTap: widget.onPressed,
+          child: Container(
+            width: widget.width,
+            height: widget.height,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.transparent),
+              borderRadius: BorderRadius.circular(widget.borderRadius)
+            ),
+            child: Text(
+              widget.text,
+              style: widget.textStyle ?? montserratStyle(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 TextStyle montserratStyle({
   Color color = Colors.white,
   double fontSize = 14,
@@ -21,13 +74,15 @@ class SearchBar extends StatelessWidget {
   final Function(String)? onChanged;
   final String hintText;
 
-  const SearchBar({Key? key, this.onChanged, this.hintText = 'Search...'})
-    : super(key: key);
+  const SearchBar({
+    super.key,
+    this.onChanged, this.hintText = 'Search...'
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      style: montserratStyle(),
+      style: montserratStyle(color: Colors.black),
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: Icon(Icons.search),
@@ -73,6 +128,7 @@ class MPify extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.black,
         body: Row(
@@ -97,9 +153,9 @@ class MPify extends StatelessWidget {
                       top: 15,
                       left: 250,
                       child: styledOutlinedButton(
-                        text: '+ Create',
+                        text: '+ Import',
                         onPressed: () {
-                          print('Create button pressed');
+                          //TODO
                         },
                       ),
                     ),
@@ -107,14 +163,33 @@ class MPify extends StatelessWidget {
                       top: 60,
                       left: 20,
                       child: SizedBox(
-                        width: 300,
-                        child: SearchBar(
-                          onChanged: (query){
-                        
-                          },
-                        ),
+                        width: 320,
+                        child: SearchBar(onChanged: (query) {}),
                       ),
                     ),
+                    Positioned(
+                      top: 120,
+                      left: 20,
+                      child: styledOutlinedButton(
+                        text: 'New Playlist',
+                        borderRadius: 0,
+                        onPressed: () {
+                          //TODO
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      top: 200,
+                      left: 20,
+                      child: HoverButton(text: 'Create Playlist',
+                      textStyle: montserratStyle(),
+                      borderRadius: 0,
+                      width: 100,
+                      height: 50,
+                      onPressed: () {
+
+                      }),
+                    )
                   ],
                 ),
               ),
