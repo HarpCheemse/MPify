@@ -1,7 +1,6 @@
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
 
 TextStyle montserratStyle({
   Color color = Colors.white,
@@ -236,10 +235,14 @@ class _CustomSliderState extends State<CustomSlider> {
         width: widget.width,
         child: SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            activeTrackColor: _hovering ? widget.hoverColor : widget.progressColor,
+            activeTrackColor: _hovering
+                ? widget.hoverColor
+                : widget.progressColor,
             inactiveTrackColor: widget.baseColor,
             thumbColor: widget.thumbColor,
-            thumbShape:  _hovering ? RoundSliderThumbShape(enabledThumbRadius: widget.thumbSize) : SliderComponentShape.noThumb,
+            thumbShape: _hovering
+                ? RoundSliderThumbShape(enabledThumbRadius: widget.thumbSize)
+                : SliderComponentShape.noThumb,
             trackHeight: widget.height,
           ),
           child: Slider(
@@ -256,5 +259,41 @@ class _CustomSliderState extends State<CustomSlider> {
         ),
       ),
     );
+  }
+}
+
+class OverlayController {
+  static OverlayEntry? _entry;
+
+  static void show(BuildContext context, Widget child) {
+    if (_entry != null) return;
+
+    _entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          GestureDetector(
+            onTap: OverlayController.hideOverlay,
+            child: Container(color: Colors.black.withOpacity(0.5)),
+          ),
+          Center(
+            child: GestureDetector(onTap: () {}, child: child),
+          ),
+        ],
+      ),
+    );
+    Overlay.of(context, rootOverlay: true).insert(_entry!);
+  }
+
+  static void hideOverlay() {
+    _entry?.remove();
+    _entry = null;
+  }
+}
+
+class CreatePlaylistForm extends StatelessWidget {
+  const CreatePlaylistForm({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 100, height: 100, color: Colors.white);
   }
 }

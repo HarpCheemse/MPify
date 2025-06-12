@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/func.dart';
 import 'package:mpify/widget.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-
 void main() {
   runApp(MPify());
 }
@@ -64,7 +62,7 @@ class Playlist extends StatelessWidget {
                 width: 320,
                 height: 70,
                 onPressed: () {
-                  FolderUtils.createPlaylistFolder('../Playlist/name');
+                  OverlayController.show(context, CreatePlaylistForm());
                 },
                 child: Transform.translate(
                   offset: Offset(65, 25),
