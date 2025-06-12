@@ -1,197 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mpify/func.dart';
+import 'package:mpify/widget.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 void main() {
   runApp(MPify());
 }
 
-Widget positionedHeader(
-  double top,
-  double left,
-  String text,
-  double fontSize,
-  double fontWeight,
-  Color color,
-) {
-  final fontWeightMap = {
-    100: FontWeight.w100,
-    200: FontWeight.w200,
-    300: FontWeight.w300,
-    400: FontWeight.w400,
-    500: FontWeight.w500,
-    600: FontWeight.w600,
-    700: FontWeight.w700,
-    800: FontWeight.w800,
-    900: FontWeight.w900,
-  };
-
-  return Positioned(
-    top: top,
-    left: left,
-    child: Text(
-      text,
-      style: montserratStyle(
-        fontSize: fontSize,
-        fontWeight: fontWeightMap[fontWeight] ?? FontWeight.normal,
-        color: color,
-      ),
-    ),
-  );
-}
-
-class HoverButton extends StatefulWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final TextStyle? textStyle;
-  final double width;
-  final double height;
-  final double borderRadius;
-  final Color? hoverColor;
-  final Color? hoverFontColor;
-  final Color baseColor;
-  final Widget? child;
-
-  final Color splashColor;
-  final Color highlightColor;
-
-  final Widget Function(bool hovering)? childBuilder;
-
-  const HoverButton({
-    super.key,
-
-    this.child,
-    this.text = '',
-    this.textStyle,
-    this.hoverFontColor = Colors.transparent,
-    this.hoverColor = const Color.fromARGB(255, 173, 173, 173),
-    required this.baseColor,
-    required this.borderRadius,
-    required this.onPressed,
-    required this.width,
-    required this.height,
-    this.childBuilder,
-
-    this.splashColor = Colors.transparent,
-    this.highlightColor = Colors.transparent,
-  });
-
-  @override
-  State<HoverButton> createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<HoverButton> {
-  bool _hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
-      child: Material(
-        color: _hovering ? widget.hoverColor : widget.baseColor,
-        borderRadius: BorderRadius.circular(widget.borderRadius),
-        child: InkWell(
-          splashColor: widget.splashColor,
-          highlightColor: widget.highlightColor,
-          borderRadius: BorderRadius.circular(widget.borderRadius),
-          onTap: widget.onPressed,
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-            ),
-            child: widget.childBuilder != null
-                ? widget.childBuilder!(_hovering)
-                : widget.child ??
-                      Text(
-                        widget.text,
-                        style: widget.textStyle ?? montserratStyle(),
-                      ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-TextStyle montserratStyle({
-  Color color = Colors.white,
-  double fontSize = 14,
-  FontWeight fontWeight = FontWeight.w700,
-}) {
-  return GoogleFonts.montserrat(
-    color: color,
-    fontSize: fontSize,
-    fontWeight: fontWeight,
-  );
-}
-
-class SearchBar extends StatelessWidget {
-  final Function(String)? onChanged;
-  final String hintText;
-  final Color searchColor;
-  final Color fontColor;
-  final Color hintColor;
-  final Color iconColor;
-
-  const SearchBar({
-    super.key,
-    this.hintColor = Colors.white,
-    this.onChanged,
-    this.hintText = 'Search...',
-    this.searchColor = Colors.white,
-    this.fontColor = Colors.black,
-    this.iconColor = Colors.white,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      style: montserratStyle(color: fontColor),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(color: hintColor),
-        prefixIcon: Icon(Icons.search, color: iconColor,),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
-        filled: true,
-        fillColor: searchColor,
-      ),
-      onChanged: onChanged,
-    );
-  }
-}
-
-Widget styledOutlinedButton({
-  required String text,
-  required VoidCallback onPressed,
-  Color borderColor = Colors.white,
-  double borderRadius = 10,
-  EdgeInsetsGeometry padding = const EdgeInsets.symmetric(
-    horizontal: 20,
-    vertical: 12,
-  ),
-  TextStyle? textStyle,
-}) {
-  return OutlinedButton(
-    onPressed: onPressed,
-    style: OutlinedButton.styleFrom(
-      side: BorderSide(color: borderColor),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      padding: padding,
-    ),
-    child: Text(text, style: textStyle ?? montserratStyle(fontSize: 12)),
-  );
-}
-
-class playlist extends StatelessWidget {
-  const playlist({super.key});
+class Playlist extends StatelessWidget {
+  const Playlist({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +43,7 @@ class playlist extends StatelessWidget {
               left: 20,
               child: SizedBox(
                 width: 320,
-                child: SearchBar(
+                child: CustomSearchBar(
                   onChanged: (query) {},
                   hintText: 'Search Playlist',
                   fontColor: const Color.fromARGB(255, 140, 140, 140),
@@ -247,7 +64,7 @@ class playlist extends StatelessWidget {
                 width: 320,
                 height: 70,
                 onPressed: () {
-                  FolderUtils.createPlaylistFolder('../playlist/name');
+                  FolderUtils.createPlaylistFolder('../Playlist/name');
                 },
                 child: Transform.translate(
                   offset: Offset(65, 25),
@@ -272,8 +89,8 @@ class playlist extends StatelessWidget {
   }
 }
 
-class songs extends StatelessWidget {
-  const songs({super.key});
+class Songs extends StatelessWidget {
+  const Songs({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +178,7 @@ class songs extends StatelessWidget {
               child: SizedBox(
                 width: 200,
                 height: 40,
-                child: SearchBar(
+                child: CustomSearchBar(
                   onChanged: (query) {},
                   hintText: 'Search Name',
                   searchColor: Colors.transparent,
@@ -435,8 +252,8 @@ class songs extends StatelessWidget {
   }
 }
 
-class player extends StatelessWidget {
-  const player({super.key});
+class Player extends StatelessWidget {
+  const Player({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -449,13 +266,30 @@ class player extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           color: const Color.fromARGB(255, 24, 24, 24),
         ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 100,
+              left: 80,
+              child: Icon(
+                Icons.album,
+                size: 200,
+                color: Colors.green,
+                opticalSize: 100,
+              ),
+            ),
+            positionedHeader(400, 50, 'Music Name', 24, 500, Colors.white),
+            positionedHeader(440, 50, 'Artist Name', 10, 400, Colors.white),
+
+          ],
+        ),
       ),
     );
   }
 }
 
-class songDetails extends StatelessWidget {
-  const songDetails({super.key});
+class SongDetails extends StatelessWidget {
+  const SongDetails({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -496,12 +330,12 @@ class songDetails extends StatelessWidget {
               top: 10,
               left: 730,
               child: HoverButton(
-                baseColor: Colors.green,
+                baseColor: const Color.fromARGB(255, 255, 255, 255),
                 borderRadius: 50,
                 onPressed: () {},
                 width: 45,
                 height: 45,
-                hoverColor: const Color.fromARGB(255, 134, 212, 137),
+                hoverColor: const Color.fromARGB(255, 150, 150, 150),
                 child: Transform.translate(
                   offset: Offset(15, 10),
                   child: Text(
@@ -513,6 +347,81 @@ class songDetails extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+            ),
+            Positioned(
+              top: 20,
+              left: 830,
+              child: Icon(Icons.fast_forward, color: Colors.white),
+            ),
+            Positioned(
+              top: 20,
+              left: 650,
+              child: Icon(Icons.fast_rewind, color: Colors.white),
+            ),
+
+            Positioned(
+              top: 20,
+              left: 550,
+              child: Icon(Icons.skip_previous, color: Colors.white),
+            ),
+            Positioned(
+              top: 20,
+              left: 950,
+              child: Icon(Icons.skip_next, color: Colors.white),
+            ),
+            positionedHeader(10, 840, '5', 8, 500, Colors.white),
+            positionedHeader(10, 660, '5', 8, 500, Colors.white),
+            Positioned(
+              top: 50,
+              left: 420,
+              child: CustomSlider(
+                width: 650,
+                height: 2,
+                value: 100,
+                min: 0,
+                max: 100,
+                baseColor: const Color.fromARGB(255, 150, 150, 150),
+                progressColor: Colors.white,
+                hoverColor: Colors.green,
+                thumbSize: 6,
+                thumbColor: Colors.green,
+                onChanged: (double value) {},
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 1370,
+              child: Icon(
+                Icons.volume_up_outlined,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 1330,
+              child: Icon(
+                Icons.music_note_outlined,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            Positioned(
+              top: 25,
+              left: 1380,
+              child: CustomSlider(
+                width: 150,
+                height: 2,
+                value: 100,
+                min: 0,
+                max: 100,
+                baseColor: const Color.fromARGB(255, 150, 150, 150),
+                progressColor: Colors.white,
+                hoverColor: Colors.green,
+                thumbSize: 6,
+                thumbColor: Colors.green,
+                onChanged: (double value) {},
               ),
             ),
           ],
@@ -533,8 +442,8 @@ class MPify extends StatelessWidget {
         backgroundColor: Colors.black,
         body: Column(
           children: [
-            Row(children: [playlist(), songs(), player()]),
-            songDetails(),
+            Row(children: [Playlist(), Songs(), Player()]),
+            SongDetails(),
           ],
         ),
       ),
