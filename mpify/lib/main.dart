@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
 import 'package:mpify/widget.dart';
+
 void main() {
   runApp(MPify());
 }
@@ -41,18 +41,20 @@ class Playlist extends StatelessWidget {
               left: 20,
               child: SizedBox(
                 width: 320,
-                child: CustomSearchBar(
+                child: CustomInputBar(
+                  controller: TextEditingController(),
                   onChanged: (query) {},
                   hintText: 'Search Playlist',
                   fontColor: const Color.fromARGB(255, 140, 140, 140),
                   hintColor: const Color.fromARGB(255, 140, 140, 140),
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
                   iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  icon: Icons.search,
                 ),
               ),
             ),
             Positioned(
-              top: 120,
+              top: 130,
               left: 20,
               child: HoverButton(
                 baseColor: Colors.transparent,
@@ -64,20 +66,20 @@ class Playlist extends StatelessWidget {
                 onPressed: () {
                   OverlayController.show(context, CreatePlaylistForm());
                 },
-                child: Transform.translate(
-                  offset: Offset(65, 25),
-                  child: Text('New Playlist', style: montserratStyle()),
+                child: Stack(
+                  children: [
+                    Transform.translate(
+                      offset: Offset(65, 25),
+                      child: Text('New Playlist', style: montserratStyle()),
+                    ),
+                    Image.asset(
+                        'assets/empty_folder.png',
+                        fit: BoxFit.contain,
+                        width: 60,
+                        height: 60,
+                      ),
+                  ],
                 ),
-              ),
-            ),
-            Positioned(
-              top: 120,
-              left: 20,
-              child: Image.asset(
-                'assets/empty_folder.png',
-                fit: BoxFit.contain,
-                width: 60,
-                height: 60,
               ),
             ),
           ],
@@ -176,13 +178,15 @@ class Songs extends StatelessWidget {
               child: SizedBox(
                 width: 200,
                 height: 40,
-                child: CustomSearchBar(
+                child: CustomInputBar(
+                  controller: TextEditingController(),
                   onChanged: (query) {},
                   hintText: 'Search Name',
                   searchColor: Colors.transparent,
                   fontColor: Colors.white,
                   hintColor: const Color.fromARGB(255, 140, 140, 140),
                   iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  icon: Icons.search,
                 ),
               ),
             ),
@@ -243,6 +247,20 @@ class Songs extends StatelessWidget {
               500,
               const Color.fromARGB(255, 157, 157, 157),
             ),
+            Positioned(
+              top: 120,
+              left: 100,
+              child: Icon(Icons.shuffle_rounded, color: Colors.white, size: 30,)
+            ),
+            Positioned(
+              top: 120,
+              left: 150,
+              child: Icon(
+                Icons.add_circle_sharp,
+                size: 30,
+                color: Colors.white,
+              ),
+            )
           ],
         ),
       ),
@@ -278,7 +296,6 @@ class Player extends StatelessWidget {
             ),
             positionedHeader(400, 50, 'Music Name', 24, 500, Colors.white),
             positionedHeader(440, 50, 'Artist Name', 10, 400, Colors.white),
-
           ],
         ),
       ),
