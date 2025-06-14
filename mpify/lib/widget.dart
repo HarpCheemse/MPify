@@ -295,6 +295,115 @@ class OverlayController {
     _entry = null;
   }
 }
+
+class CreateSongForm extends StatefulWidget {
+  const CreateSongForm({super.key});
+
+  @override
+  State<CreateSongForm> createState() => _CreateSongFormState();
+}
+
+class _CreateSongFormState extends State<CreateSongForm> {
+  final TextEditingController controller = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    final TextEditingController name = TextEditingController();
+    final TextEditingController link = TextEditingController();
+    return Material(
+      borderRadius: BorderRadius.circular(10),
+      color: const Color.fromARGB(255, 43, 43, 43),
+      child: Container(
+        width: 600,
+        height: 400,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: const Color.fromARGB(255, 43, 43, 43),
+        ),
+        child: Stack(
+          children: [
+            positionedHeader(30, 250, 'Create Song', 18, 600, Colors.white),
+            Positioned(
+              left: 45,
+              top: 120,
+              child: SizedBox(
+                width: 500,
+                height: 50,
+                child: CustomInputBar(
+                  onChanged: (query) {},
+                  controller: name,
+                  hintText: 'Song Name',
+                  fontColor: const Color.fromARGB(255, 255, 255, 255),
+                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  searchColor: const Color.fromARGB(134, 95, 95, 95),
+                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  icon: Icons.add,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 45,
+              top: 200,
+              child: SizedBox(
+                width: 500,
+                height: 50,
+                child: CustomInputBar(
+                  onChanged: (query) {},
+                  controller: link,
+                  hintText: 'Song Link',
+                  fontColor: const Color.fromARGB(255, 255, 255, 255),
+                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  searchColor: const Color.fromARGB(134, 95, 95, 95),
+                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  icon: Icons.add,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 340,
+              left: 400,
+              child: HoverButton(
+                baseColor: Colors.transparent,
+                borderRadius: 0,
+                onPressed: () {
+                  OverlayController.hideOverlay();
+                },
+                width: 80,
+                hoverColor: Colors.transparent,
+                height: 40,
+                child: Transform.translate(
+                  offset: Offset(10, 10),
+                  child: Text('Cancel', style: montserratStyle()),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 340,
+              left: 500,
+              child: HoverButton(
+                baseColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                borderRadius: 0,
+                onPressed: () {
+                  final songName = name.text;
+                  final songLink = link.text;
+                  FolderUtils.downloadMP3(songName, songLink);
+                  OverlayController.hideOverlay();
+                },
+                width: 80,
+                height: 40,
+                child: Transform.translate(
+                  offset: Offset(10, 10),
+                  child: Text('Create', style: montserratStyle()),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class CreatePlaylistForm extends StatefulWidget {
   const CreatePlaylistForm({super.key});
 
@@ -350,7 +459,9 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
               child: HoverButton(
                 baseColor: Colors.transparent,
                 borderRadius: 0,
-                onPressed: () {OverlayController.hideOverlay();},
+                onPressed: () {
+                  OverlayController.hideOverlay();
+                },
                 width: 80,
                 hoverColor: Colors.transparent,
                 height: 40,
@@ -371,7 +482,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
                   final folderName = controller.text;
                   FolderUtils.createPlaylistFolder(folderName);
                   OverlayController.hideOverlay();
-                  },
+                },
                 width: 80,
                 height: 40,
                 child: Transform.translate(
@@ -382,6 +493,96 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ScrollableListPlaylist extends StatefulWidget {
+  final double width;
+  final double height;
+  final Color? color;
+  const ScrollableListPlaylist({
+    super.key,
+    required this.width,
+    required this.height,
+    this.color = Colors.white,
+  });
+
+  @override
+  State<ScrollableListPlaylist> createState() => _ScrollableListBoxState();
+}
+
+class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    FolderUtils.playlistWatcher();
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      color: widget.color,
+      child: Scrollbar(
+        thumbVisibility: true,
+        controller: _scrollController,
+        child: ValueListenableBuilder<List<String>>(
+          valueListenable: playlistNotifer,
+          builder: (context, playlist, _) {
+            return ListView.builder(
+            controller: _scrollController,
+            itemCount: playlist.length,
+            itemBuilder: (BuildContext content, int index) {
+              final name = playlist[index];
+              return PlaylistFolder(name: name);
+            },
+          );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class PlaylistFolder extends StatelessWidget {
+  final String name;
+  const PlaylistFolder({
+    super.key,
+    required this.name
+  });
+  Widget build(BuildContext context) {
+    return HoverButton(
+      baseColor: Colors.transparent,
+      hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
+      textStyle: montserratStyle(),
+      borderRadius: 5,
+      width: 320,
+      height: 70,
+      onPressed: () {
+        debugPrint(name);
+      },
+      child: Stack(
+        children: [
+          Positioned(
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: Image.asset('assets/folder.png', fit: BoxFit.contain),
+            ),
+          ),
+          Positioned(
+            left: 80,
+            top: 20,
+            child: Text(name, style: montserratStyle()),
+          ),
+        ],
       ),
     );
   }

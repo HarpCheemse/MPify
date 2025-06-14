@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/func.dart';
 import 'package:mpify/widget.dart';
 
 void main() {
   runApp(MPify());
+  FolderUtils.playlistWatcher();
 }
 
 class Playlist extends StatelessWidget {
@@ -73,13 +75,22 @@ class Playlist extends StatelessWidget {
                       child: Text('New Playlist', style: montserratStyle()),
                     ),
                     Image.asset(
-                        'assets/empty_folder.png',
-                        fit: BoxFit.contain,
-                        width: 60,
-                        height: 60,
-                      ),
+                      'assets/empty_folder.png',
+                      fit: BoxFit.contain,
+                      width: 60,
+                      height: 60,
+                    ),
                   ],
                 ),
+              ),
+            ),
+            Positioned(
+              top: 210,
+              left: 20,
+              child: ScrollableListPlaylist(
+                width: 320,
+                height: 380,
+                color: Colors.transparent,
               ),
             ),
           ],
@@ -250,17 +261,22 @@ class Songs extends StatelessWidget {
             Positioned(
               top: 120,
               left: 100,
-              child: Icon(Icons.shuffle_rounded, color: Colors.white, size: 30,)
+              child: Icon(Icons.shuffle_rounded, color: Colors.white, size: 30),
             ),
             Positioned(
-              top: 120,
+              top: 110,
               left: 150,
-              child: Icon(
-                Icons.add_circle_sharp,
-                size: 30,
-                color: Colors.white,
+              child: IconButton(
+                icon: Icon(
+                  Icons.add_circle_sharp,
+                  size: 30,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  OverlayController.show(context, CreateSongForm());
+                },
               ),
-            )
+            ),
           ],
         ),
       ),
