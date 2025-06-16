@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/func.dart';
+import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
@@ -10,10 +12,15 @@ import 'package:mpify/widgets/shared/scrollable/scrollable_song.dart';
 import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 
-
-class Songs extends StatelessWidget {
+class Songs extends StatefulWidget {
   const Songs({super.key});
 
+  @override
+  State<Songs> createState() => _SongsState();
+}
+
+class _SongsState extends State<Songs> {
+  bool _isShuffle = true;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -74,24 +81,26 @@ class Songs extends StatelessWidget {
             Positioned(
               top: 100,
               left: 10,
-              child: HoverButton(
-                baseColor: Colors.green,
-                borderRadius: 50,
-                onPressed: () {},
-                width: 60,
-                height: 60,
-                hoverColor: const Color.fromARGB(255, 134, 212, 137),
-                child: Transform.translate(
-                  offset: Offset(20, 15),
-                  child: Text(
-                    '| |',
-                    style: montserratStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 20,
+              child: Consumer<SongModels>(
+                builder: (context, value, child) {
+                  final songs = context.read<SongModels>();
+                  return HoverButton(
+                    baseColor: Colors.green,
+                    borderRadius: 50,
+                    onPressed: () {
+                      songs.isPlaying
+                          ? AudioUtils.pauseSong()
+                          : AudioUtils.resumeSong();
+                      songs.flipIsPlaying();
+                    },
+                    width: 60,
+                    height: 60,
+                    hoverColor: const Color.fromARGB(255, 134, 212, 137),
+                    child: Icon(
+                      songs.isPlaying ? Icons.pause : Icons.play_arrow,
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
             Positioned(
@@ -170,13 +179,25 @@ class Songs extends StatelessWidget {
               const Color.fromARGB(255, 157, 157, 157),
             ),
             Positioned(
-              top: 120,
+              top: 110,
               left: 100,
-              child: Icon(Icons.shuffle_rounded, color: Colors.white, size: 30),
+              child: IconButton(
+                icon: Icon(Icons.shuffle_rounded),
+                color: _isShuffle ? Colors.green : Colors.grey,
+                iconSize: 30,
+                onPressed: () {
+                  _isShuffle
+                      ? context.read<SongModels>().sortSongsByName()
+                      : context.read<SongModels>().shuffleSongs();
+                  setState(() {
+                    _isShuffle = !_isShuffle;
+                  });
+                },
+              ),
             ),
             Positioned(
               top: 110,
-              left: 150,
+              left: 170,
               child: IconButton(
                 icon: Icon(
                   Icons.add_circle_sharp,
@@ -192,10 +213,7 @@ class Songs extends StatelessWidget {
               top: 210,
               left: 20,
               right: 20,
-              child: Container(
-                height: 1,
-                color: Colors.grey,
-              )
+              child: Container(height: 1, color: Colors.grey),
             ),
             Positioned(
               top: 220,
@@ -205,7 +223,7 @@ class Songs extends StatelessWidget {
                 height: 370,
                 color: Colors.transparent,
               ),
-            )
+            ),
           ],
         ),
       ),

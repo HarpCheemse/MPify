@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/func.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text/positioned_header.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -85,6 +86,9 @@ class Song extends StatelessWidget {
       onPressed: () {
         final playlist = context.read<PlaylistModels>().selectedPlaylist;
         context.read<SongModels>().loadSong(playlist);
+        context.read<SongModels>().setIsPlaying(true);
+        context.read<SongModels>().getSongIndex(name);
+        AudioUtils.playSong(name);
       },
       child: Stack(
         children: [

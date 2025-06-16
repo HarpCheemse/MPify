@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/song_models.dart';
+import 'package:provider/provider.dart';
 
-class CustomSlider extends StatefulWidget {
+class DurationSlider extends StatefulWidget {
   final double width;
   final double height;
   final double value;
-  final double min;
-  final double max;
   final Color baseColor;
   final Color progressColor;
   final Color hoverColor;
@@ -13,13 +13,11 @@ class CustomSlider extends StatefulWidget {
   final double thumbSize;
   final ValueChanged<double> onChanged;
 
-  const CustomSlider({
+  const DurationSlider({
     super.key,
     required this.width,
     required this.height,
     required this.value,
-    required this.min,
-    required this.max,
     required this.baseColor,
     required this.progressColor,
     required this.hoverColor,
@@ -29,16 +27,14 @@ class CustomSlider extends StatefulWidget {
   });
 
   @override
-  State<CustomSlider> createState() => _CustomSliderState();
+  State<DurationSlider> createState() => _DurationSliderState();
 }
 
-class _CustomSliderState extends State<CustomSlider> {
-  late double _value;
+class _DurationSliderState extends State<DurationSlider> {
   bool _hovering = false;
   @override
   void initState() {
     super.initState();
-    _value = widget.value;
   }
 
   @override
@@ -60,15 +56,19 @@ class _CustomSliderState extends State<CustomSlider> {
                 : SliderComponentShape.noThumb,
             trackHeight: widget.height,
           ),
-          child: Slider(
-            value: _value,
-            min: widget.min,
-            max: widget.max,
-            onChanged: (newValue) {
-              setState(() {
-                _value = newValue;
-              });
-              widget.onChanged(newValue);
+          child: Consumer<SongModels>(
+            builder: (context, value, child) {
+              final totalSecond = value.songDuration.inSeconds;
+              final currentSecond = value.songProgress.inSeconds;
+
+              return Slider(
+                value: currentSecond.toDouble().clamp(0, totalSecond.toDouble() ),
+                min: 0,
+                max: totalSecond > 0 ? totalSecond.toDouble() : 1,
+                onChanged: (newValue) {
+                  context.read<SongModels>().seek(Duration(seconds: newValue.toInt()));
+                },
+              );
             },
           ),
         ),

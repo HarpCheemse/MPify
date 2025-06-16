@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 //Global Var
 ValueNotifier<List<String>> playlistNotifer = ValueNotifier([]);
@@ -22,15 +23,18 @@ class FolderUtils {
   }
 
   static Future<void> downloadMP3(BuildContext context, name, link) async {
+    final playlist = context.read<PlaylistModels>().selectedPlaylist;
     final current = Directory.current;
     final target = Directory(p.join(current.path, '..', 'mp3'));
 
     final trimmedLink = link.split('&')[0];
-    final cleanName = name.replaceAll(RegExp(r'[^\w\-]'), '_');
-
-    if (PlaylistUltis.writeSongToPlaylist(context, cleanName, trimmedLink) ==
-        0) {
-      debugPrint('Error Writing File. Download canceled');
+    final cleanName = name
+        .replaceAll(RegExp(r'[^\w\s-]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (!await target.exists()) {
+      debugPrint('Folder $target does not exit');
+      target.create(recursive: true);
       return;
     }
     final process = await Process.start(
@@ -45,6 +49,17 @@ class FolderUtils {
     process.stderr.transform(SystemEncoding().decoder).listen((data) {
       debugPrint('[stderr] $data');
     });
+
+    final exitCode = await process.exitCode;
+    if (exitCode != 0) {
+      debugPrint('Error downloading mp3');
+      return;
+    }
+    if (await PlaylistUltis.writeSongToPlaylist(playlist, cleanName, trimmedLink) ==
+        0) {
+      debugPrint('Error Writing File. Download canceled');
+      return;
+    }
   }
 
   static Future<void> playlistWatcher() async {
@@ -79,11 +94,10 @@ class FolderUtils {
 
 class PlaylistUltis {
   static Future<int> writeSongToPlaylist(
-    BuildContext context,
+    playlist,
     name,
     link,
   ) async {
-    final playlist = context.read<PlaylistModels>().selectedPlaylist;
     final currentDir = Directory.current;
     final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
     final playlistFile = File(p.join(targetDir.path, '$playlist.txt'));
@@ -113,6 +127,8 @@ class PlaylistUltis {
     final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
     final playlistFile = File(p.join(targetDir.path, '$playlist.txt'));
 
+    final songModels = context.read<SongModels>();
+
     if (!await playlistFile.exists()) {
       debugPrint('playlist does not exit');
       return;
@@ -122,8 +138,56 @@ class PlaylistUltis {
       debugPrint(event.path);
       debugPrint(playlistFile.path);
       if (event.path == playlistFile.path) {
-        context.read<SongModels>().loadSong(playlist);
+        songModels.loadSong(playlist);
       }
     });
+  }
+}
+
+class AudioUtils {
+  static final AudioPlayer player = AudioPlayer();
+
+  static Future<void> playSong(song) async {
+    final current = Directory.current;
+    final target = Directory(p.join(current.path, '..', 'mp3'));
+    if (!await target.exists()) {
+      debugPrint('Folder mp3 missing');
+      return;
+    }
+    final songFile = Directory(p.join(target.path, '$song.mp3'));
+    if (await songFile.exists()) {
+      debugPrint('$song not found');
+      return;
+    }
+    player.stop();
+    await player.play(DeviceFileSource(songFile.path));
+  }
+
+  static Future<void> pauseSong() async {
+    await player.pause();
+  }
+
+  static Future<void> resumeSong() async {
+    await player.resume();
+  }
+
+  static Future<void> skipForward() async {
+    final posiotion = await player.getCurrentPosition();
+    if (posiotion != null) {
+      await player.seek(posiotion + const Duration(seconds: 5));
+    }
+  }
+
+  static Future<void> skipBackward() async {
+    final position = await player.getCurrentPosition();
+    if (position != null) {
+      final newPosition = position - const Duration(seconds: 5);
+      await player.seek(
+        newPosition > Duration.zero ? newPosition : Duration.zero,
+      );
+    }
+  }
+  static Future<void> setVolume(value) async {
+    await player.setVolume(value);
   }
 }
