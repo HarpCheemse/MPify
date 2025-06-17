@@ -1,4 +1,5 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mpify/func.dart';
 import 'dart:io';
@@ -12,10 +13,19 @@ String formatDuration(Duration duration) {
 
 class Song {
   final String name;
-  final String link;
+  final String artist;
   final String duration;
-
-  Song({required this.name, required this.link, required this.duration});
+  final String link;
+  final DateTime dateAdded;
+  final String? imagePath;
+  Song({
+    required this.name,
+    required this.link,
+    required this.duration,
+    required this.artist,
+    required this.dateAdded,
+    required this.imagePath,
+  });
 }
 
 class SongModels extends ChangeNotifier {
@@ -36,27 +46,50 @@ class SongModels extends ChangeNotifier {
   }
 
   Future<void> loadSong(String playlist) async {
-    final current = Directory.current;
-    final target = Directory(p.join(current.path, '..', 'playlist'));
-    final filePlaylist = File(p.join(target.path, '$playlist.txt'));
+    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
 
-    if (!await filePlaylist.exists()) {
+    if (!await playlistFile.exists()) {
       debugPrint('playlist does not exit');
       _songs = [];
       notifyListeners();
       return;
     }
-
-    final lines = await filePlaylist.readAsLines();
-    _songs = lines
-        .map((lines) {
-          final parts = lines.split(':');
-          if (parts.length < 2) return null;
-          return Song(name: parts[0].trim(), link: parts[1], duration: '0:00');
-        })
-        .whereType<Song>()
-        .toList();
+    _songs = [];
+    await parsePlaylistJSON(playlistFile);
     notifyListeners();
+  }
+
+  Future<void> parsePlaylistJSON(file) async {
+    final contents = await file.readAsString();
+    try {
+      if (contents.trim().isEmpty) {
+      debugPrint('file playlist.json empty');
+      return;
+    }
+    final List<dynamic> songs = jsonDecode(contents);
+    for (var song in songs) {
+      final name = song['name'];
+      final duration = song['duration'];
+      final link = song['link'];
+      final artist = song['artist'];
+      final dateAdded = DateTime.parse(song['dateAdded']);
+      final imagePath = song['ImagePath'];
+      _songs.add(
+        Song(
+          name: name,
+          duration: duration,
+          link: link,
+          artist: artist,
+          dateAdded: dateAdded,
+          imagePath: imagePath,
+        ),
+      );
+    }
+    }
+    catch (e) {
+      debugPrint('$e');
+    }
   }
 
   bool _isPlaying = false;
@@ -98,9 +131,9 @@ class SongModels extends ChangeNotifier {
   }
 
   void sortSongsByName() {
-  _songs.sort((a, b) => a.name.compareTo(b.name));
-  notifyListeners();
-}
+    _songs.sort((a, b) => a.name.compareTo(b.name));
+    notifyListeners();
+  }
 
   Duration _songDuration = Duration.zero;
   Duration _songProgress = Duration.zero;
@@ -108,7 +141,7 @@ class SongModels extends ChangeNotifier {
   Duration get songDuration => _songDuration;
   Duration get songProgress => _songProgress;
 
-  final AudioPlayer _audioPlayer = AudioUtils.player;
+  final _audioPlayer = AudioUtils.player;
 
   SongModels() {
     AudioUtils.player.onPlayerComplete.listen((event) {

@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:path/path.dart' as p;
-
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -17,7 +18,7 @@ class FolderUtils {
     if (!await target.exists()) {
       await target.create(recursive: true);
     }
-    final filePath = p.join(target.path, '$folderName.txt');
+    final filePath = p.join(target.path, '$folderName.json');
     final file = File(filePath);
     await file.writeAsString('');
   }
@@ -55,7 +56,11 @@ class FolderUtils {
       debugPrint('Error downloading mp3');
       return;
     }
-    if (await PlaylistUltis.writeSongToPlaylist(playlist, cleanName, trimmedLink) ==
+    if (await PlaylistUltis.writeSongToPlaylist(
+          playlist,
+          cleanName,
+          trimmedLink,
+        ) ==
         0) {
       debugPrint('Error Writing File. Download canceled');
       return;
@@ -63,57 +68,89 @@ class FolderUtils {
   }
 
   static Future<void> playlistWatcher() async {
-    final current = Directory.current;
-    final target = Directory(p.join(current.path, '..', 'playlist'));
-    if (!await target.exists()) {
-      debugPrint('folder playlist missing!');
-      return;
-    }
+    final target = await checkPlaylistFolderExist();
 
-    //get all .txt when init
+    //get all .json when init
     playlistNotifer.value = await target
         .list()
-        .where((entity) => entity is File && entity.path.endsWith('.txt'))
-        .map((entity) => entity.uri.pathSegments.last.replaceAll('.txt', ''))
+        .where((entity) => entity is File && entity.path.endsWith('.json'))
+        .map((entity) => entity.uri.pathSegments.last.replaceAll('.json', ''))
         .toList();
 
-    //update .txt
+    //update .json
     target.watch().listen((event) async {
-      if (event.path.endsWith('txt')) {
+      if (event.path.endsWith('json')) {
         playlistNotifer.value = await target
             .list()
-            .where((entity) => entity is File && entity.path.endsWith('.txt'))
+            .where((entity) => entity is File && entity.path.endsWith('.json'))
             .map(
-              (entity) => entity.uri.pathSegments.last.replaceAll('.txt', ''),
+              (entity) => entity.uri.pathSegments.last.replaceAll('.json', ''),
             )
             .toList();
       }
     });
   }
-}
 
-class PlaylistUltis {
-  static Future<int> writeSongToPlaylist(
-    playlist,
-    name,
-    link,
-  ) async {
+  static Future<Directory> checkPlaylistFolderExist() async {
     final currentDir = Directory.current;
     final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
-    final playlistFile = File(p.join(targetDir.path, '$playlist.txt'));
     if (!await targetDir.exists()) {
       debugPrint('folder playlist missing');
       await targetDir.create(recursive: true);
     }
+    return targetDir;
+  }
+
+  static Future<Directory> checkMP3FolderExist() async {
+    final playlistDir = await checkPlaylistFolderExist();
+    final mp3Dir = Directory(p.join(playlistDir.path, '..', 'mp3'));
+    if (!await mp3Dir.exists()) {
+      debugPrint('folder mp3 missing');
+      await mp3Dir.create(recursive: true);
+    }
+    return mp3Dir;
+  }
+}
+
+class PlaylistUltis {
+  static Future<int> writeSongToPlaylist(
+    String playlist,
+    String name,
+    String link, {
+    String artist = 'Unknown',
+    String imagePath = '',
+  }) async {
+    final targetDir = await FolderUtils.checkPlaylistFolderExist();
+    final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
+
     if (!await playlistFile.exists()) {
       debugPrint('$playlistFile missing');
       return 0;
     }
-    final songData = '$name: $link\n';
+
+    final duration = await AudioUtils.getSongDuration(name);
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final formartedDuration = '$minutes:$seconds';
+    final newSong = {
+      'name': name,
+      'duration': formartedDuration,
+      'link': link,
+      'artist': artist,
+      'dateAdded': DateTime.now().toIso8601String(),
+      'imagePath': imagePath,
+    };
     try {
-      await playlistFile.writeAsString(songData, mode: FileMode.append);
+      final contents = await playlistFile.readAsString();
+      List<dynamic> songs = [];
+      if (contents.isNotEmpty) {
+        songs = jsonDecode(contents);
+      }
+      songs.add(newSong);
+
+      await playlistFile.writeAsString(jsonEncode(songs), mode: FileMode.write);
     } catch (e) {
-      debugPrint('Error writing file');
+      debugPrint('Error writing file json $e');
       return 0;
     }
     return 1;
@@ -147,15 +184,90 @@ class PlaylistUltis {
 class AudioUtils {
   static final AudioPlayer player = AudioPlayer();
 
-  static Future<void> playSong(song) async {
-    final current = Directory.current;
-    final target = Directory(p.join(current.path, '..', 'mp3'));
-    if (!await target.exists()) {
-      debugPrint('Folder mp3 missing');
-      return;
+  static Future<Duration> getSongDuration(String name) async {
+    final target = await FolderUtils.checkMP3FolderExist();
+    final mp3FilePath = p.join(target.path, '$name.mp3');
+
+    final mp3File = File(mp3FilePath);
+    if (!await mp3File.exists()) {
+      debugPrint('ERROR: MP3 file "$mp3FilePath" does NOT exist!');
+      return Duration.zero;
+    } else {
+      debugPrint('SUCCESS: MP3 file "$mp3FilePath" EXISTS.');
     }
-    final songFile = Directory(p.join(target.path, '$song.mp3'));
-    if (await songFile.exists()) {
+
+    try {
+      final String ffprobeExecutable = 'C:\\Github\\MPify\\ffprobe.exe'; // <-- CHANGE THIS!
+      final process = await Process.start(
+        ffprobeExecutable,
+        [
+          '-i',
+          mp3FilePath,
+          '-v',
+          'quiet',
+          '-show_entries',
+          'format=duration',
+          '-hide_banner',
+          '-of',
+          'default=noprint_wrappers=1:nokey=1',
+        ],
+        runInShell: false,
+      );
+
+      final List<String> stdoutLines = [];
+      final List<String> stderrLines = [];
+
+      process.stdout
+          .transform(systemEncoding.decoder)
+          .listen((String data) {
+            stdoutLines.add(data.trim());
+            debugPrint('FFPROBE STDOUT CHUNK: "${data.trim()}"');
+          });
+
+      process.stderr
+          .transform(systemEncoding.decoder)
+          .listen((String data) {
+            stderrLines.add(data.trim());
+            debugPrint('FFPROBE STDERR CHUNK: "${data.trim()}"');
+          });
+
+      final exitCode = await process.exitCode;
+
+      debugPrint('FFPROBE process finished with exit code: $exitCode');
+      debugPrint('Collected STDOUT (full): "${stdoutLines.join('').trim()}"');
+      debugPrint('Collected STDERR (full): "${stderrLines.join('\n').trim()}"');
+
+      if (exitCode != 0) {
+        debugPrint('ffprobe command failed with exit code: $exitCode');
+        debugPrint('Full STDERR from ffprobe: ${stderrLines.join('\n')}');
+        return Duration.zero;
+      }
+
+      final rawOutput = stdoutLines.join('').trim();
+      final seconds = double.tryParse(rawOutput);
+
+      if (seconds == null) {
+        debugPrint('Could not parse duration from output: "$rawOutput"');
+        return Duration.zero;
+      }
+
+      debugPrint('Successfully parsed duration: $seconds seconds');
+      return Duration(microseconds: (seconds * 1000000).toInt());
+    } catch (e) {
+      debugPrint('ERROR: Exception during ffprobe execution: $e');
+      if (e is ProcessException) {
+         debugPrint('ProcessException message: ${e.message}');
+         if (e.message.contains('No such file or directory') || e.errorCode == 2) { // Error code 2 typically means file not found
+            debugPrint('This usually means the ffprobe.exe path is incorrect or ffprobe.exe does not exist at that location.');
+         }
+      }
+      return Duration.zero;
+    }
+  }
+  static Future<void> playSong(song) async {
+    final target = await FolderUtils.checkMP3FolderExist();
+    final songFile = File(p.join(target.path, '$song.mp3'));
+    if (!await songFile.exists()) {
       debugPrint('$song not found');
       return;
     }
@@ -187,6 +299,7 @@ class AudioUtils {
       );
     }
   }
+
   static Future<void> setVolume(value) async {
     await player.setVolume(value);
   }

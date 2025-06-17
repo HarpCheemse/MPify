@@ -53,7 +53,7 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
             itemCount: songs.length,
             itemBuilder: (BuildContext content, int index) {
               final song = songs[index];
-              return Song(name: song.name, link:song.link,duration: song.duration );
+              return Song(name: song.name, artist:song.artist, duration: song.duration, index: index,);
             },
           );
           },
@@ -65,13 +65,15 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
 
 class Song extends StatelessWidget {
   final String name;
-  final String? link;
   final String duration;
+  final String artist;
+  final int index;
   const Song({
     super.key,
     required this.name,
     required this.duration,
-    this.link,
+    required this.artist,
+    required this.index
   });
 
   @override
@@ -84,15 +86,14 @@ class Song extends StatelessWidget {
       width: 320,
       height: 70,
       onPressed: () {
-        final playlist = context.read<PlaylistModels>().selectedPlaylist;
-        context.read<SongModels>().loadSong(playlist);
+        final songs = context.read<SongModels>().songs;
         context.read<SongModels>().setIsPlaying(true);
         context.read<SongModels>().getSongIndex(name);
-        AudioUtils.playSong(name);
+        AudioUtils.playSong(songs[context.read<SongModels>().currentSongIndex].name);
       },
       child: Stack(
         children: [
-          positionedHeader(15, 12, '1', 16, 500, Colors.white),
+          positionedHeader(15, 12, '${index + 1}', 16, 500, Colors.white),
           Positioned(
             top: 10,
             left: 80,
@@ -107,8 +108,9 @@ class Song extends StatelessWidget {
             top: 20,
             child: Text(name, style: montserratStyle()),
           ),
-          positionedHeader(20, 360, 'Artist Name', 12, 600, Colors.grey),
-          positionedHeader(20, 670, '3:40', 12, 600, Colors.grey),
+          positionedHeader(20, 360, artist , 12, 600, Colors.grey),
+          positionedHeader(20, 670, duration , 12, 600, Colors.grey),
+          
         ],
       ),
     );

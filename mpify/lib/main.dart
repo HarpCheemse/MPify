@@ -4,7 +4,8 @@ import 'package:mpify/models/song_models.dart';
 import 'package:mpify/screen/home_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => PlaylistModels()),
