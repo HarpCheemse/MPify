@@ -18,6 +18,7 @@ class Song {
   final String link;
   final DateTime dateAdded;
   final String? imagePath;
+  final String identifier;
   Song({
     required this.name,
     required this.link,
@@ -25,6 +26,7 @@ class Song {
     required this.artist,
     required this.dateAdded,
     required this.imagePath,
+    required this.identifier,
   });
 }
 
@@ -38,10 +40,10 @@ class SongModels extends ChangeNotifier {
   int _currentSongIndex = 0;
   int get currentSongIndex => _currentSongIndex;
 
-  Future<void> getSongIndex(songName) async {
-    final index = _songsBackground.indexWhere((song) => song.name == songName);
+  Future<void> getSongIndex(songIdentifier) async {
+    final index = _songsBackground.indexWhere((song) => song.identifier == songIdentifier);
     if (index == -1) {
-      debugPrint('$songName does not exit in the list');
+      debugPrint('$songIdentifier does not exit in the list');
       return;
     }
     _currentSongIndex = index;
@@ -61,10 +63,6 @@ class SongModels extends ChangeNotifier {
     }
     _songsActive = [];
     await parsePlaylistJSON(playlistFile);
-    
-    songsActive.forEach((song) {
-      debugPrint(song.name);
-    });
     notifyListeners();
   }
 
@@ -75,7 +73,8 @@ class SongModels extends ChangeNotifier {
       duration: song.duration,
       link: song.link,
       dateAdded: song.dateAdded,
-      imagePath: song.imagePath
+      imagePath: song.imagePath,
+      identifier: song.identifier,
      )).toList();
   }
 
@@ -94,9 +93,11 @@ class SongModels extends ChangeNotifier {
       final artist = song['artist'];
       final dateAdded = DateTime.parse(song['dateAdded']);
       final imagePath = song['ImagePath'];
+      final identifier = song['identifier'];
       _songsActive.add(
         Song(
           name: name,
+          identifier: identifier,
           duration: duration,
           link: link,
           artist: artist,
@@ -130,7 +131,7 @@ class SongModels extends ChangeNotifier {
       _currentSongIndex = 0;
       notifyListeners();
     }
-    await AudioUtils.playSong(_songsBackground[_currentSongIndex].name);
+    await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 
   Future<void> playPreviousSong() async {

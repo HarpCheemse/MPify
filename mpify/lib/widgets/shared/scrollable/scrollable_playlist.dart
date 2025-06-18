@@ -49,8 +49,8 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
             controller: _scrollController,
             itemCount: playlist.length,
             itemBuilder: (BuildContext content, int index) {
-              final name = playlist[index];
-              return PlaylistFolder(name: name);
+              final playlistName = playlist[index];
+              return PlaylistFolder(playlistName: playlistName);
             },
           );
           },
@@ -61,10 +61,10 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
 }
 
 class PlaylistFolder extends StatelessWidget {
-  final String name;
+  final String playlistName;
   const PlaylistFolder({
     super.key,
-    required this.name
+    required this.playlistName,
   });
 
   @override
@@ -77,9 +77,9 @@ class PlaylistFolder extends StatelessWidget {
       width: 320,
       height: 70,
       onPressed: () {
-        context.read<PlaylistModels>().setSelectedPlaylist(name);
-        context.read<SongModels>().loadSong(name);
-        PlaylistUltis.playlistSongWatcher(context, name );
+        context.read<PlaylistModels>().setSelectedPlaylist(playlistName);
+        context.read<SongModels>().loadSong(playlistName);
+        PlaylistUltis.playlistSongWatcher(context, playlistName);
       },
       child: Stack(
         children: [
@@ -93,7 +93,7 @@ class PlaylistFolder extends StatelessWidget {
           Positioned(
             left: 80,
             top: 20,
-            child: Text(name, style: montserratStyle()),
+            child: Text(playlistName, style: montserratStyle()),
           ),
         ],
       ),
