@@ -149,7 +149,7 @@ class PlaylistUltis {
       'artist': artist,
       'dateAdded': DateTime.now().toIso8601String(),
       'imagePath': imagePath,
-      'identifier': identifier
+      'identifier': identifier,
     };
     try {
       final contents = await playlistFile.readAsString();
@@ -166,33 +166,48 @@ class PlaylistUltis {
     }
     return 1;
   }
+}
+
+class Watcher {
+  static Timer? _debounceTimer;
+  static bool _isLoading = false;
 
   static Future<void> playlistSongWatcher(
     BuildContext context,
     String playlist,
   ) async {
+    _debounceTimer?.cancel();
+
     final currentDir = Directory.current;
     final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
     final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
-    Timer? debounceTimer;
-
-    final songModels = context.read<SongModels>();
 
     if (!await playlistFile.exists()) {
-      debugPrint('playlist does not exit');
+      debugPrint('playlist does not exist');
       return;
     }
 
+    final songModels = context.read<SongModels>();
+
     targetDir.watch(events: FileSystemEvent.modify).listen((event) {
-      if (event.path == playlistFile.path) {
-        debounceTimer?.cancel();
-        debounceTimer = Timer(const Duration(seconds: 1), () async {
+      if (event.path.endsWith('$playlist.json')) {
+        debugPrint('📄 Detected change to $playlist.json');
+        _debounceTimer?.cancel();
+
+        _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+          if(_isLoading) return;
+          _isLoading = true;
           try {
             await songModels.loadSong(playlist);
           } catch (e) {
-            debugPrint('failed to load playlist: $e');
+            debugPrint('Failed to load playlist: $e');
+          }
+          finally {
+            _isLoading = false;
           }
         });
+      } else {
+        debugPrint('🧹 Ignored change: ${event.path}');
       }
     });
   }
@@ -214,8 +229,7 @@ class AudioUtils {
     }
 
     try {
-      final String ffprobeExecutable =
-          'C:\\Github\\MPify\\ffprobe.exe'; // <-- CHANGE THIS!
+      final String ffprobeExecutable = 'C:\\Github\\MPify\\ffprobe.exe';
       final process = await Process.start(ffprobeExecutable, [
         '-i',
         mp3FilePath,
