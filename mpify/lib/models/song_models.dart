@@ -29,13 +29,17 @@ class Song {
 }
 
 class SongModels extends ChangeNotifier {
-  List<Song> _songs = [];
-  List<Song> get songs => _songs;
+  List<Song> _songsActive = []; //change when click on playlist
+  List<Song> _songsBackground = []; //unchange till click on a song in a another playlist
+
+  List<Song> get songsActive => _songsActive;
+  List<Song> get songsBackground => _songsBackground;
 
   int _currentSongIndex = 0;
   int get currentSongIndex => _currentSongIndex;
+
   Future<void> getSongIndex(songName) async {
-    final index = _songs.indexWhere((song) => song.name == songName);
+    final index = _songsBackground.indexWhere((song) => song.name == songName);
     if (index == -1) {
       debugPrint('$songName does not exit in the list');
       return;
@@ -51,13 +55,24 @@ class SongModels extends ChangeNotifier {
 
     if (!await playlistFile.exists()) {
       debugPrint('playlist does not exit');
-      _songs = [];
+      _songsActive = [];
       notifyListeners();
       return;
     }
-    _songs = [];
+    _songsActive = [];
     await parsePlaylistJSON(playlistFile);
     notifyListeners();
+  }
+
+  Future<void> loadActivePlaylistSong() async { // start when click on a song of active playlist
+    _songsBackground = _songsActive.map((song) =>
+     Song(name: song.name,
+      artist: song.artist,
+      duration: song.duration,
+      link: song.link,
+      dateAdded: song.dateAdded,
+      imagePath: song.imagePath
+     )).toList();
   }
 
   Future<void> parsePlaylistJSON(file) async {
@@ -75,7 +90,7 @@ class SongModels extends ChangeNotifier {
       final artist = song['artist'];
       final dateAdded = DateTime.parse(song['dateAdded']);
       final imagePath = song['ImagePath'];
-      _songs.add(
+      _songsActive.add(
         Song(
           name: name,
           duration: duration,
@@ -104,14 +119,14 @@ class SongModels extends ChangeNotifier {
   }
 
   Future<void> playNextSong() async {
-    if (_currentSongIndex + 1 < _songs.length) {
+    if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
       notifyListeners();
     } else {
       _currentSongIndex = 0;
       notifyListeners();
     }
-    await AudioUtils.playSong(_songs[_currentSongIndex].name);
+    await AudioUtils.playSong(_songsBackground[_currentSongIndex].name);
   }
 
   Future<void> playPreviousSong() async {
@@ -119,19 +134,19 @@ class SongModels extends ChangeNotifier {
       _currentSongIndex--;
       notifyListeners();
     } else {
-      _currentSongIndex = _songs.length - 1;
+      _currentSongIndex = _songsBackground.length - 1;
       notifyListeners();
     }
-    await AudioUtils.playSong(_songs[_currentSongIndex].name);
+    await AudioUtils.playSong(_songsBackground[_currentSongIndex].name);
   }
 
   void shuffleSongs() {
-    _songs.shuffle();
+    _songsBackground.shuffle();
     notifyListeners();
   }
 
   void sortSongsByName() {
-    _songs.sort((a, b) => a.name.compareTo(b.name));
+    _songsBackground.sort((a, b) => a.name.compareTo(b.name));
     notifyListeners();
   }
 
