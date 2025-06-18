@@ -52,9 +52,10 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
               itemBuilder: (BuildContext content, int index) {
                 final song = songs[index];
                 return Song(
-                  name: song.name,
+                  songName: song.name,
                   artist: song.artist,
                   duration: song.duration,
+                  identifier: song.identifier,
                   index: index,
                 );
               },
@@ -67,16 +68,18 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
 }
 
 class Song extends StatelessWidget {
-  final String name;
+  final String songName;
   final String duration;
   final String artist;
+  final String identifier;
   final int index;
   const Song({
     super.key,
-    required this.name,
+    required this.songName,
     required this.duration,
     required this.artist,
     required this.index,
+    required this.identifier,
   });
 
   @override
@@ -93,11 +96,11 @@ class Song extends StatelessWidget {
         await songModels.loadActivePlaylistSong(); //copy activeSong to background song
         final songsBackground = songModels.songsBackground;
 
-        songModels.getSongIndex(name);
+        songModels.getSongIndex(identifier);
         songModels.setIsPlaying(true);
         try {
           AudioUtils.playSong(
-          songsBackground[songModels.currentSongIndex].name,
+          songsBackground[songModels.currentSongIndex].identifier,
         );
         }
         catch (e) {
@@ -131,7 +134,7 @@ class Song extends StatelessWidget {
           SizedBox(
             width: 330,
             height: 20,
-            child: Text(name, style: montserratStyle()),
+            child: Text(songName, style: montserratStyle()),
           ),
           SizedBox(width: 20),
           SizedBox(

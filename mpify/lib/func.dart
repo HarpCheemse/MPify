@@ -7,9 +7,16 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:crypto/crypto.dart';
 
 //Global Var
 ValueNotifier<List<String>> playlistNotifer = ValueNotifier([]);
+
+String hashYoutubeLink(String link) {
+  final bytes = utf8.encode(link);
+  final digest = sha256.convert(bytes);
+  return digest.toString();
+}
 
 class FolderUtils {
   static Future<void> createPlaylistFolder(folderName) async {
@@ -33,6 +40,7 @@ class FolderUtils {
         .replaceAll(RegExp(r'[^\w\s-]'), '')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
+    final identifier = hashYoutubeLink(link);
     if (!await target.exists()) {
       debugPrint('Folder $target does not exit');
       target.create(recursive: true);
@@ -40,7 +48,7 @@ class FolderUtils {
     }
     final process = await Process.start(
       'yt-dlp',
-      ['-x', '--audio-format', 'mp3', '-o', '$cleanName.%(ext)s', trimmedLink],
+      ['-x', '--audio-format', 'mp3', '-o', '$identifier.%(ext)s', trimmedLink],
       workingDirectory: target.path,
       runInShell: true,
     );
@@ -60,6 +68,7 @@ class FolderUtils {
           playlist,
           cleanName,
           trimmedLink,
+          identifier,
         ) ==
         0) {
       debugPrint('Error Writing File. Download canceled');
@@ -116,7 +125,8 @@ class PlaylistUltis {
   static Future<int> writeSongToPlaylist(
     String playlist,
     String name,
-    String link, {
+    String link,
+    String identifier, {
     String artist = 'Unknown',
     String imagePath = '',
   }) async {
@@ -128,7 +138,7 @@ class PlaylistUltis {
       return 0;
     }
 
-    final duration = await AudioUtils.getSongDuration(name);
+    final duration = await AudioUtils.getSongDuration(identifier);
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     final formartedDuration = '$minutes:$seconds';
@@ -139,6 +149,7 @@ class PlaylistUltis {
       'artist': artist,
       'dateAdded': DateTime.now().toIso8601String(),
       'imagePath': imagePath,
+      'identifier': identifier
     };
     try {
       final contents = await playlistFile.readAsString();
@@ -190,9 +201,9 @@ class PlaylistUltis {
 class AudioUtils {
   static final AudioPlayer player = AudioPlayer();
 
-  static Future<Duration> getSongDuration(String name) async {
+  static Future<Duration> getSongDuration(String identifier) async {
     final target = await FolderUtils.checkMP3FolderExist();
-    final mp3FilePath = p.join(target.path, '$name.mp3');
+    final mp3FilePath = p.join(target.path, '$identifier.mp3');
 
     final mp3File = File(mp3FilePath);
     if (!await mp3File.exists()) {
@@ -268,11 +279,11 @@ class AudioUtils {
     }
   }
 
-  static Future<void> playSong(song) async {
+  static Future<void> playSong(identifier) async {
     final target = await FolderUtils.checkMP3FolderExist();
-    final songFile = File(p.join(target.path, '$song.mp3'));
+    final songFile = File(p.join(target.path, '$identifier.mp3'));
     if (!await songFile.exists()) {
-      debugPrint('$song not found');
+      debugPrint('$identifier not found');
       return;
     }
     player.stop();
