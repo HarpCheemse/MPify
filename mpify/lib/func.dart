@@ -162,7 +162,8 @@ class PlaylistUltis {
   ) async {
     final currentDir = Directory.current;
     final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
-    final playlistFile = File(p.join(targetDir.path, '$playlist.txt'));
+    final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
+    Timer? debounceTimer;
 
     final songModels = context.read<SongModels>();
 
@@ -172,10 +173,15 @@ class PlaylistUltis {
     }
 
     targetDir.watch(events: FileSystemEvent.modify).listen((event) {
-      debugPrint(event.path);
-      debugPrint(playlistFile.path);
       if (event.path == playlistFile.path) {
-        songModels.loadSong(playlist);
+        debounceTimer?.cancel();
+        debounceTimer = Timer(const Duration(seconds: 1), () async {
+          try {
+            await songModels.loadSong(playlist);
+          } catch (e) {
+            debugPrint('failed to load playlist: $e');
+          }
+        });
       }
     });
   }
@@ -197,39 +203,32 @@ class AudioUtils {
     }
 
     try {
-      final String ffprobeExecutable = 'C:\\Github\\MPify\\ffprobe.exe'; // <-- CHANGE THIS!
-      final process = await Process.start(
-        ffprobeExecutable,
-        [
-          '-i',
-          mp3FilePath,
-          '-v',
-          'quiet',
-          '-show_entries',
-          'format=duration',
-          '-hide_banner',
-          '-of',
-          'default=noprint_wrappers=1:nokey=1',
-        ],
-        runInShell: false,
-      );
+      final String ffprobeExecutable =
+          'C:\\Github\\MPify\\ffprobe.exe'; // <-- CHANGE THIS!
+      final process = await Process.start(ffprobeExecutable, [
+        '-i',
+        mp3FilePath,
+        '-v',
+        'quiet',
+        '-show_entries',
+        'format=duration',
+        '-hide_banner',
+        '-of',
+        'default=noprint_wrappers=1:nokey=1',
+      ], runInShell: false);
 
       final List<String> stdoutLines = [];
       final List<String> stderrLines = [];
 
-      process.stdout
-          .transform(systemEncoding.decoder)
-          .listen((String data) {
-            stdoutLines.add(data.trim());
-            debugPrint('FFPROBE STDOUT CHUNK: "${data.trim()}"');
-          });
+      process.stdout.transform(systemEncoding.decoder).listen((String data) {
+        stdoutLines.add(data.trim());
+        debugPrint('FFPROBE STDOUT CHUNK: "${data.trim()}"');
+      });
 
-      process.stderr
-          .transform(systemEncoding.decoder)
-          .listen((String data) {
-            stderrLines.add(data.trim());
-            debugPrint('FFPROBE STDERR CHUNK: "${data.trim()}"');
-          });
+      process.stderr.transform(systemEncoding.decoder).listen((String data) {
+        stderrLines.add(data.trim());
+        debugPrint('FFPROBE STDERR CHUNK: "${data.trim()}"');
+      });
 
       final exitCode = await process.exitCode;
 
@@ -256,14 +255,19 @@ class AudioUtils {
     } catch (e) {
       debugPrint('ERROR: Exception during ffprobe execution: $e');
       if (e is ProcessException) {
-         debugPrint('ProcessException message: ${e.message}');
-         if (e.message.contains('No such file or directory') || e.errorCode == 2) { // Error code 2 typically means file not found
-            debugPrint('This usually means the ffprobe.exe path is incorrect or ffprobe.exe does not exist at that location.');
-         }
+        debugPrint('ProcessException message: ${e.message}');
+        if (e.message.contains('No such file or directory') ||
+            e.errorCode == 2) {
+          // Error code 2 typically means file not found
+          debugPrint(
+            'This usually means the ffprobe.exe path is incorrect or ffprobe.exe does not exist at that location.',
+          );
+        }
       }
       return Duration.zero;
     }
   }
+
   static Future<void> playSong(song) async {
     final target = await FolderUtils.checkMP3FolderExist();
     final songFile = File(p.join(target.path, '$song.mp3'));
@@ -303,6 +307,7 @@ class AudioUtils {
   static Future<void> setVolume(value) async {
     await player.setVolume(value);
   }
+
   static Future<void> stopSong() async {
     player.stop();
   }
