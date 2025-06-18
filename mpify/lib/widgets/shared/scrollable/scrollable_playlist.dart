@@ -79,7 +79,7 @@ class PlaylistFolder extends StatelessWidget {
       onPressed: () {
         context.read<PlaylistModels>().setSelectedPlaylist(playlistName);
         context.read<SongModels>().loadSong(playlistName);
-        PlaylistUltis.playlistSongWatcher(context, playlistName);
+        Watcher.playlistSongWatcher(context, playlistName);
       },
       child: Stack(
         children: [

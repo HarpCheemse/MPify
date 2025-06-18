@@ -61,7 +61,6 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _songsActive = [];
     await parsePlaylistJSON(playlistFile);
     notifyListeners();
   }
@@ -79,6 +78,8 @@ class SongModels extends ChangeNotifier {
   }
 
   Future<void> parsePlaylistJSON(file) async {
+    _songsActive = [];
+    debugPrint('parsing Json');
     final contents = await file.readAsString();
     try {
       if (contents.trim().isEmpty) {
@@ -92,7 +93,7 @@ class SongModels extends ChangeNotifier {
       final link = song['link'];
       final artist = song['artist'];
       final dateAdded = DateTime.parse(song['dateAdded']);
-      final imagePath = song['ImagePath'];
+      final imagePath = song['imagePath'];
       final identifier = song['identifier'];
       _songsActive.add(
         Song(
@@ -124,6 +125,8 @@ class SongModels extends ChangeNotifier {
   }
 
   Future<void> playNextSong() async {
+    setIsPlaying(true);
+    debugPrint('Current: $_currentSongIndex');
     if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
       notifyListeners();
@@ -131,6 +134,7 @@ class SongModels extends ChangeNotifier {
       _currentSongIndex = 0;
       notifyListeners();
     }
+    debugPrint('After: $_currentSongIndex');
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 
@@ -142,7 +146,7 @@ class SongModels extends ChangeNotifier {
       _currentSongIndex = _songsBackground.length - 1;
       notifyListeners();
     }
-    await AudioUtils.playSong(_songsBackground[_currentSongIndex].name);
+    await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 
   void shuffleSongs() {

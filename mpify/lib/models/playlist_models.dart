@@ -8,4 +8,5 @@ class PlaylistModels extends ChangeNotifier{
     _selectedPlaylist = name;
     notifyListeners();
   }
+  
 }
