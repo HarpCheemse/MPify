@@ -61,6 +61,10 @@ class SongModels extends ChangeNotifier {
     }
     _songsActive = [];
     await parsePlaylistJSON(playlistFile);
+    
+    songsActive.forEach((song) {
+      debugPrint(song.name);
+    });
     notifyListeners();
   }
 
