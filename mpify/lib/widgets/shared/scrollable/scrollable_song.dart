@@ -4,7 +4,10 @@ import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:provider/provider.dart';
-
+import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
+import 'package:mpify/widgets/shared/overlay/overlay_gui/edit_song_form.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:mpify/models/playlist_models.dart';
 
 class ScrollableListSong extends StatefulWidget {
@@ -56,6 +59,7 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
                   artist: song.artist,
                   duration: song.duration,
                   identifier: song.identifier,
+                  imagePath: song.imagePath,
                   index: index,
                 );
               },
@@ -73,6 +77,7 @@ class Song extends StatelessWidget {
   final String artist;
   final String identifier;
   final int index;
+  final String? imagePath;
   const Song({
     super.key,
     required this.songName,
@@ -80,6 +85,7 @@ class Song extends StatelessWidget {
     required this.artist,
     required this.index,
     required this.identifier,
+    required this.imagePath,
   });
 
   @override
@@ -92,18 +98,19 @@ class Song extends StatelessWidget {
       width: 320,
       height: 70,
       onPressed: () async {
+        debugPrint('$imagePath.png');
         final songModels = context.read<SongModels>();
-        await songModels.loadActivePlaylistSong(); //copy activeSong to background song
+        await songModels
+            .loadActivePlaylistSong(); //copy activeSong to background song
         final songsBackground = songModels.songsBackground;
 
         songModels.getSongIndex(identifier);
         songModels.setIsPlaying(true);
         try {
           AudioUtils.playSong(
-          songsBackground[songModels.currentSongIndex].identifier,
-        );
-        }
-        catch (e) {
+            songsBackground[songModels.currentSongIndex].identifier,
+          );
+        } catch (e) {
           debugPrint('error playing audio: $e');
         }
       },
@@ -127,7 +134,18 @@ class Song extends StatelessWidget {
             child: SizedBox(
               width: 50,
               height: 50,
-              child: Image.asset('assets/placeholder.png', fit: BoxFit.contain),
+              child: (imagePath != null)
+                  ? Image.file(
+                      File(
+                        p.join(
+                          Directory.current.path,
+                          '..',
+                          'cover',
+                          imagePath,
+                        ),
+                      ),
+                    )
+                  : Image.asset('assets/placeholder.png', fit: BoxFit.contain),
             ),
           ),
           SizedBox(width: 20),
@@ -164,11 +182,35 @@ class Song extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {},
-            icon: Icon(Icons.more_horiz, color: Colors.grey,),
+            icon: Icon(Icons.more_horiz, color: Colors.grey),
             color: const Color.fromARGB(255, 53, 53, 53),
             itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(value: 'edit', child: Text('edit', style: montserratStyle(color: Colors.white),)),
-              PopupMenuItem<String>(value: 'delete', child: Text('Delete', style: montserratStyle(color: Colors.white),)),
+              PopupMenuItem<String>(
+                value: 'edit',
+                onTap: () {
+                  OverlayController.show(
+                    context,
+                    EditSongForm(
+                      playlist: context.read<PlaylistModels>().selectedPlaylist,
+                      identifier: identifier,
+                      name: songName,
+                      artist: artist,
+                      imagePath: imagePath,
+                    ),
+                  );
+                },
+                child: Text(
+                  'edit',
+                  style: montserratStyle(color: Colors.white),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'delete',
+                child: Text(
+                  'Delete',
+                  style: montserratStyle(color: Colors.white),
+                ),
+              ),
             ],
           ),
         ],
