@@ -303,4 +303,7 @@ class AudioUtils {
   static Future<void> setVolume(value) async {
     await player.setVolume(value);
   }
+  static Future<void> stopSong() async {
+    player.stop();
+  }
 }

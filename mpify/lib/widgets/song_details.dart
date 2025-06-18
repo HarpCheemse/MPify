@@ -45,8 +45,8 @@ class _SongDetailsState extends State<SongDetails> {
             Consumer<SongModels>(
               builder: (context, value, child) {
                 final index = value.currentSongIndex;
-                final songs = value.songs;
-                final name = (songs.isEmpty) ? 'Name' : songs[index].name;
+                final songs = value.songsBackground;
+                final name = (songs.isEmpty) ? 'Song Name' : songs[index].name;
                 return positionedHeader(20, 70, name, 14, 600, Colors.white);
               },
             ),
