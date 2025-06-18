@@ -128,7 +128,7 @@ class PlaylistUltis {
     String link,
     String identifier, {
     String artist = 'Unknown',
-    String imagePath = '',
+    imagePath = null,
   }) async {
     final targetDir = await FolderUtils.checkPlaylistFolderExist();
     final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
@@ -191,7 +191,6 @@ class Watcher {
 
     targetDir.watch(events: FileSystemEvent.modify).listen((event) {
       if (event.path.endsWith('$playlist.json')) {
-        debugPrint('📄 Detected change to $playlist.json');
         _debounceTimer?.cancel();
 
         _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
@@ -206,8 +205,6 @@ class Watcher {
             _isLoading = false;
           }
         });
-      } else {
-        debugPrint('🧹 Ignored change: ${event.path}');
       }
     });
   }
@@ -283,7 +280,6 @@ class AudioUtils {
         debugPrint('ProcessException message: ${e.message}');
         if (e.message.contains('No such file or directory') ||
             e.errorCode == 2) {
-          // Error code 2 typically means file not found
           debugPrint(
             'This usually means the ffprobe.exe path is incorrect or ffprobe.exe does not exist at that location.',
           );
