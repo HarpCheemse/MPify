@@ -7,6 +7,8 @@ import 'package:mpify/widgets/shared/slider.dart/duration.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:provider/provider.dart';
 import 'package:mpify/widgets/shared/slider.dart/volume.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
 
 class SongDetails extends StatefulWidget {
   const SongDetails({super.key});
@@ -34,11 +36,33 @@ class _SongDetailsState extends State<SongDetails> {
               left: 0,
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
-                child: Image.asset(
-                  'assets/placeholder.png',
-                  fit: BoxFit.cover,
-                  height: 50,
-                  width: 50,
+                child: Consumer<SongModels>(
+                  builder: (context, value, child) {
+                    final songs = value.songsBackground;
+                    final index = value.currentSongIndex;
+                    final imagePath = (songs.isEmpty)
+                        ? null
+                        : songs[index].imagePath;
+                    return SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: (imagePath != null)
+                          ? Image.file(
+                              File(
+                                p.join(
+                                  Directory.current.path,
+                                  '..',
+                                  'cover',
+                                  imagePath,
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/placeholder.png',
+                              fit: BoxFit.contain,
+                            ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -47,19 +71,51 @@ class _SongDetailsState extends State<SongDetails> {
                 final index = value.currentSongIndex;
                 final songs = value.songsBackground;
                 final name = (songs.isEmpty) ? 'Song Name' : songs[index].name;
-                return positionedHeader(20, 70, name, 14, 600, Colors.white);
+                return Padding(
+                  padding: const EdgeInsets.only(top: 30, left: 70),
+                  child: SizedBox(
+                    width: 330,
+                    child: Text(
+                      '$name',
+                      style: montserratStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.fade,
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ),
+                );
               },
             ),
-            positionedHeader(
-              40,
-              70,
-              'Artist',
-              14,
-              500,
-              const Color.fromARGB(255, 150, 150, 150),
+            Consumer<SongModels>(
+              builder: (context, value, child) {
+                final songs = value.songsBackground;
+                final index = value.currentSongIndex;
+                final artist = (songs.isEmpty) ? 'Artist' : songs[index].artist;
+                return Padding(
+                  padding: const EdgeInsets.only(top: 50, left: 70),
+                  child: SizedBox(
+                    width: 160,
+                    child: Text(
+                      '$artist',
+                      style: montserratStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                      ),
+                      overflow: TextOverflow.fade,
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ),
+                );
+              },
             ),
             Padding(
-              padding: EdgeInsets.only(bottom: 30 ),
+              padding: EdgeInsets.only(bottom: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
