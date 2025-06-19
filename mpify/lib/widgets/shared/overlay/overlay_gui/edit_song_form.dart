@@ -76,6 +76,16 @@ class _EditSongFormState extends State<EditSongForm> {
       debugPrint("No image in clipboard");
     }
   }
+  Future <void> clearCachedImage() async {
+    final current = Directory.current;
+    final target = Directory(p.join(current.path, '..', 'cover'));
+    final imageFile = File(p.join(target.path, '${widget.identifier}.png'));
+
+    if(!await target.exists()) {
+      await target.create(recursive: true);
+    }
+    await FileImage(File(imageFile.path)).evict();
+  }
 
   Future<void> _editSongInfo() async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
@@ -103,21 +113,12 @@ class _EditSongFormState extends State<EditSongForm> {
       }
       match['name'] = name.text;
       match['artist'] = artist.text;
-      if (_isReset) {
-        if (imagePath == null) {
-          match['imagePath'] = null;
-        } else {
-          match['imagePath'] = imagePath;
-        }
-      } else {
-        if (imagePath != null) {
-          match['imagePath'] = imagePath;
-        } else {
-          match['imagePath'] = widget.imagePath;
-        }
+      if(_isReset) {
+        match['imagePath'] = imagePath;
       }
-      ;
-
+      else {
+        match['imagePath'] = imagePath ?? widget.imagePath;
+      }
       final updatedContents = jsonEncode(songs);
       await playlistFile.writeAsString(updatedContents);
       debugPrint('Song Info Updated');
@@ -137,6 +138,7 @@ class _EditSongFormState extends State<EditSongForm> {
       await target.create(recursive: true);
     }
     await imageFile.writeAsBytes(_imageBytes!);
+    debugPrint('Saved Imaged As $fileName');
     return fileName;
   }
 
@@ -337,6 +339,8 @@ class _EditSongFormState extends State<EditSongForm> {
                       await context.read<SongModels>().loadSong(
                         widget.playlist,
                       );
+                      if(_imageBytes != null) clearCachedImage();
+                      await context.read<SongModels>().loadActivePlaylistSong();
                       OverlayController.hideOverlay();
                     },
                     height: 30,

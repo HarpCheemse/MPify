@@ -144,6 +144,8 @@ class Song extends StatelessWidget {
                           imagePath,
                         ),
                       ),
+                      key: UniqueKey(),
+                      fit: BoxFit.cover,
                     )
                   : Image.asset('assets/placeholder.png', fit: BoxFit.contain),
             ),
@@ -152,7 +154,7 @@ class Song extends StatelessWidget {
           SizedBox(
             width: 330,
             height: 20,
-            child: Text(songName, style: montserratStyle()),
+            child: Text(songName, style: montserratStyle(), overflow: TextOverflow.fade, maxLines: 1, softWrap: false,),
           ),
           SizedBox(width: 20),
           SizedBox(
