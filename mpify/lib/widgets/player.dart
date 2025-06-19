@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:mpify/widgets/shared/slider.dart/duration.dart';
-import 'package:mpify/func.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
+
+import 'package:mpify/utils/audio_ultis.dart';
+
 
 class Player extends StatefulWidget {
   const Player({super.key});

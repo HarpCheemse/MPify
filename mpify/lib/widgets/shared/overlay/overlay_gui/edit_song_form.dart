@@ -7,19 +7,20 @@ import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
-import 'package:mpify/func.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
+import 'package:mpify/utils/folder_ultis.dart';
+
 class EditSongForm extends StatefulWidget {
-  final playlist;
-  final identifier;
-  final name;
-  final artist;
-  final imagePath;
+  final String playlist;
+  final String identifier;
+  final String name;
+  final String artist;
+  final String? imagePath;
   const EditSongForm({
     super.key,
     required this.playlist,
@@ -46,17 +47,6 @@ class _EditSongFormState extends State<EditSongForm> {
       withData: true,
     );
 
-    Future<void> pasteImage() async {
-      final pastedImage = await Pasteboard.image;
-      if (pastedImage != null) {
-        setState(() {
-          _imageBytes = pastedImage;
-        });
-      } else {
-        debugPrint("No image in clipboard");
-      }
-    }
-
     if (result != null && result.files.single.bytes != null) {
       setState(() {
         _imageBytes = result.files.single.bytes;
@@ -76,12 +66,13 @@ class _EditSongFormState extends State<EditSongForm> {
       debugPrint("No image in clipboard");
     }
   }
-  Future <void> clearCachedImage() async {
+
+  Future<void> clearCachedImage() async {
     final current = Directory.current;
     final target = Directory(p.join(current.path, '..', 'cover'));
     final imageFile = File(p.join(target.path, '${widget.identifier}.png'));
 
-    if(!await target.exists()) {
+    if (!await target.exists()) {
       await target.create(recursive: true);
     }
     await FileImage(File(imageFile.path)).evict();
@@ -113,10 +104,9 @@ class _EditSongFormState extends State<EditSongForm> {
       }
       match['name'] = name.text;
       match['artist'] = artist.text;
-      if(_isReset) {
+      if (_isReset) {
         match['imagePath'] = imagePath;
-      }
-      else {
+      } else {
         match['imagePath'] = imagePath ?? widget.imagePath;
       }
       final updatedContents = jsonEncode(songs);
@@ -152,11 +142,12 @@ class _EditSongFormState extends State<EditSongForm> {
     });
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
-        _focusNode.requestFocus(); // Persist focus
+        _focusNode.requestFocus();
       }
     });
 
     @override
+    // ignore: unused_element
     void dispose() {
       _focusNode.dispose();
       name.dispose();
@@ -336,11 +327,16 @@ class _EditSongFormState extends State<EditSongForm> {
                     borderRadius: 0,
                     onPressed: () async {
                       await _editSongInfo();
-                      await context.read<SongModels>().loadSong(
-                        widget.playlist,
-                      );
-                      if(_imageBytes != null) clearCachedImage();
-                      await context.read<SongModels>().loadActivePlaylistSong();
+                      if (context.mounted) {
+                        await context.read<SongModels>().loadSong(
+                          widget.playlist,
+                        );
+                      }
+                      if (_imageBytes != null) clearCachedImage();
+                      if (!mounted) return;
+                      if(context.mounted) {
+                        await context.read<SongModels>().loadActivePlaylistSong();
+                      }
                       OverlayController.hideOverlay();
                     },
                     height: 30,

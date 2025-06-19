@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
+
+import 'package:mpify/utils/audio_ultis.dart';
 
 class VolumeSlider extends StatefulWidget {
   final double width;

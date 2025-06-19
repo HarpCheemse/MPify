@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
@@ -12,6 +11,7 @@ import 'package:mpify/widgets/shared/scrollable/scrollable_song.dart';
 import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 
+import 'package:mpify/utils/audio_ultis.dart';
 class Songs extends StatefulWidget {
   const Songs({super.key});
 
