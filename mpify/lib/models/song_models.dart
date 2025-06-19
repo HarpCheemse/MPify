@@ -1,15 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
+import 'package:mpify/utils/playlist_ultis.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 
-String formatDuration(Duration duration) {
-  final minutes = duration.inMinutes;
-  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return '$minutes:$seconds';
-}
+import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/audio_ultis.dart';
+
 
 class Song {
   final String name;
@@ -48,7 +44,6 @@ class SongModels extends ChangeNotifier {
     }
     _currentSongIndex = index;
     notifyListeners();
-    debugPrint('$index');
   }
 
   Future<void> loadSong(String playlist) async {
@@ -61,7 +56,7 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    await parsePlaylistJSON(playlistFile);
+    _songsActive = await PlaylistUltis.parsePlaylistJSON(playlistFile);
     notifyListeners();
   }
 
@@ -77,42 +72,6 @@ class SongModels extends ChangeNotifier {
      )).toList();
   }
 
-  Future<void> parsePlaylistJSON(file) async {
-    _songsActive = [];
-    debugPrint('parsing Json');
-    final contents = await file.readAsString();
-    try {
-      if (contents.trim().isEmpty) {
-      debugPrint('file playlist.json empty');
-      return;
-    }
-    final List<dynamic> songs = jsonDecode(contents);
-    for (var song in songs) {
-      final name = song['name'];
-      final duration = song['duration'];
-      final link = song['link'];
-      final artist = song['artist'];
-      final dateAdded = DateTime.parse(song['dateAdded']);
-      final imagePath = song['imagePath'];
-      final identifier = song['identifier'];
-      _songsActive.add(
-        Song(
-          name: name,
-          identifier: identifier,
-          duration: duration,
-          link: link,
-          artist: artist,
-          dateAdded: dateAdded,
-          imagePath: imagePath,
-        ),
-      );
-    }
-    }
-    catch (e) {
-      debugPrint('$e');
-    }
-  }
-
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
   void flipIsPlaying() {
@@ -126,7 +85,6 @@ class SongModels extends ChangeNotifier {
 
   Future<void> playNextSong() async {
     setIsPlaying(true);
-    debugPrint('Current: $_currentSongIndex');
     if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
       notifyListeners();
@@ -134,7 +92,6 @@ class SongModels extends ChangeNotifier {
       _currentSongIndex = 0;
       notifyListeners();
     }
-    debugPrint('After: $_currentSongIndex');
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 

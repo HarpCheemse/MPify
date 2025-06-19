@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/watcher_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
-
-import 'package:mpify/func.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mpify/models/playlist_models.dart';
+
 class ScrollableListPlaylist extends StatefulWidget {
   final double width;
   final double height;
@@ -29,8 +29,7 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    FolderUtils.playlistWatcher();
-    
+    Watcher.playlistWatcher(context);
   }
 
   @override
@@ -42,17 +41,17 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
       child: Scrollbar(
         thumbVisibility: true,
         controller: _scrollController,
-        child: ValueListenableBuilder<List<String>>(
-          valueListenable: playlistNotifer,
-          builder: (context, playlist, _) {
+        child: Consumer<PlaylistModels>(
+          builder: (context, playlist, child) {
+            final length = playlist.playlists.length;
             return ListView.builder(
-            controller: _scrollController,
-            itemCount: playlist.length,
-            itemBuilder: (BuildContext content, int index) {
-              final playlistName = playlist[index];
-              return PlaylistFolder(playlistName: playlistName);
-            },
-          );
+              controller: _scrollController,
+              itemCount: length,
+              itemBuilder: (BuildContext content, int index) {
+                final playlistName = playlist.playlists[index];
+                return PlaylistFolder(playlistName: playlistName);
+              },
+            );
           },
         ),
       ),
@@ -62,10 +61,7 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
 
 class PlaylistFolder extends StatelessWidget {
   final String playlistName;
-  const PlaylistFolder({
-    super.key,
-    required this.playlistName,
-  });
+  const PlaylistFolder({super.key, required this.playlistName});
 
   @override
   Widget build(BuildContext context) {
@@ -81,19 +77,23 @@ class PlaylistFolder extends StatelessWidget {
         context.read<SongModels>().loadSong(playlistName);
         Watcher.playlistSongWatcher(context, playlistName);
       },
-      child: Stack(
+      child: Row(
         children: [
-          Positioned(
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: Image.asset('assets/folder.png', fit: BoxFit.contain),
-            ),
+          SizedBox(
+            width: 60,
+            height: 60,
+            child: Image.asset('assets/folder.png', fit: BoxFit.contain),
           ),
-          Positioned(
-            left: 80,
-            top: 20,
-            child: Text(playlistName, style: montserratStyle()),
+          SizedBox(width: 20),
+          SizedBox(
+            width: 230,
+            child: Text(
+              playlistName,
+              style: montserratStyle(),
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+            ),
           ),
         ],
       ),

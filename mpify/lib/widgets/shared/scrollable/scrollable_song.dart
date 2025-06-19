@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
@@ -9,6 +8,8 @@ import 'package:mpify/widgets/shared/overlay/overlay_gui/edit_song_form.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:mpify/models/playlist_models.dart';
+
+import 'package:mpify/utils/audio_ultis.dart';
 
 class ScrollableListSong extends StatefulWidget {
   final double width;
@@ -207,7 +208,14 @@ class Song extends StatelessWidget {
                 ),
               ),
               PopupMenuItem<String>(
-                value: 'delete',
+                value: 'Delete from this playlist',
+                child: Text(
+                  'Delete',
+                  style: montserratStyle(color: Colors.white),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'Delete from the device',
                 child: Text(
                   'Delete',
                   style: montserratStyle(color: Colors.white),

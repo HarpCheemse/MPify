@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/func.dart';
 import 'package:mpify/models/song_models.dart';
-import 'package:mpify/widgets/shared/text/positioned_header.dart';
+import 'package:mpify/utils/string_ultis.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/slider.dart/duration.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -9,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:mpify/widgets/shared/slider.dart/volume.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
+
+import 'package:mpify/utils/audio_ultis.dart';
 
 class SongDetails extends StatefulWidget {
   const SongDetails({super.key});
@@ -76,7 +77,7 @@ class _SongDetailsState extends State<SongDetails> {
                   child: SizedBox(
                     width: 330,
                     child: Text(
-                      '$name',
+                      name,
                       style: montserratStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -100,7 +101,7 @@ class _SongDetailsState extends State<SongDetails> {
                   child: SizedBox(
                     width: 160,
                     child: Text(
-                      '$artist',
+                      artist,
                       style: montserratStyle(
                         color: Colors.grey,
                         fontWeight: FontWeight.w400,
@@ -193,7 +194,7 @@ class _SongDetailsState extends State<SongDetails> {
                 children: [
                   Consumer<SongModels>(
                     builder: (context, value, child) {
-                      final songProgress = formatDuration(value.songProgress);
+                      final songProgress = StringUltis.formatDuration(value.songProgress);
                       return Text(
                         songProgress,
                         style: montserratStyle(fontWeight: FontWeight.w300),
@@ -216,7 +217,7 @@ class _SongDetailsState extends State<SongDetails> {
 
                   Consumer<SongModels>(
                     builder: (context, value, child) {
-                      final songDuration = formatDuration(value.songDuration);
+                      final songDuration = StringUltis.formatDuration(value.songDuration);
                       return Text(
                         songDuration,
                         style: montserratStyle(fontWeight: FontWeight.w300),
