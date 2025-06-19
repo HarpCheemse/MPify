@@ -7,7 +7,7 @@ local laws and Youtube's TOS.
 
 The developer of this project does not endorse or take any responsibility for any misuse, including  
 attempts to profit from copyrighted material using this tool.  
-  
+
 # Features
 - Offline MP3 playback
 - Ability to add/delete/edit album
@@ -28,7 +28,6 @@ yt-dlp: https://github.com/yt-dlp/yt-dlp
 ### 3. Set mpify folder in your system PATH  
   
 ### 4. Run the app with: flutter run  
-  
 ## License  
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.  
