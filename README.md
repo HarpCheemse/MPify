@@ -9,25 +9,35 @@ The developer of this project does not endorse or take any responsibility for an
 attempts to profit from copyrighted material using this tool.  
 
 # Features
-- Offline MP3 playback
-- Ability to add/delete/edit album
-- Download MP3 from Youtube via `yt-dlp`
-- Lightweight and minimal UI  
+- Offline MP3 playback.  
+- Ability to add/delete/edit album.  
+- Download MP3 from Youtube via `yt-dlp`.  
+- Lightweight and minimal UI.  
   
 # Screenshot  
-![MPify UI Preview](/mpify/assets/example.png)
+![MPify UI Preview](/mpify/assets/example.png)  
+  
+# Prerequisites
+- [Flutter SDK](https://docs.flutter.dev/get-started/install)  
+- Flutter version ^3.8.1  
+- After installation run: flutter doctor  
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp/releases)  
+- Mpify uses yt-dlp to download audio.  
 # Installation  
   
-### 1. Clone the repo: git clone https://github.com/Harpcheemse/Mpify.git  
-  
-### 2. Install Dependencies
-This tool simply provide a GUI to `yt-dlp` and ease of managing files.  
-By donwloading `yt-dlp`, user agrees to be reponsible for any misconduct  
-yt-dlp: https://github.com/yt-dlp/yt-dlp
+### 1. Clone the repo: 
+- git clone https://github.com/Harpcheemse/Mpify.git  
 
-### 3. Set mpify folder in your system PATH  
-  
-### 4. Run the app with: flutter run  
+### 2. Install Dependencies
+This tool simply provides a GUI to `yt-dlp` and ease of managing files.  
+By donwloading `yt-dlp`, user agrees to be responsible for any misconduct.  
+
+- Place yt-dlp.exe directly in the root folder.  
+- Add the Mpify folder path to your system's PATH in enviroment variables.  
+- Run: "flutter pub get" to get the dependencies.
+
+### 3. Run the app: 
+- flutter run  
 ## License  
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.  

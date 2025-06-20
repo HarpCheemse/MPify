@@ -1,5 +1,5 @@
 name: mpify
-description: "An alternative to spotify."
+description: "A way to manage/play mp3 file with additional support for yt-dlp."
 publish_to: 'none'
 version: 1.0.0+1
 
