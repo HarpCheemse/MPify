@@ -135,4 +135,7 @@ class PlaylistUltis {
     }
     return parsedSongs;
   }
+  static Future<void> deletePlaylist() async {
+
+  }
 }

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/utils/watcher_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mpify/models/playlist_models.dart';
+import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
+import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
+import 'dart:io';
 
 class ScrollableListPlaylist extends StatefulWidget {
   final double width;
@@ -86,7 +91,7 @@ class PlaylistFolder extends StatelessWidget {
           ),
           SizedBox(width: 20),
           SizedBox(
-            width: 230,
+            width: 200,
             child: Text(
               playlistName,
               style: montserratStyle(),
@@ -95,8 +100,39 @@ class PlaylistFolder extends StatelessWidget {
               softWrap: false,
             ),
           ),
+          PopupMenuButton<String>(
+            onSelected: (String value) {},
+            icon: Icon(Icons.more_horiz, color: Colors.grey),
+            color: const Color.fromARGB(255, 53, 53, 53),
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'open',
+                child: Text('Open File Location', style: montserratStyle()),
+                onTap: () {
+                  openFolderInExplorer();
+                },
+              ),
+              PopupMenuItem<String>(
+                value: 'delete',
+                child: Text('Delete Playlist', style: montserratStyle()),
+                onTap: () {
+                  OverlayController.show(context, Confirmation(headerText: 'Delete Playlist', warningText: 'This action is pernament are you sure you want to delete this playlist?', function: () => PlaylistUltis.deletePlaylist()) );
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+}
+void openFolderInExplorer() async {
+  final path = await FolderUtils.checkPlaylistFolderExist();
+  if (Platform.isWindows) {
+    Process.run('explorer', [path.path]);
+  } else if (Platform.isMacOS) {
+    Process.run('open', [path.path]);
+  } else if (Platform.isLinux) {
+    Process.run('xdg-open', [path.path]);
   }
 }
