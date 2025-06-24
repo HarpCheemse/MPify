@@ -135,7 +135,13 @@ class PlaylistUltis {
     }
     return parsedSongs;
   }
-  static Future<void> deletePlaylist() async {
-
+  static Future<void> deletePlaylist(String playlist) async {
+    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
+    if (!await playlistFile.exists()) {
+      debugPrint('$playlist.json does not exit');
+      return;
+    }
+    await playlistFile.delete();
   }
 }

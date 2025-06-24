@@ -116,7 +116,18 @@ class PlaylistFolder extends StatelessWidget {
                 value: 'delete',
                 child: Text('Delete Playlist', style: montserratStyle()),
                 onTap: () {
-                  OverlayController.show(context, Confirmation(headerText: 'Delete Playlist', warningText: 'This action is pernament are you sure you want to delete this playlist?', function: () => PlaylistUltis.deletePlaylist()) );
+                  Future.delayed(Duration.zero, () {
+                    if (!context.mounted) return;
+                    OverlayController.show(
+                    context,
+                    Confirmation(
+                      headerText: 'Delete Playlist',
+                      warningText:
+                          'This action is pernament are you sure you want to delete this playlist?',
+                      function: () => PlaylistUltis.deletePlaylist(playlistName),
+                    ),
+                  );
+                  });
                 },
               ),
             ],
@@ -126,6 +137,7 @@ class PlaylistFolder extends StatelessWidget {
     );
   }
 }
+
 void openFolderInExplorer() async {
   final path = await FolderUtils.checkPlaylistFolderExist();
   if (Platform.isWindows) {
