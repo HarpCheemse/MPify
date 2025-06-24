@@ -62,7 +62,6 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
                   artist: song.artist,
                   duration: song.duration,
                   identifier: song.identifier,
-                  imagePath: song.imagePath,
                   index: index,
                 );
               },
@@ -80,7 +79,6 @@ class Song extends StatelessWidget {
   final String artist;
   final String identifier;
   final int index;
-  final String? imagePath;
   const Song({
     super.key,
     required this.songName,
@@ -88,11 +86,12 @@ class Song extends StatelessWidget {
     required this.artist,
     required this.index,
     required this.identifier,
-    required this.imagePath,
   });
 
   @override
   Widget build(BuildContext context) {
+    final coverPath = p.join(Directory.current.path, '..', 'cover', '$identifier.png');
+    final imageExist = File(coverPath).existsSync();
     return HoverButton(
       baseColor: Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
@@ -101,7 +100,6 @@ class Song extends StatelessWidget {
       width: 320,
       height: 70,
       onPressed: () async {
-        debugPrint('$imagePath.png');
         final songModels = context.read<SongModels>();
         await songModels
             .loadActivePlaylistSong(); //copy activeSong to background song
@@ -137,16 +135,9 @@ class Song extends StatelessWidget {
             child: SizedBox(
               width: 50,
               height: 50,
-              child: (imagePath != null)
+              child: imageExist
                   ? Image.file(
-                      File(
-                        p.join(
-                          Directory.current.path,
-                          '..',
-                          'cover',
-                          imagePath,
-                        ),
-                      ),
+                      File(coverPath),
                       key: UniqueKey(),
                       fit: BoxFit.cover,
                     )
@@ -205,7 +196,6 @@ class Song extends StatelessWidget {
                       identifier: identifier,
                       name: songName,
                       artist: artist,
-                      imagePath: imagePath,
                     ),
                   );
                 },
@@ -220,7 +210,9 @@ class Song extends StatelessWidget {
                   style: montserratStyle(color: Colors.white),
                 ),
                 onTap: () {
-                  final selectedPlaylist = context.read<PlaylistModels>().selectedPlaylist;
+                  final selectedPlaylist = context
+                      .read<PlaylistModels>()
+                      .selectedPlaylist;
                   Future.delayed(Duration.zero, () {
                     if (!context.mounted) return;
                     OverlayController.show(
@@ -229,7 +221,10 @@ class Song extends StatelessWidget {
                         headerText: 'Delete Song',
                         warningText:
                             'This action is pernament are you sure you want to delete this song?',
-                        function: () => PlaylistUltis.deleteSongFromPlaylist(identifier, selectedPlaylist),
+                        function: () => PlaylistUltis.deleteSongFromPlaylist(
+                          identifier,
+                          selectedPlaylist,
+                        ),
                       ),
                     );
                   });
@@ -249,7 +244,8 @@ class Song extends StatelessWidget {
                         headerText: 'Delete Song',
                         warningText:
                             'This action is pernament are you sure you want to delete this song pernamently from your device?',
-                        function: () => PlaylistUltis.deleteSongFromDevice(identifier),
+                        function: () =>
+                            PlaylistUltis.deleteSongFromDevice(identifier),
                       ),
                     );
                   });

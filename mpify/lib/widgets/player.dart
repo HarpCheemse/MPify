@@ -9,7 +9,6 @@ import 'package:mpify/widgets/shared/button/hover_button.dart';
 
 import 'package:mpify/utils/audio_ultis.dart';
 
-
 class Player extends StatefulWidget {
   const Player({super.key});
   @override
@@ -37,20 +36,28 @@ class _PlayerState extends State<Player> {
                 builder: (context, value, child) {
                   final songs = value.songsBackground;
                   final index = value.currentSongIndex;
-                  final imagePath = (songs.isEmpty)
+                  final identifier = (songs.isEmpty)
                       ? null
-                      : songs[index].imagePath;
+                      : songs[index].identifier;
+                  final coverPath = p.join(
+                    Directory.current.path,
+                    '..',
+                    'cover',
+                    '$identifier.png',
+                  );
+                  final imageExist = File(coverPath).existsSync();
+                  
                   return SizedBox(
                     width: 300,
                     height: 300,
-                    child: (imagePath != null)
+                    child: imageExist
                         ? Image.file(
                             File(
                               p.join(
                                 Directory.current.path,
                                 '..',
                                 'cover',
-                                imagePath,
+                                '$identifier.png',
                               ),
                             ),
                           )
@@ -108,7 +115,7 @@ class _PlayerState extends State<Player> {
                 );
               },
             ),
-            SizedBox(height: 50,),
+            SizedBox(height: 50),
             SizedBox(
               width: 330,
               child: Row(
@@ -124,59 +131,59 @@ class _PlayerState extends State<Player> {
                     ),
                   ),
                   Padding(
-                      padding: EdgeInsets.only(right: 30),
-                      child: IconButton(
-                        icon: Icon(Icons.fast_rewind, color: Colors.white),
-                        onPressed: () {
-                          AudioUtils.skipBackward();
-                        },
-                      ),
+                    padding: EdgeInsets.only(right: 30),
+                    child: IconButton(
+                      icon: Icon(Icons.fast_rewind, color: Colors.white),
+                      onPressed: () {
+                        AudioUtils.skipBackward();
+                      },
                     ),
-                    Center(
-                      child: Consumer<SongModels>(
-                        builder: (context, model, child) {
-                          return HoverButton(
-                            baseColor: const Color.fromARGB(255, 255, 255, 255),
-                            borderRadius: 50,
-                            onPressed: () {
-                              model.isPlaying
-                                  ? AudioUtils.pauseSong()
-                                  : AudioUtils.resumeSong();
-                              model.flipIsPlaying();
-                            },
-                            width: 45,
-                            height: 45,
-                            hoverColor: const Color.fromARGB(255, 150, 150, 150),
-                            child: Transform.translate(
-                              offset: Offset(0, 0),
-                              child: Icon(
-                                model.isPlaying ? Icons.pause : Icons.play_arrow,
-                              ),
+                  ),
+                  Center(
+                    child: Consumer<SongModels>(
+                      builder: (context, model, child) {
+                        return HoverButton(
+                          baseColor: const Color.fromARGB(255, 255, 255, 255),
+                          borderRadius: 50,
+                          onPressed: () {
+                            model.isPlaying
+                                ? AudioUtils.pauseSong()
+                                : AudioUtils.resumeSong();
+                            model.flipIsPlaying();
+                          },
+                          width: 45,
+                          height: 45,
+                          hoverColor: const Color.fromARGB(255, 150, 150, 150),
+                          child: Transform.translate(
+                            offset: Offset(0, 0),
+                            child: Icon(
+                              model.isPlaying ? Icons.pause : Icons.play_arrow,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 30),
-                      child: IconButton(
-                        icon: Icon(Icons.fast_forward),
-                        color: Colors.white,
-                        onPressed: () {
-                          AudioUtils.skipForward();
-                        },
-                      ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 30),
+                    child: IconButton(
+                      icon: Icon(Icons.fast_forward),
+                      color: Colors.white,
+                      onPressed: () {
+                        AudioUtils.skipForward();
+                      },
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 30),
-                      child: IconButton(
-                        icon: Icon(Icons.skip_next, color: Colors.white),
-                        onPressed: () {
-                          final songModels = context.read<SongModels>();
-                          songModels.playNextSong();
-                        },
-                      ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 30),
+                    child: IconButton(
+                      icon: Icon(Icons.skip_next, color: Colors.white),
+                      onPressed: () {
+                        final songModels = context.read<SongModels>();
+                        songModels.playNextSong();
+                      },
                     ),
+                  ),
                 ],
               ),
             ),

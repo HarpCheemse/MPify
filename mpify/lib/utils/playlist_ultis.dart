@@ -60,7 +60,6 @@ class PlaylistUltis {
     String link,
     String identifier, {
     String artist = 'Unknown',
-    String? imagePath,
   }) async {
     final targetDir = await FolderUtils.checkPlaylistFolderExist();
     final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
@@ -80,7 +79,6 @@ class PlaylistUltis {
       'link': link,
       'artist': artist,
       'dateAdded': DateTime.now().toIso8601String(),
-      'imagePath': imagePath,
       'identifier': identifier,
     };
     try {
@@ -115,7 +113,6 @@ class PlaylistUltis {
         final link = song['link'];
         final artist = song['artist'];
         final dateAdded = DateTime.parse(song['dateAdded']);
-        final imagePath = song['imagePath'];
         final identifier = song['identifier'];
         parsedSongs.add(
           Song(
@@ -125,7 +122,6 @@ class PlaylistUltis {
             link: link,
             artist: artist,
             dateAdded: dateAdded,
-            imagePath: imagePath,
           ),
         );
       }

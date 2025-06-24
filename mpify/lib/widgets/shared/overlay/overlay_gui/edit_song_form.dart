@@ -20,14 +20,12 @@ class EditSongForm extends StatefulWidget {
   final String identifier;
   final String name;
   final String artist;
-  final String? imagePath;
   const EditSongForm({
     super.key,
     required this.playlist,
     required this.identifier,
     required this.name,
     required this.artist,
-    required this.imagePath,
   });
 
   @override
@@ -90,7 +88,7 @@ class _EditSongFormState extends State<EditSongForm> {
     }
     final contents = await playlistFile.readAsString();
     List<dynamic> songs = jsonDecode(contents);
-    final imagePath = await saveImageFile();
+    await saveImageFile();
 
     try {
       final match = songs.firstWhere(
@@ -104,11 +102,7 @@ class _EditSongFormState extends State<EditSongForm> {
       }
       match['name'] = name.text;
       match['artist'] = artist.text;
-      if (_isReset) {
-        match['imagePath'] = imagePath;
-      } else {
-        match['imagePath'] = imagePath ?? widget.imagePath;
-      }
+
       final updatedContents = jsonEncode(songs);
       await playlistFile.writeAsString(updatedContents);
       debugPrint('Song Info Updated');
@@ -118,8 +112,8 @@ class _EditSongFormState extends State<EditSongForm> {
     }
   }
 
-  Future<String?> saveImageFile() async {
-    if (_imageBytes == null) return null;
+  Future<bool> saveImageFile() async {
+    if (_imageBytes == null) return false;
     final current = Directory.current;
     final target = Directory(p.join(current.path, '..', 'cover'));
     final fileName = '${widget.identifier}.png';
@@ -129,7 +123,7 @@ class _EditSongFormState extends State<EditSongForm> {
     }
     await imageFile.writeAsBytes(_imageBytes!);
     debugPrint('Saved Imaged As $fileName');
-    return fileName;
+    return true;
   }
 
   @override
@@ -158,6 +152,14 @@ class _EditSongFormState extends State<EditSongForm> {
 
   @override
   Widget build(BuildContext context) {
+    final coverPath = p.join(
+      Directory.current.path,
+      '..',
+      'cover',
+      '${widget.identifier}.png',
+    );
+    final imageExist = File(coverPath).existsSync();
+
     return KeyboardListener(
       focusNode: _focusNode,
       autofocus: true,
@@ -236,24 +238,14 @@ class _EditSongFormState extends State<EditSongForm> {
                                   'assets/placeholder.png',
                                   fit: BoxFit.cover,
                                 ))
-                        : widget.imagePath == null
+                        : !imageExist
                         ? (_imageBytes != null
                               ? Image.memory(_imageBytes!, fit: BoxFit.cover)
                               : Image.asset(
                                   'assets/placeholder.png',
                                   fit: BoxFit.cover,
                                 ))
-                        : Image.file(
-                            File(
-                              p.join(
-                                Directory.current.path,
-                                '..',
-                                'cover',
-                                widget.imagePath,
-                              ),
-                            ),
-                            fit: BoxFit.cover,
-                          ),
+                        : Image.file(File(coverPath), fit: BoxFit.cover),
                   ),
                   SizedBox(width: 80),
                   GestureDetector(
@@ -334,8 +326,10 @@ class _EditSongFormState extends State<EditSongForm> {
                       }
                       if (_imageBytes != null) clearCachedImage();
                       if (!mounted) return;
-                      if(context.mounted) {
-                        await context.read<SongModels>().loadActivePlaylistSong();
+                      if (context.mounted) {
+                        await context
+                            .read<SongModels>()
+                            .loadActivePlaylistSong();
                       }
                       OverlayController.hideOverlay();
                     },

@@ -41,21 +41,23 @@ class _SongDetailsState extends State<SongDetails> {
                   builder: (context, value, child) {
                     final songs = value.songsBackground;
                     final index = value.currentSongIndex;
-                    final imagePath = (songs.isEmpty)
+                    final identifier = (songs.isEmpty)
                         ? null
-                        : songs[index].imagePath;
+                        : songs[index].identifier;
+                    final coverPath = p.join(
+                      Directory.current.path,
+                      '..',
+                      'cover',
+                      '$identifier.png',
+                    );
+                    final imageExist = File(coverPath).existsSync();
                     return SizedBox(
                       width: 60,
                       height: 60,
-                      child: (imagePath != null)
+                      child: imageExist
                           ? Image.file(
                               File(
-                                p.join(
-                                  Directory.current.path,
-                                  '..',
-                                  'cover',
-                                  imagePath,
-                                ),
+                                coverPath
                               ),
                             )
                           : Image.asset(
@@ -194,7 +196,9 @@ class _SongDetailsState extends State<SongDetails> {
                 children: [
                   Consumer<SongModels>(
                     builder: (context, value, child) {
-                      final songProgress = StringUltis.formatDuration(value.songProgress);
+                      final songProgress = StringUltis.formatDuration(
+                        value.songProgress,
+                      );
                       return Text(
                         songProgress,
                         style: montserratStyle(fontWeight: FontWeight.w300),
@@ -217,7 +221,9 @@ class _SongDetailsState extends State<SongDetails> {
 
                   Consumer<SongModels>(
                     builder: (context, value, child) {
-                      final songDuration = StringUltis.formatDuration(value.songDuration);
+                      final songDuration = StringUltis.formatDuration(
+                        value.songDuration,
+                      );
                       return Text(
                         songDuration,
                         style: montserratStyle(fontWeight: FontWeight.w300),

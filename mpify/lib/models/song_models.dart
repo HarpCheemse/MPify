@@ -13,7 +13,6 @@ class Song {
   final String duration;
   final String link;
   final DateTime dateAdded;
-  final String? imagePath;
   final String identifier;
   Song({
     required this.name,
@@ -21,7 +20,6 @@ class Song {
     required this.duration,
     required this.artist,
     required this.dateAdded,
-    required this.imagePath,
     required this.identifier,
   });
 }
@@ -67,7 +65,6 @@ class SongModels extends ChangeNotifier {
       duration: song.duration,
       link: song.link,
       dateAdded: song.dateAdded,
-      imagePath: song.imagePath,
       identifier: song.identifier,
      )).toList();
   }
