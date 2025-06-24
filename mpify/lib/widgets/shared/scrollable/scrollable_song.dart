@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:mpify/models/playlist_models.dart';
 
 import 'package:mpify/utils/audio_ultis.dart';
+import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
+import 'package:mpify/utils/playlist_ultis.dart';
 
 class ScrollableListSong extends StatefulWidget {
   final double width;
@@ -155,7 +157,13 @@ class Song extends StatelessWidget {
           SizedBox(
             width: 330,
             height: 20,
-            child: Text(songName, style: montserratStyle(), overflow: TextOverflow.fade, maxLines: 1, softWrap: false,),
+            child: Text(
+              songName,
+              style: montserratStyle(),
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+            ),
           ),
           SizedBox(width: 20),
           SizedBox(
@@ -189,7 +197,6 @@ class Song extends StatelessWidget {
             color: const Color.fromARGB(255, 53, 53, 53),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
-                value: 'edit',
                 onTap: () {
                   OverlayController.show(
                     context,
@@ -208,16 +215,29 @@ class Song extends StatelessWidget {
                 ),
               ),
               PopupMenuItem<String>(
-                value: 'Delete from this playlist',
                 child: Text(
-                  'Delete',
+                  'Delete From Playlist',
                   style: montserratStyle(color: Colors.white),
                 ),
+                onTap: () {
+                  final selectedPlaylist = context.read<PlaylistModels>().selectedPlaylist;
+                  Future.delayed(Duration.zero, () {
+                    if (!context.mounted) return;
+                    OverlayController.show(
+                      context,
+                      Confirmation(
+                        headerText: 'Delete Song',
+                        warningText:
+                            'This action is pernament are you sure you want to delete this song?',
+                        function: () => PlaylistUltis.deleteSongFromPlaylist(identifier, selectedPlaylist),
+                      ),
+                    );
+                  });
+                },
               ),
               PopupMenuItem<String>(
-                value: 'Delete from the device',
                 child: Text(
-                  'Delete',
+                  'Delete From Device',
                   style: montserratStyle(color: Colors.white),
                 ),
               ),

@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
-import 'dart:io';
 
 class ScrollableListPlaylist extends StatefulWidget {
   final double width;
@@ -106,27 +105,26 @@ class PlaylistFolder extends StatelessWidget {
             color: const Color.fromARGB(255, 53, 53, 53),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
-                value: 'open',
                 child: Text('Open File Location', style: montserratStyle()),
                 onTap: () {
-                  openFolderInExplorer();
+                  FolderUtils.openFolderInExplorer();
                 },
               ),
               PopupMenuItem<String>(
-                value: 'delete',
                 child: Text('Delete Playlist', style: montserratStyle()),
                 onTap: () {
                   Future.delayed(Duration.zero, () {
                     if (!context.mounted) return;
                     OverlayController.show(
-                    context,
-                    Confirmation(
-                      headerText: 'Delete Playlist',
-                      warningText:
-                          'This action is pernament are you sure you want to delete this playlist?',
-                      function: () => PlaylistUltis.deletePlaylist(playlistName),
-                    ),
-                  );
+                      context,
+                      Confirmation(
+                        headerText: 'Delete Playlist',
+                        warningText:
+                            'This action is pernament are you sure you want to delete this playlist?',
+                        function: () =>
+                            PlaylistUltis.deletePlaylist(playlistName),
+                      ),
+                    );
                   });
                 },
               ),
@@ -135,16 +133,5 @@ class PlaylistFolder extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-void openFolderInExplorer() async {
-  final path = await FolderUtils.checkPlaylistFolderExist();
-  if (Platform.isWindows) {
-    Process.run('explorer', [path.path]);
-  } else if (Platform.isMacOS) {
-    Process.run('open', [path.path]);
-  } else if (Platform.isLinux) {
-    Process.run('xdg-open', [path.path]);
   }
 }

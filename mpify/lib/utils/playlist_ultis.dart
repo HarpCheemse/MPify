@@ -12,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 
-
 //Functions that manipulate playlist related stuff
 
 class PlaylistUltis {
@@ -54,6 +53,7 @@ class PlaylistUltis {
       return;
     }
   }
+
   static Future<bool> writeSongToPlaylist(
     String playlist,
     String name,
@@ -98,43 +98,43 @@ class PlaylistUltis {
     }
     return true;
   }
-    
+
   static Future<List<Song>> parsePlaylistJSON(file) async {
     final List<Song> parsedSongs = [];
     final contents = await file.readAsString();
     try {
       if (contents.trim().isEmpty) {
-      debugPrint('file playlist.json empty');
-      return parsedSongs;
-    }
+        debugPrint('file playlist.json empty');
+        return parsedSongs;
+      }
 
-    final List<dynamic> songs = jsonDecode(contents);
-    for (var song in songs) {
-      final name = song['name'];
-      final duration = song['duration'];
-      final link = song['link'];
-      final artist = song['artist'];
-      final dateAdded = DateTime.parse(song['dateAdded']);
-      final imagePath = song['imagePath'];
-      final identifier = song['identifier'];
-      parsedSongs.add(
-        Song(
-          name: name,
-          identifier: identifier,
-          duration: duration,
-          link: link,
-          artist: artist,
-          dateAdded: dateAdded,
-          imagePath: imagePath,
-        ),
-      );
-    }
-    }
-    catch (e) {
+      final List<dynamic> songs = jsonDecode(contents);
+      for (var song in songs) {
+        final name = song['name'];
+        final duration = song['duration'];
+        final link = song['link'];
+        final artist = song['artist'];
+        final dateAdded = DateTime.parse(song['dateAdded']);
+        final imagePath = song['imagePath'];
+        final identifier = song['identifier'];
+        parsedSongs.add(
+          Song(
+            name: name,
+            identifier: identifier,
+            duration: duration,
+            link: link,
+            artist: artist,
+            dateAdded: dateAdded,
+            imagePath: imagePath,
+          ),
+        );
+      }
+    } catch (e) {
       debugPrint('$e');
     }
     return parsedSongs;
   }
+
   static Future<void> deletePlaylist(String playlist) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
     final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
@@ -143,5 +143,32 @@ class PlaylistUltis {
       return;
     }
     await playlistFile.delete();
+  }
+
+  static Future<void> deleteSongFromPlaylist(identifier, selectedPlaylist) async {
+    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final playlistFile = File(
+      p.join(playlistDir.path, '$selectedPlaylist.json'),
+    );
+    if (!await playlistFile.exists()) {
+      debugPrint("$selectedPlaylist does not exist");
+      return;
+    }
+    try {
+      final contents = await playlistFile.readAsString();
+      List<dynamic> songs = [];
+      if (contents.isNotEmpty) {
+        songs = jsonDecode(contents);
+      }
+      final updatedList = songs.where((song) {
+        return song['identifier'] != identifier;
+      }).toList();
+      await playlistFile.writeAsString(
+        jsonEncode(updatedList),
+        mode: FileMode.write,
+      );
+    } catch (e) {
+      debugPrint('$e');
+    }
   }
 }
