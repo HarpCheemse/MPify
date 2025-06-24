@@ -240,6 +240,20 @@ class Song extends StatelessWidget {
                   'Delete From Device',
                   style: montserratStyle(color: Colors.white),
                 ),
+                onTap: () {
+                  Future.delayed(Duration.zero, () {
+                    if (!context.mounted) return;
+                    OverlayController.show(
+                      context,
+                      Confirmation(
+                        headerText: 'Delete Song',
+                        warningText:
+                            'This action is pernament are you sure you want to delete this song pernamently from your device?',
+                        function: () => PlaylistUltis.deleteSongFromDevice(identifier),
+                      ),
+                    );
+                  });
+                },
               ),
             ],
           ),

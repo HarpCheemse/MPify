@@ -145,7 +145,10 @@ class PlaylistUltis {
     await playlistFile.delete();
   }
 
-  static Future<void> deleteSongFromPlaylist(identifier, selectedPlaylist) async {
+  static Future<void> deleteSongFromPlaylist(
+    identifier,
+    selectedPlaylist,
+  ) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
     final playlistFile = File(
       p.join(playlistDir.path, '$selectedPlaylist.json'),
@@ -156,10 +159,7 @@ class PlaylistUltis {
     }
     try {
       final contents = await playlistFile.readAsString();
-      List<dynamic> songs = [];
-      if (contents.isNotEmpty) {
-        songs = jsonDecode(contents);
-      }
+      List<dynamic> songs = contents.isNotEmpty ? jsonDecode(contents) : [];
       final updatedList = songs.where((song) {
         return song['identifier'] != identifier;
       }).toList();
@@ -167,6 +167,65 @@ class PlaylistUltis {
         jsonEncode(updatedList),
         mode: FileMode.write,
       );
+    } catch (e) {
+      debugPrint('$e');
+    }
+  }
+
+  static Future<void> deleteSongFromDevice(identifier) async {
+    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final playlists = playlistDir
+        .listSync()
+        .where((file) => file.path.endsWith('.json'))
+        .toList();
+    debugPrint('Deleting $identifier from device');
+    for (final playlist in playlists) {
+      try {
+        //delete song from playlist.json
+        final file = File(playlist.path);
+        final contents = await file.readAsString();
+        List<dynamic> songs = contents.isNotEmpty ? jsonDecode(contents) : [];
+        final updatedList = songs.where((song) {
+          return song['identifier'] != identifier;
+        }).toList();
+        await file.writeAsString(jsonEncode(updatedList), mode: FileMode.write);
+      } catch (e) {
+        debugPrint('$e');
+      }
+    }
+    //delete song.mp3 from mp3 folder
+    final mp3Dir = await FolderUtils.checkMP3FolderExist();
+    final mp3File = File(p.join(mp3Dir.path, '$identifier.mp3'));
+    try {
+      if (await mp3File.exists()) {
+        mp3File.delete();
+      } else {
+        debugPrint('$mp3File does not exist');
+      }
+    } catch (e) {
+      debugPrint('$e');
+    }
+    //delete song cover from cover fodler
+    final coverDir = await FolderUtils.checkCoverFolderExist();
+    final coverFile = File(p.join(coverDir.path, '$identifier.png'));
+    try {
+      if (await coverFile.exists()) {
+        coverFile.delete();
+      } else {
+        debugPrint('$coverFile does not exist');
+      }
+    } catch (e) {
+      debugPrint('$e');
+    }
+    //delete song lyric
+    final lyricDir = await FolderUtils.checkLyricFolderExist();
+    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    try {
+      if (await lyricFile.exists()) {
+        lyricFile.delete();
+      } else {
+        debugPrint('$lyricFile does not exist');
+      }
     } catch (e) {
       debugPrint('$e');
     }
