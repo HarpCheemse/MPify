@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/audio_ultis.dart';
-
+import 'dart:math';
 
 class Song {
   final String name;
@@ -26,16 +26,35 @@ class Song {
 
 class SongModels extends ChangeNotifier {
   List<Song> _songsActive = []; //change when click on playlist
-  List<Song> _songsBackground = []; //unchange till click on a song in a another playlist
+  List<Song> _songsBackground =
+      []; //unchange till click on a song in a another playlist
 
-  List<Song> get songsActive => _songsActive;
+  List<Song> get songsActive {
+    if (_searchQuery.isEmpty)
+    {
+      return _songsActive;
+    }
+    else {
+      final q = _searchQuery.toLowerCase();
+      return _songsActive
+          .where(
+            (song) =>
+                song.name.toLowerCase().contains(q) ||
+                song.artist.toLowerCase().contains(q),
+          )
+          .toList();
+    }
+  }
+
   List<Song> get songsBackground => _songsBackground;
 
   int _currentSongIndex = 0;
   int get currentSongIndex => _currentSongIndex;
 
   Future<void> getSongIndex(songIdentifier) async {
-    final index = _songsBackground.indexWhere((song) => song.identifier == songIdentifier);
+    final index = _songsBackground.indexWhere(
+      (song) => song.identifier == songIdentifier,
+    );
     if (index == -1) {
       debugPrint('$songIdentifier does not exit in the list');
       return;
@@ -43,9 +62,8 @@ class SongModels extends ChangeNotifier {
     _currentSongIndex = index;
     notifyListeners();
   }
-  Future<void> getSongIdentifier() async {
 
-  }
+  Future<void> getSongIdentifier() async {}
 
   Future<void> loadSong(String playlist) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
@@ -61,15 +79,28 @@ class SongModels extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadActivePlaylistSong() async { // start when click on a song of active playlist
-    _songsBackground = _songsActive.map((song) =>
-     Song(name: song.name,
-      artist: song.artist,
-      duration: song.duration,
-      link: song.link,
-      dateAdded: song.dateAdded,
-      identifier: song.identifier,
-     )).toList();
+  Future<void> loadActivePlaylistSong() async {
+    // start when click on a song of active playlist
+    _songsBackground = _songsActive
+        .map(
+          (song) => Song(
+            name: song.name,
+            artist: song.artist,
+            duration: song.duration,
+            link: song.link,
+            dateAdded: song.dateAdded,
+            identifier: song.identifier,
+          ),
+        )
+        .toList();
+  }
+
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+
+  void updateSongSearchQuery(query) {
+    _searchQuery = query;
+    notifyListeners();
   }
 
   bool _isPlaying = false;
@@ -108,8 +139,19 @@ class SongModels extends ChangeNotifier {
     debugPrint('$_currentSongIndex');
   }
 
-  void shuffleSongs() {
-    _songsBackground.shuffle();
+  void shuffleSongs(int fixedIndex) {
+    final rand = Random();
+    for (int i = 0; i < _songsBackground.length; i++) {
+      if (i == fixedIndex) continue;
+      int j;
+      do {
+        j = rand.nextInt(i + 1);
+      } while (j == fixedIndex);
+      final temp = songsBackground[i];
+      _songsBackground[i] = _songsBackground[j];
+      _songsBackground[j] = temp;
+    }
+
     notifyListeners();
   }
 

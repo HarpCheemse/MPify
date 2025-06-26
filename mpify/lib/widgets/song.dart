@@ -21,6 +21,7 @@ class Songs extends StatefulWidget {
 
 class _SongsState extends State<Songs> {
   bool _isShuffle = true;
+  TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -110,8 +111,10 @@ class _SongsState extends State<Songs> {
                 width: 200,
                 height: 40,
                 child: CustomInputBar(
-                  controller: TextEditingController(),
-                  onChanged: (query) {},
+                  controller: controller,
+                  onChanged: (query) {
+                    context.read<SongModels>().updateSongSearchQuery(query);
+                  },
                   hintText: 'Search Name',
                   searchColor: Colors.transparent,
                   fontColor: Colors.white,
@@ -188,7 +191,7 @@ class _SongsState extends State<Songs> {
                 onPressed: () {
                   _isShuffle
                       ? context.read<SongModels>().sortSongsByName()
-                      : context.read<SongModels>().shuffleSongs();
+                      : context.read<SongModels>().shuffleSongs(context.read<SongModels>().currentSongIndex);
                   setState(() {
                     _isShuffle = !_isShuffle;
                   });

@@ -9,6 +9,14 @@ class PlaylistModels extends ChangeNotifier{
   List<String> get playlists => _playlists;
   bool get isPlayerOpen => _isPlayerOpen;
 
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+
+  void updateSongSearchQuery(query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
   void tooglePlayer() {
     _isPlayerOpen = !_isPlayerOpen;
     notifyListeners();
