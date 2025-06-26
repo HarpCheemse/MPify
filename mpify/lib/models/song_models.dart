@@ -155,8 +155,16 @@ class SongModels extends ChangeNotifier {
     notifyListeners();
   }
 
-  void sortSongsByName() {
+  void unshuffleSongs() {
+    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
     _songsBackground.sort((a, b) => a.name.compareTo(b.name));
+    for(int i = 0; i<_songsBackground.length; i++) {
+      if(_songsBackground[i].identifier == prevSongIdentifier) {
+        _currentSongIndex = i;
+        break;
+      } 
+    }
+
     notifyListeners();
   }
 

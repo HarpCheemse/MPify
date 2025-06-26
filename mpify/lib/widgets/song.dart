@@ -196,7 +196,7 @@ class _SongsState extends State<Songs> {
                 iconSize: 30,
                 onPressed: () {
                   _isShuffle
-                      ? context.read<SongModels>().sortSongsByName()
+                      ? context.read<SongModels>().unshuffleSongs()
                       : context.read<SongModels>().shuffleSongs(context.read<SongModels>().currentSongIndex);
                   setState(() {
                     _isShuffle = !_isShuffle;
