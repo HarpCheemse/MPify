@@ -18,6 +18,12 @@ class CreatePlaylistForm extends StatefulWidget {
 class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
   final TextEditingController controller = TextEditingController();
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Material(
       borderRadius: BorderRadius.circular(10),

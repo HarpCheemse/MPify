@@ -139,15 +139,14 @@ class _EditSongFormState extends State<EditSongForm> {
         _focusNode.requestFocus();
       }
     });
+  }
 
-    @override
-    // ignore: unused_element
-    void dispose() {
-      _focusNode.dispose();
-      name.dispose();
-      artist.dispose();
-      super.dispose();
-    }
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    name.dispose();
+    artist.dispose();
+    super.dispose();
   }
 
   @override

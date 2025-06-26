@@ -14,11 +14,17 @@ class CreateSongForm extends StatefulWidget {
 }
 
 class _CreateSongFormState extends State<CreateSongForm> {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController link = TextEditingController();
+
+  @override
+  void dispose() {
+    name.dispose();
+    link.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
-    final TextEditingController name = TextEditingController();
-    final TextEditingController link = TextEditingController();
     return Material(
       borderRadius: BorderRadius.circular(10),
       color: const Color.fromARGB(255, 43, 43, 43),

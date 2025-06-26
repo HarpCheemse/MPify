@@ -64,9 +64,6 @@ class _PlayerState extends State<Player> {
     Color.fromARGB(100, 0, 229, 255), // Electric Blue
   ];
   @override
-  void dispose() {
-    super.dispose();
-  }
 
   Widget build(BuildContext context) {
     return Padding(

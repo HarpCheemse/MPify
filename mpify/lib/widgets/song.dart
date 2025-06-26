@@ -22,6 +22,12 @@ class Songs extends StatefulWidget {
 class _SongsState extends State<Songs> {
   bool _isShuffle = true;
   TextEditingController controller = TextEditingController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Padding(

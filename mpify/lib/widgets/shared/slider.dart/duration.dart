@@ -33,11 +33,6 @@ class DurationSlider extends StatefulWidget {
 class _DurationSliderState extends State<DurationSlider> {
   bool _hovering = false;
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),

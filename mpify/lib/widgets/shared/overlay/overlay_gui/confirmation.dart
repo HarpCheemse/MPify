@@ -21,7 +21,6 @@ class Confirmation extends StatefulWidget {
 }
 
 class _ConfirmationState extends State<Confirmation> {
-  final TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -46,7 +45,7 @@ class _ConfirmationState extends State<Confirmation> {
                 style: montserratStyle(color: Colors.redAccent),
               ),
             ),
-            SizedBox(height: 40,),
+            SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: Row(
@@ -66,7 +65,7 @@ class _ConfirmationState extends State<Confirmation> {
                       child: Text('Cancel', style: montserratStyle()),
                     ),
                   ),
-                  SizedBox(width: 30,),
+                  SizedBox(width: 30),
                   HoverButton(
                     baseColor: Colors.transparent,
                     hoverColor: Colors.transparent,

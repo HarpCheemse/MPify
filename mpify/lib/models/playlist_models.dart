@@ -22,6 +22,7 @@ class PlaylistModels extends ChangeNotifier{
     notifyListeners();
   }
 
+
   void updateListOfPlaylist(List<String> newListOfPlaylist) {
     _playlists = newListOfPlaylist;
     notifyListeners();

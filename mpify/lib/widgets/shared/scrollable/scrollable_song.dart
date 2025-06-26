@@ -39,6 +39,12 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
     final playlist = context.read<PlaylistModels>().selectedPlaylist;
     context.read<SongModels>().loadSong(playlist);
   }
+  
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

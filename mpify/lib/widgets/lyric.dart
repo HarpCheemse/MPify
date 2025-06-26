@@ -60,10 +60,6 @@ class _LyricState extends State<Lyric> {
     Color.fromARGB(100, 255, 241, 118), // Soft Yellow
     Color.fromARGB(100, 0, 229, 255), // Electric Blue
   ];
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

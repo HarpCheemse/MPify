@@ -6,11 +6,20 @@ import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_gui/create_playlist_form.dart';
 import 'package:mpify/widgets/shared/scrollable/scrollable_playlist.dart';
 
-
-
-class Playlist extends StatelessWidget {
+class Playlist extends StatefulWidget {
   const Playlist({super.key});
 
+  @override
+  State<Playlist> createState() => _PlaylistState();
+}
+
+class _PlaylistState extends State<Playlist> {
+  TextEditingController controller = TextEditingController();
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -27,7 +36,10 @@ class Playlist extends StatelessWidget {
             Positioned(
               top: 20,
               left: 20,
-              child: Text('Your Playlists', style: montserratStyle(fontSize: 16)),
+              child: Text(
+                'Your Playlists',
+                style: montserratStyle(fontSize: 16),
+              ),
             ),
             Positioned(
               top: 60,
@@ -35,7 +47,7 @@ class Playlist extends StatelessWidget {
               child: SizedBox(
                 width: 320,
                 child: CustomInputBar(
-                  controller: TextEditingController(),
+                  controller: controller,
                   onChanged: (query) {},
                   hintText: 'Search Playlist',
                   fontColor: const Color.fromARGB(255, 140, 140, 140),

@@ -15,10 +15,14 @@ class EditLyricForm extends StatefulWidget {
 }
 
 class _EditLyricFormState extends State<EditLyricForm> {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController lyric = TextEditingController();
+  @override
+  void dispose() {
+    lyric.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
-    final TextEditingController lyric = TextEditingController();
     return Material(
       borderRadius: BorderRadius.circular(10),
       color: const Color.fromARGB(255, 43, 43, 43),
