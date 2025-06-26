@@ -47,9 +47,9 @@ class FolderUtils {
 
   static Future<Directory> checkLyricFolderExist() async {
     final currentDir = Directory.current;
-    final lyricDir = Directory(p.join(currentDir.path, '..', 'cover'));
+    final lyricDir = Directory(p.join(currentDir.path, '..', 'lyric'));
     if (!await lyricDir.exists()) {
-      debugPrint('Folder mp3 missing. Creating new one ...');
+      debugPrint('Folder lyric missing. Creating new one ...');
       await lyricDir.create(recursive: true);
     }
     return lyricDir;
@@ -64,5 +64,21 @@ class FolderUtils {
     } else if (Platform.isLinux) {
       Process.run('xdg-open', [path.path]);
     }
+  }
+  static void writeLyricToFolder(text,identifier) async {
+    final lyricDir = await checkLyricFolderExist();
+    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    if(!await lyricFile.exists()) {
+      lyricFile.create(recursive: true);
+    }
+    await lyricFile.writeAsString(text);
+    debugPrint('$text');
+  }
+  static Future<String?> getSongLyric(String identifier) async {
+    final lyricDir = await checkLyricFolderExist();
+    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    if(!await lyricFile.exists()) return null;
+    final text = await lyricFile.readAsString();
+    return text;
   }
 }

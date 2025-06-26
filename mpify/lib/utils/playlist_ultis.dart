@@ -33,10 +33,16 @@ class PlaylistUltis {
     }
     final process = await Process.start(
       'yt-dlp',
-      ['-x', '--audio-format', 'mp3', '-o', '$identifier.%(ext)s', trimmedLink],
+      ['-x', '--audio-format', 'mp3', '--no-continue', '-o', '$identifier.%(ext)s', trimmedLink],
       workingDirectory: target.path,
       runInShell: true,
     );
+    process.stdout.transform(SystemEncoding().decoder).listen((data) {
+      debugPrint('[stdout] $data');
+    });
+    process.stderr.transform(SystemEncoding().decoder).listen((data) {
+      debugPrint('[stderr] $data');
+    });
 
     final exitCode = await process.exitCode;
     if (exitCode != 0) {
@@ -49,9 +55,12 @@ class PlaylistUltis {
       trimmedLink,
       identifier,
     )) {
-      debugPrint('Error Writing File. Download canceled');
-      return;
+      debugPrint('Download successed');
     }
+    else {
+      debugPrint('Error. Download Canceled');
+    }
+
   }
 
   static Future<bool> writeSongToPlaylist(

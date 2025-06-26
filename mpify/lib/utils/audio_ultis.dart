@@ -90,7 +90,7 @@ class AudioUtils {
     final target = await FolderUtils.checkMP3FolderExist();
     final songFile = File(p.join(target.path, '$identifier.mp3'));
     if (!await songFile.exists()) {
-      debugPrint('$identifier not found');
+      debugPrint('$identifier.mp3 not found');
       return;
     }
     player.stop();

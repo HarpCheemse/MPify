@@ -46,9 +46,13 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
       width: widget.width,
       height: widget.height,
       color: widget.color,
-      child: Scrollbar(
+      child: RawScrollbar(
         thumbVisibility: true,
         controller: _scrollController,
+        thumbColor: const Color.fromARGB(116, 255, 255, 255),
+        radius: Radius.circular(5),
+        thickness: 10,
+        trackVisibility: true,
         child: Consumer<SongModels>(
           builder: (context, songModels, child) {
             final songs = songModels.songsActive;
@@ -156,7 +160,7 @@ class Song extends StatelessWidget {
               softWrap: false,
             ),
           ),
-          SizedBox(width: 20),
+          SizedBox(width: 10),
           SizedBox(
             width: 170,
             height: 20,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
-import 'package:mpify/widgets/shared/button/outline_button.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
@@ -28,17 +27,7 @@ class Playlist extends StatelessWidget {
             Positioned(
               top: 20,
               left: 20,
-              child: Text('Your Playlists', style: montserratStyle()),
-            ),
-            Positioned(
-              top: 15,
-              left: 250,
-              child: styledOutlinedButton(
-                text: '+ Import',
-                onPressed: () {
-                  //TODO
-                },
-              ),
+              child: Text('Your Playlists', style: montserratStyle(fontSize: 16)),
             ),
             Positioned(
               top: 60,

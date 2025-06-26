@@ -164,7 +164,7 @@ class _SongsState extends State<Songs> {
             ),
             positionedHeader(
               180,
-              500,
+              490,
               'Artist',
               14,
               500,
@@ -172,7 +172,7 @@ class _SongsState extends State<Songs> {
             ),
             positionedHeader(
               180,
-              670,
+              660,
               'Duration',
               14,
               500,

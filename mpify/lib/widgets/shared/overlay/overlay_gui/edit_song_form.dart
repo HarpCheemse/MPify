@@ -232,7 +232,7 @@ class _EditSongFormState extends State<EditSongForm> {
                     height: 210,
                     child: _isReset
                         ? (_imageBytes != null
-                              // selected not null use that. if imagepath not null use that. else fallback to placeholder
+                              // selected not null use that. if image exist. use that. else fallback to placeholder
                               ? Image.memory(_imageBytes!, fit: BoxFit.cover)
                               : Image.asset(
                                   'assets/placeholder.png',

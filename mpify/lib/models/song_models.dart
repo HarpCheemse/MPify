@@ -43,6 +43,9 @@ class SongModels extends ChangeNotifier {
     _currentSongIndex = index;
     notifyListeners();
   }
+  Future<void> getSongIdentifier() async {
+
+  }
 
   Future<void> loadSong(String playlist) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
@@ -90,6 +93,7 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
     }
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
+    debugPrint('$_currentSongIndex');
   }
 
   Future<void> playPreviousSong() async {
@@ -101,6 +105,7 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
     }
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
+    debugPrint('$_currentSongIndex');
   }
 
   void shuffleSongs() {

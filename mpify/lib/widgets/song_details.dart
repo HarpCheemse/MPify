@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/string_ultis.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
@@ -55,11 +56,7 @@ class _SongDetailsState extends State<SongDetails> {
                       width: 60,
                       height: 60,
                       child: imageExist
-                          ? Image.file(
-                              File(
-                                coverPath
-                              ),
-                            )
+                          ? Image.file(File(coverPath))
                           : Image.asset(
                               'assets/placeholder.png',
                               fit: BoxFit.contain,
@@ -243,12 +240,17 @@ class _SongDetailsState extends State<SongDetails> {
               ),
             ),
             Positioned(
-              top: 40,
+              top: 30,
               left: 1330,
-              child: Icon(
-                Icons.music_note_outlined,
-                color: Colors.white,
-                size: 20,
+              child: IconButton(
+                icon: Icon(
+                  Icons.music_note_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: () {
+                  context.read<PlaylistModels>().tooglePlayer();
+                },
               ),
             ),
             Positioned(
