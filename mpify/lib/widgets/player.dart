@@ -88,7 +88,7 @@ class _PlayerState extends State<Player> {
             width: 350,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              color: colorList[colorIndex],
+              color: (identifier == null) ? const Color.fromARGB(255, 24, 24, 24) : colorList[colorIndex],
             ),
             child: Column(
               children: [

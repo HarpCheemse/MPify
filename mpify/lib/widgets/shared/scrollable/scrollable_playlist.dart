@@ -11,6 +11,8 @@ import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
 
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+
 class ScrollableListPlaylist extends StatefulWidget {
   final double width;
   final double height;
@@ -130,8 +132,33 @@ class PlaylistFolder extends StatelessWidget {
                     Text('Create A Back Up File', style: montserratStyle()),
                   ],
                 ),
-                onTap: () {
-                  FolderUtils.createBackupFile(playlistName);
+                onTap: () async {
+                  showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (dialogContext) {
+                      Future.microtask(() async {
+                        if (!context.mounted) return;
+                        OverlayController.show(context, Confirmation(headerText: 'Create Backup', warningText: 'Are You Sure You Want To Create A Backup?', function: () async =>  await FolderUtils.createBackupFile(playlistName)));
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
+                        }
+                      });
+                      return AlertDialog(
+                        backgroundColor: const Color.fromARGB(255, 24, 24, 24),
+                        title: Center(
+                          child: Text(
+                            'Please Wait A Bit',
+                            style: montserratStyle(),
+                          ),
+                        ),
+                        content: LoadingAnimationWidget.staggeredDotsWave(
+                          color: Colors.white,
+                          size: 10,
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
               PopupMenuItem(
