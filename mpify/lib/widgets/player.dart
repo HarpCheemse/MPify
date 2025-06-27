@@ -67,7 +67,7 @@ class _PlayerState extends State<Player> {
 
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 80),
+      padding: EdgeInsets.only(left: 10, top: 20),
       child: Selector<SongModels, String?>(
         selector: (_, model) {
           final songs = model.songsBackground;

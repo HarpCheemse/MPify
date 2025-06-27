@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/playlist_models.dart';
+import 'package:mpify/widgets/homebar.dart';
 import 'package:mpify/widgets/lyric.dart';
 
 import 'package:mpify/widgets/playlist.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         body: Column(
           children: [
+            Homebar(),
             Row(
               children: [
                 Playlist(),

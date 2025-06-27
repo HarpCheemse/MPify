@@ -5,12 +5,17 @@ import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/screen/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await windowManager.ensureInitialized();
+      windowManager.waitUntilReadyToShow().then((_) async {
+        await windowManager.maximize();
+        await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+      });
       try {
         runApp(
           MultiProvider(

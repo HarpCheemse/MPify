@@ -23,7 +23,7 @@ class _SongDetailsState extends State<SongDetails> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 10),
+      padding: EdgeInsets.only(left: 10, top: 20),
       child: Container(
         width: 1520,
         height: 90,

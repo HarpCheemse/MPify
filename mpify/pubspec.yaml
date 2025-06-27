@@ -19,6 +19,7 @@ dependencies:
   file_picker:
   archive:
   loading_animation_widget:
+  window_manager: 
 
 
 dev_dependencies:
