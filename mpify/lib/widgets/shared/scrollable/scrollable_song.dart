@@ -209,15 +209,27 @@ class Song extends StatelessWidget {
                     ),
                   );
                 },
-                child: Text(
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, color: Colors.white,),
+                    SizedBox(width: 10,),
+                    Text(
                   'edit',
                   style: montserratStyle(color: Colors.white),
                 ),
+                  ],
+                )
               ),
               PopupMenuItem<String>(
-                child: Text(
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.redAccent,),
+                    SizedBox(width: 10,),
+                    Text(
                   'Delete From Playlist',
                   style: montserratStyle(color: Colors.white),
+                ),
+                  ],
                 ),
                 onTap: () {
                   final selectedPlaylist = context
@@ -241,9 +253,15 @@ class Song extends StatelessWidget {
                 },
               ),
               PopupMenuItem<String>(
-                child: Text(
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.redAccent,),
+                    SizedBox(width: 10,),
+                    Text(
                   'Delete From Device',
                   style: montserratStyle(color: Colors.white),
+                ),
+                  ],
                 ),
                 onTap: () {
                   Future.delayed(Duration.zero, () {

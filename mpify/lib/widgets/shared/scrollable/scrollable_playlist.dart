@@ -111,13 +111,39 @@ class PlaylistFolder extends StatelessWidget {
             color: const Color.fromARGB(255, 53, 53, 53),
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
-                child: Text('Open File Location', style: montserratStyle()),
+                child: Row(
+                  children: [
+                    Icon(Icons.file_open_outlined, color: Colors.white,),
+                    SizedBox(width: 10,),
+                    Text('Open File Location', style: montserratStyle()),
+                  ],
+                ),
                 onTap: () {
                   FolderUtils.openFolderInExplorer();
                 },
               ),
-              PopupMenuItem<String>(
-                child: Text('Delete Playlist', style: montserratStyle()),
+              PopupMenuItem(
+                child: Row(
+                  children: [Icon(Icons.backup_outlined, color: Colors.white,),
+                  SizedBox(width: 10,),
+                  Text('Create A Back Up File', style: montserratStyle())],
+                ),
+              ),
+              PopupMenuItem(
+                child: Row(children: [
+                  Icon(Icons.upload_file_outlined, color: Colors.white,),
+                  SizedBox(width: 10,),
+                  Text('Import Backup File', style: montserratStyle())
+                ],),
+              ),
+                            PopupMenuItem<String>(
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.redAccent,),
+                    SizedBox(width: 10,),
+                    Text('Delete Playlist', style: montserratStyle()),
+                  ],
+                ),
                 onTap: () {
                   Future.delayed(Duration.zero, () {
                     if (!context.mounted) return;
