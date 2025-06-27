@@ -113,8 +113,8 @@ class PlaylistFolder extends StatelessWidget {
               PopupMenuItem<String>(
                 child: Row(
                   children: [
-                    Icon(Icons.file_open_outlined, color: Colors.white,),
-                    SizedBox(width: 10,),
+                    Icon(Icons.file_open_outlined, color: Colors.white),
+                    SizedBox(width: 10),
                     Text('Open File Location', style: montserratStyle()),
                   ],
                 ),
@@ -124,23 +124,31 @@ class PlaylistFolder extends StatelessWidget {
               ),
               PopupMenuItem(
                 child: Row(
-                  children: [Icon(Icons.backup_outlined, color: Colors.white,),
-                  SizedBox(width: 10,),
-                  Text('Create A Back Up File', style: montserratStyle())],
+                  children: [
+                    Icon(Icons.backup_outlined, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text('Create A Back Up File', style: montserratStyle()),
+                  ],
                 ),
+                onTap: () {
+                  FolderUtils.createBackupFile(playlistName);
+                },
               ),
               PopupMenuItem(
-                child: Row(children: [
-                  Icon(Icons.upload_file_outlined, color: Colors.white,),
-                  SizedBox(width: 10,),
-                  Text('Import Backup File', style: montserratStyle())
-                ],),
-              ),
-                            PopupMenuItem<String>(
+                onTap: () async {},
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, color: Colors.redAccent,),
-                    SizedBox(width: 10,),
+                    Icon(Icons.upload_file_outlined, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text('Import Backup File', style: montserratStyle()),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.redAccent),
+                    SizedBox(width: 10),
                     Text('Delete Playlist', style: montserratStyle()),
                   ],
                 ),

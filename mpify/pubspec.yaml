@@ -17,7 +17,7 @@ dependencies:
   crypto:
   pasteboard: 
   file_picker:
-  flutter_riverpod: 
+  archive:
 
 dev_dependencies:
   flutter_test:
