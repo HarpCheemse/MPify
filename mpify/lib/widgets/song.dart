@@ -227,6 +227,7 @@ class _SongsState extends State<Songs> {
                         ],
                       );
                       if (selected != null) {
+                        if (!context.mounted) return;
                         context.read<SongModels>().updateSortOption(selected);
                       }
                     },

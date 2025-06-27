@@ -135,7 +135,9 @@ class PlaylistFolder extends StatelessWidget {
                 },
               ),
               PopupMenuItem(
-                onTap: () async {},
+                onTap: () async {
+                  await FolderUtils.importBackupFile(playlistName);
+                },
                 child: Row(
                   children: [
                     Icon(Icons.upload_file_outlined, color: Colors.white),

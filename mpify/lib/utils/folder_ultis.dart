@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:mpify/models/song_models.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 
@@ -110,7 +112,9 @@ class FolderUtils {
     }
 
     //copy metaData
-    await File(p.join(backupFolder.path, 'metadata.json')).create(recursive: true);
+    await File(
+      p.join(backupFolder.path, 'metadata.json'),
+    ).create(recursive: true);
     List<dynamic> songs = [];
     final contents = await playlistJson.readAsString();
     if (contents.isNotEmpty) {
@@ -176,25 +180,125 @@ class FolderUtils {
       final zipPath = backupFolder.path + '.zip';
       final zipFile = File(zipPath);
       await zipFolder(backupFolder, zipFile);
-    }
-    catch (e) {
+    } catch (e) {
       debugPrint('Error: $e');
       return false;
     }
     //delete the Dir
     try {
       await backupFolder.delete(recursive: true);
-    }
-    catch (e) {
+    } catch (e) {
       debugPrint('Error: $e');
       return false;
     }
     return true;
   }
+
   static Future<void> zipFolder(Directory inputDir, File outputFile) async {
     final ZipFileEncoder zipEncoder = ZipFileEncoder();
     zipEncoder.create(outputFile.path);
     await zipEncoder.addDirectory(inputDir);
     zipEncoder.close();
+  }
+
+  static Future<void> importBackupFile(String playlistName) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+    final playlisrDir = await checkPlaylistFolderExist();
+    final coverDir = await checkCoverFolderExist();
+    final lyricDir = await checkLyricFolderExist();
+    final mp3Dir = await checkMP3FolderExist();
+    final playlistFile = File(p.join(playlisrDir.path, '$playlistName.json'));
+    if (!await playlistFile.exists()) {
+      playlistFile.create(recursive: true);
+    }
+
+    final bytes = result.files.first.bytes!;
+    final archive = ZipDecoder().decodeBytes(bytes);
+
+    try {
+      for (final file in archive) {
+        if (file.isFile) {
+          final filename = file.name;
+          //copy metadata.json
+          if (filename.endsWith('/metadata.json')) {
+            final jsonString = utf8.decode(file.content as List<int>);
+            final List<dynamic> metadata = jsonDecode(jsonString);
+            if (metadata.isEmpty) {
+              return;
+            }
+            final List<Song> songs = [];
+            for (var song in metadata) {
+              final name = song['name'];
+              final duration = song['duration'];
+              final link = song['link'];
+              final artist = song['artist'];
+              final dateAdded = DateTime.parse(song['dateAdded']);
+              final identifier = song['identifier'];
+              songs.add(
+                Song(
+                  name: name,
+                  link: link,
+                  duration: duration,
+                  artist: artist,
+                  dateAdded: dateAdded,
+                  identifier: identifier,
+                ),
+              );
+              debugPrint('$name');
+            }
+            final playlistFile = File(
+              p.join(playlisrDir.path, '$playlistName.json'),
+            );
+            await playlistFile.writeAsString(
+              jsonEncode(
+                songs
+                    .map(
+                      (s) => {
+                        'name': s.name,
+                        'link': s.link,
+                        'artist': s.artist,
+                        'duration': s.duration,
+                        'dateAdded': s.dateAdded.toIso8601String(),
+                        'identifier': s.identifier,
+                      },
+                    )
+                    .toList(),
+              ),
+              mode: FileMode.write,
+            );
+          }
+          //copy image
+          else if (filename.endsWith('.png')) {
+            final filename = p.basename(file.name);
+            final coverFile = File(p.join(coverDir.path, filename));
+            await coverFile.create(recursive: true);
+            await coverFile.writeAsBytes(file.content as List<int>);
+          }
+          //copy lyric
+          else if (filename.endsWith('.txt')) {
+            final filename = p.basename(file.name);
+            final lyricFile = File(p.join(lyricDir.path, filename));
+            await lyricFile.create(recursive: true);
+            await lyricFile.writeAsBytes(file.content as List<int>);
+          }
+          //copy mp3
+          else if (filename.endsWith('.mp3')) {
+            final filename = p.basename(file.name);
+            final mp3File = File(p.join(mp3Dir.path, filename));
+            await mp3File.create(recursive: true);
+            await mp3File.writeAsBytes(file.content as List<int>);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      return;
+    }
   }
 }

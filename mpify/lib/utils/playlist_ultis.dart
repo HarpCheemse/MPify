@@ -33,7 +33,15 @@ class PlaylistUltis {
     }
     final process = await Process.start(
       'yt-dlp',
-      ['-x', '--audio-format', 'mp3', '--no-continue', '-o', '$identifier.%(ext)s', trimmedLink],
+      [
+        '-x',
+        '--audio-format',
+        'mp3',
+        '--no-continue',
+        '-o',
+        '$identifier.%(ext)s',
+        trimmedLink,
+      ],
       workingDirectory: target.path,
       runInShell: true,
     );
@@ -56,11 +64,9 @@ class PlaylistUltis {
       identifier,
     )) {
       debugPrint('Download successed');
-    }
-    else {
+    } else {
       debugPrint('Error. Download Canceled');
     }
-
   }
 
   static Future<bool> writeSongToPlaylist(
