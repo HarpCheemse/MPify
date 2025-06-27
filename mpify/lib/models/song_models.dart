@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
+import 'package:mpify/utils/string_ultis.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
 
@@ -24,17 +25,34 @@ class Song {
   });
 }
 
+enum SortOption {
+  newest,
+  lastest,
+  nameAZ,
+  nameZA,
+  artistAZ,
+  artistZA,
+  durationLongest,
+  durationShortest,
+}
+
 class SongModels extends ChangeNotifier {
+  SortOption _sortOption = SortOption.newest;
+  SortOption get sortOption => _sortOption;
+
+  void updateSortOption(SortOption option) {
+    _sortOption = option;
+    applySort(option);
+  }
+
   List<Song> _songsActive = []; //change when click on playlist
   List<Song> _songsBackground =
       []; //unchange till click on a song in a another playlist
 
   List<Song> get songsActive {
-    if (_searchQuery.isEmpty)
-    {
+    if (_searchQuery.isEmpty) {
       return _songsActive;
-    }
-    else {
+    } else {
       final q = _searchQuery.toLowerCase();
       return _songsActive
           .where(
@@ -48,7 +66,7 @@ class SongModels extends ChangeNotifier {
 
   List<Song> get songsBackground => _songsBackground;
 
-  int _currentSongIndex = 0;
+  int _currentSongIndex = -1;
   int get currentSongIndex => _currentSongIndex;
 
   Future<void> getSongIndex(songIdentifier) async {
@@ -116,6 +134,7 @@ class SongModels extends ChangeNotifier {
 
   Future<void> playNextSong() async {
     setIsPlaying(true);
+    if (_currentSongIndex == -1) return;
     if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
       notifyListeners();
@@ -124,10 +143,10 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
     }
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
-    debugPrint('$_currentSongIndex');
   }
 
   Future<void> playPreviousSong() async {
+    if (_currentSongIndex == -1) return;
     if (_currentSongIndex - 1 >= 0) {
       _currentSongIndex--;
       notifyListeners();
@@ -136,7 +155,6 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
     }
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
-    debugPrint('$_currentSongIndex');
   }
 
   void shuffleSongs(int fixedIndex) {
@@ -158,11 +176,11 @@ class SongModels extends ChangeNotifier {
   void unshuffleSongs() {
     String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
     _songsBackground.sort((a, b) => a.name.compareTo(b.name));
-    for(int i = 0; i<_songsBackground.length; i++) {
-      if(_songsBackground[i].identifier == prevSongIdentifier) {
+    for (int i = 0; i < _songsBackground.length; i++) {
+      if (_songsBackground[i].identifier == prevSongIdentifier) {
         _currentSongIndex = i;
         break;
-      } 
+      }
     }
 
     notifyListeners();
@@ -194,6 +212,74 @@ class SongModels extends ChangeNotifier {
   void seek(Duration position) {
     _audioPlayer.seek(position);
     _songProgress = position;
+    notifyListeners();
+  }
+
+  void applySort(SortOption option) {
+    switch (option) {
+      case SortOption.nameAZ:
+        _songsActive.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        _songsBackground.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.nameZA:
+        _songsActive.sort(
+          (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        );
+        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case SortOption.artistAZ:
+        _songsActive.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
+        _songsBackground.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.artistZA:
+        _songsActive.sort(
+          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
+        );
+        _songsBackground.sort(
+          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.lastest:
+        _songsActive.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        break;
+      case SortOption.newest:
+        _songsActive.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        break;
+      case SortOption.durationLongest:
+        _songsActive.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            a.duration,
+          ).compareTo(StringUltis.getDurationFromString(b.duration)),
+        );
+        _songsBackground.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            a.duration,
+          ).compareTo(StringUltis.getDurationFromString(b.duration)),
+        );
+        break;
+      case SortOption.durationShortest:
+        _songsActive.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+        );
+        _songsBackground.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+        );
+        break;
+    }
     notifyListeners();
   }
 }

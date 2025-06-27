@@ -20,4 +20,14 @@ class StringUltis {
     debugPrint('$num');
     return num;
   }
+  static int getDurationFromString(String durationString) {
+    int duration = 0;
+    final part = durationString.split(':');
+    if (part.length == 2) {
+      final minutes = int.tryParse(part[0]) ?? 0;
+      final seconds = int.tryParse(part[1]) ?? 0;
+      duration = minutes * 60 + seconds;
+    }
+    return duration;
+  }
 }

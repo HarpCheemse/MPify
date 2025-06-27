@@ -12,6 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 
 import 'package:mpify/utils/audio_ultis.dart';
+
+final GlobalKey sortByMenuKey = GlobalKey();
+
 class Songs extends StatefulWidget {
   const Songs({super.key});
 
@@ -28,6 +31,7 @@ class _SongsState extends State<Songs> {
     controller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -131,28 +135,106 @@ class _SongsState extends State<Songs> {
               ),
             ),
             Positioned(
-              top: 125,
+              top: 130,
               left: 680,
-              child: HoverButton(
-                baseColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                hoverFontColor: const Color.fromARGB(255, 144, 4, 4),
-                borderRadius: 0,
-                onPressed: () {},
-                width: 120,
-                height: 30,
-                childBuilder: (hovering) => Transform.translate(
-                  offset: Offset(5, 5),
-                  child: Text(
-                    'Date Added ≡⋮',
-                    style: montserratStyle(
-                      fontSize: 13,
-                      color: hovering
-                          ? Colors.white
-                          : const Color.fromARGB(255, 150, 150, 150),
+              child: Consumer<SongModels>(
+                builder: (context, value, child) {
+                  return HoverButton(
+                    baseColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    key: sortByMenuKey,
+                    hoverFontColor: const Color.fromARGB(255, 144, 4, 4),
+                    text: 'Sorted by :=',
+                    textStyle: montserratStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey,
                     ),
-                  ),
-                ),
+                    borderRadius: 0,
+                    onPressed: () async {
+                      final RenderBox button =
+                          sortByMenuKey.currentContext!.findRenderObject()
+                              as RenderBox;
+                      final overlay =
+                          Overlay.of(context).context.findRenderObject()
+                              as RenderBox;
+                      final topLeft = button.localToGlobal(
+                        Offset(0, 50),
+                        ancestor: overlay,
+                      );
+                      final bottomRight = button.localToGlobal(
+                        button.size.bottomRight(Offset(0, 50)),
+                        ancestor: overlay,
+                      );
+                      final position = RelativeRect.fromRect(
+                        Rect.fromPoints(topLeft, bottomRight),
+                        Offset.zero & overlay.size,
+                      );
+                      final selected = await showMenu(
+                        context: context,
+                        position: position,
+                        color: Colors.black,
+                        items: [
+                          PopupMenuItem(
+                            value: SortOption.newest,
+                            child: Text(
+                              'Newest Added',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.lastest,
+                            child: Text(
+                              'Lastest Added',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.nameAZ,
+                            child: Text('Name (A-Z)', style: montserratStyle()),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.nameZA,
+                            child: Text('Name (Z-A)', style: montserratStyle()),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.artistAZ,
+                            child: Text(
+                              'Artist (A-Z)',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.artistZA,
+                            child: Text(
+                              'Artist (Z-A)',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.durationLongest,
+                            child: Text(
+                              'Duration Longest',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: SortOption.durationShortest,
+                            child: Text(
+                              'Duration Shortest',
+                              style: montserratStyle(),
+                            ),
+                          ),
+                        ],
+                      );
+                      if (selected != null) {
+                        context.read<SongModels>().updateSortOption(selected);
+                      }
+                    },
+                    width: 120,
+                    height: 30,
+                  );
+                },
               ),
             ),
             positionedHeader(
@@ -197,7 +279,9 @@ class _SongsState extends State<Songs> {
                 onPressed: () {
                   _isShuffle
                       ? context.read<SongModels>().unshuffleSongs()
-                      : context.read<SongModels>().shuffleSongs(context.read<SongModels>().currentSongIndex);
+                      : context.read<SongModels>().shuffleSongs(
+                          context.read<SongModels>().currentSongIndex,
+                        );
                   setState(() {
                     _isShuffle = !_isShuffle;
                   });
