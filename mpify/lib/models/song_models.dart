@@ -39,10 +39,18 @@ enum SortOption {
 class SongModels extends ChangeNotifier {
   SortOption _sortOption = SortOption.newest;
   SortOption get sortOption => _sortOption;
+  
 
   void updateSortOption(SortOption option) {
     _sortOption = option;
     applySort(option);
+  }
+
+  bool _isShuffle = true;
+  bool get isShuffle => _isShuffle;
+  void flipIsShuffle() {
+    _isShuffle = !_isShuffle;
+    notifyListeners();
   }
 
   List<Song> _songsActive = []; //change when click on playlist
@@ -111,6 +119,9 @@ class SongModels extends ChangeNotifier {
           ),
         )
         .toList();
+        if(_isShuffle) {
+          shuffleSongs(_currentSongIndex);
+        }
   }
 
   String _searchQuery = '';
@@ -174,8 +185,9 @@ class SongModels extends ChangeNotifier {
   }
 
   void unshuffleSongs() {
+    if(_songsBackground.isEmpty) return;
     String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
-    _songsBackground.sort((a, b) => a.name.compareTo(b.name));
+    applySort(_sortOption);
     for (int i = 0; i < _songsBackground.length; i++) {
       if (_songsBackground[i].identifier == prevSongIdentifier) {
         _currentSongIndex = i;

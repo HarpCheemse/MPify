@@ -23,7 +23,6 @@ class Songs extends StatefulWidget {
 }
 
 class _SongsState extends State<Songs> {
-  bool _isShuffle = true;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -274,17 +273,17 @@ class _SongsState extends State<Songs> {
               left: 100,
               child: IconButton(
                 icon: Icon(Icons.shuffle_rounded),
-                color: _isShuffle ? Colors.green : Colors.grey,
+                color: context.watch<SongModels>().isShuffle
+                    ? Colors.green
+                    : Colors.grey,
                 iconSize: 30,
                 onPressed: () {
-                  _isShuffle
+                  context.read<SongModels>().isShuffle
                       ? context.read<SongModels>().unshuffleSongs()
                       : context.read<SongModels>().shuffleSongs(
                           context.read<SongModels>().currentSongIndex,
                         );
-                  setState(() {
-                    _isShuffle = !_isShuffle;
-                  });
+                  context.read<SongModels>().flipIsShuffle();
                 },
               ),
             ),
