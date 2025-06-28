@@ -3,7 +3,12 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/widgets/homebar.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
+
+final String APP_VERSION = "1.0.0";
+final String AUTHOR = "HarpCheemse";
+final List<String> CONTRIBUTOR = [];
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -44,13 +49,118 @@ class _SettingsState extends State<Settings> {
           ],
         );
       case SettingsCategory.audio:
-        return Text('Audio');
+        return Column(
+          children: [
+            Text(
+              'Audio Settings Will Be Comming Soon. Stay Tune!',
+              style: montserratStyle(context: context),
+            ),
+          ],
+        );
       case SettingsCategory.backup:
-        return Text('Backup');
+        return Column(
+          children: [
+            Text(
+              'Backup & Restore Settings Will Be Comming Soon. Stay Tune!',
+              style: montserratStyle(context: context),
+            ),
+          ],
+        );
       case SettingsCategory.troubleshooter:
-        return Text('Troubleshooter');
+        return Column(
+          children: [
+            Text(
+              'Troubleshooter Will Be Comming Soon. Stay Tune!',
+              style: montserratStyle(context: context),
+            ),
+          ],
+        );
       case SettingsCategory.about:
-        return Text('About');
+        return Container(
+          width: 100,
+          height: 700,
+          child: Column(
+            children: [
+              Image.asset('assets/app_icon.png'),
+              Text(
+                'Mpify',
+                style: montserratStyle(context: context, fontSize: 30),
+              ),
+              Text(
+                'Version: $APP_VERSION',
+                style: montserratStyle(context: context),
+              ),
+              Text('Author: $AUTHOR', style: montserratStyle(context: context)),
+              Text(
+                'License: Licensed under the MIT Liscense',
+                style: montserratStyle(context: context),
+              ),
+              const SizedBox(height: 10,),
+              HoverButton(
+                baseColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                borderRadius: 10,
+                onPressed: () async {
+                  final url = Uri.parse('https://github.com/HarpCheemse/MPify/blob/main/LICENSE');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+                width: 100,
+                height: 20,
+                child: Text(
+                  'License Link',
+                  style: montserratStyle(
+                    context: context,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10,),
+              HoverButton(
+                baseColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                borderRadius: 10,
+                onPressed: () async {
+                  final url = Uri.parse('https://github.com/HarpCheemse/MPify');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+                width: 100,
+                height: 20,
+                child: Text(
+                  'Github Link',
+                  style: montserratStyle(
+                    context: context,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10,),
+              HoverButton(
+                baseColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                borderRadius: 10,
+                onPressed: () async {
+                  final url = Uri.parse('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1&pp=ygUJcmljayByb2xsoAcB');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+                width: 100,
+                height: 20,
+                child: Text(
+                  'Suppot Me Link',
+                  style: montserratStyle(
+                    context: context,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
     }
   }
 
@@ -165,7 +275,9 @@ class _SettingsState extends State<Settings> {
                       hoverColor: Colors.transparent,
                       borderRadius: 0,
                       onPressed: () {
-                        _selectedCategory = SettingsCategory.about;
+                        setState(() {
+                          _selectedCategory = SettingsCategory.about;
+                        });
                       },
                       width: 200,
                       height: 80,
@@ -183,7 +295,11 @@ class _SettingsState extends State<Settings> {
                   ],
                 ),
                 const SizedBox(width: 30),
-                Container(height: double.infinity, width: 1, color: Theme.of(context).colorScheme.onSurface),
+                Container(
+                  height: double.infinity,
+                  width: 1,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 Expanded(child: _buildContent()),
               ],
             ),

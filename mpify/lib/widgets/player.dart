@@ -208,12 +208,7 @@ class _PlayerState extends State<Player> {
                         child: Consumer<SongModels>(
                           builder: (context, model, child) {
                             return HoverButton(
-                              baseColor: const Color.fromARGB(
-                                255,
-                                255,
-                                255,
-                                255,
-                              ),
+                              baseColor: Colors.white,
                               borderRadius: 50,
                               onPressed: () {
                                 model.isPlaying
@@ -235,6 +230,7 @@ class _PlayerState extends State<Player> {
                                   model.isPlaying
                                       ? Icons.pause
                                       : Icons.play_arrow,
+                                      color: Colors.black,
                                 ),
                               ),
                             );

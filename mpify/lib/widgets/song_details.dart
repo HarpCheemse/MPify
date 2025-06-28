@@ -158,6 +158,7 @@ class _SongDetailsState extends State<SongDetails> {
                             offset: Offset(0, 0),
                             child: Icon(
                               model.isPlaying ? Icons.pause : Icons.play_arrow,
+                              color: Colors.black,
                             ),
                           ),
                         );
