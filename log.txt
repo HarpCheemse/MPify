@@ -26,3 +26,33 @@ Error: FormatException: Unexpected character (at line 18, character 2)
 ][
  ^
 . Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+[stdout] [youtube] Extracting URL: https://www.youtube.com/watch?v=3pbvmR8n27w
+
+[stdout] [youtube] 3pbvmR8n27w: Downloading webpage
+
+[stdout] [youtube] 3pbvmR8n27w: Downloading tv client config
+
+[stdout] [youtube] 3pbvmR8n27w: Downloading tv player API JSON
+
+[stdout] [youtube] 3pbvmR8n27w: Downloading ios player API JSON
+
+[stdout] [youtube] 3pbvmR8n27w: Downloading m3u8 information
+
+[stdout] [info] 3pbvmR8n27w: Downloading 1 format(s): 251
+
+[stdout] [download]   0.0% of    4.96MiB at  162.92KiB/s ETA 00:31
+8612fab3af3dd1c99e365b6eec36b.webm
+
+[stdout] [download]   0.3% of    4.96MiB at    1.80MiB/s ETA 00:02
+[stdout] [download]   1.2% of    4.96MiB at    2.88MiB/s ETA 00:01
+[stdout] [download]   5.0% of    4.96MiB at    6.10MiB/s ETA 00:00
+[stdout] [download]  10.1% of    4.96MiB at    9.10MiB/s ETA 00:00
+[stdout] [download]  20.1% of    4.96MiB at   13.80MiB/s ETA 00:00
+[stdout] [download]  40.3% of    4.96MiB at   21.31MiB/s ETA 00:00
+[stdout] [download]  80.5% of    4.96MiB at   27.00MiB/s ETA 00:00
+[stdout] [download] 100.0% of    4.96MiB at   29.04MiB/s ETA 00:00
+[stdout] [download] 100% of    4.96MiB in 00:00:00 at 16.30MiB/s  
+[stdout] [ExtractAudio] Destination: 055e97be13c1a3dd0904421b227c67667168612fab3af3dd1c99e365b6eec36b.mp3
+
+[stdout] Deleting original file 055e97be13c1a3dd0904421b227c67667168612fab3af3dd1c99e365b6eec36b.webm (pass -k to keep)
+

@@ -74,7 +74,7 @@ class SongModels extends ChangeNotifier {
 
   List<Song> get songsBackground => _songsBackground;
 
-  int _currentSongIndex = -1;
+  int _currentSongIndex = 0;
   int get currentSongIndex => _currentSongIndex;
 
   Future<void> getSongIndex(songIdentifier) async {

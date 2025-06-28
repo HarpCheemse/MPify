@@ -148,7 +148,7 @@ class Song extends StatelessWidget {
               child: imageExist
                   ? Image.file(
                       File(coverPath),
-                      key: UniqueKey(),
+                      key: UniqueKey(), //Important to clear image cached
                       fit: BoxFit.cover,
                     )
                   : Image.asset('assets/placeholder.png', fit: BoxFit.contain),
@@ -166,7 +166,7 @@ class Song extends StatelessWidget {
               softWrap: false,
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           SizedBox(
             width: 170,
             height: 20,
@@ -179,7 +179,7 @@ class Song extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           SizedBox(
             width: 50,
             height: 20,

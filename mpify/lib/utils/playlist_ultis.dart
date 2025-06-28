@@ -16,17 +16,17 @@ import 'package:mpify/models/song_models.dart';
 class PlaylistUltis {
   static Future<void> downloadMP3(BuildContext context, name, link) async {
     MiscUtils.showNotification('Attemping To Download $name');
-    final playlist = context.read<PlaylistModels>().selectedPlaylist;
-    final mp3Dir = await FolderUtils.checkMP3FolderExist();
+    final String playlist = context.read<PlaylistModels>().selectedPlaylist;
+    final Directory mp3Dir = await FolderUtils.checkMP3FolderExist();
 
-    final trimmedLink = link.split('&')[0];
-    final cleanName = name
+    final String trimmedLink = link.split('&')[0];
+    final String cleanName = name
         .replaceAll(RegExp(r'[^\w\s-]'), '')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-    final identifier = StringUltis.hashYoutubeLink(link);
+    final String identifier = StringUltis.hashYoutubeLink(link);
     try {
-      final process = await Process.start(
+      final Process process = await Process.start(
         'yt-dlp',
         [
           '-x',
@@ -76,8 +76,8 @@ class PlaylistUltis {
     String identifier, {
     String artist = 'Unknown',
   }) async {
-    final targetDir = await FolderUtils.checkPlaylistFolderExist();
-    final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
+    final Directory targetDir = await FolderUtils.checkPlaylistFolderExist();
+    final File playlistFile = File(p.join(targetDir.path, '$playlist.json'));
 
     if (!await playlistFile.exists()) {
       FolderUtils.writeLog(
@@ -86,9 +86,12 @@ class PlaylistUltis {
       return false;
     }
 
-    final duration = await AudioUtils.getSongDuration(identifier);
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final Duration duration = await AudioUtils.getSongDuration(identifier);
+    final int minutes = duration.inMinutes;
+    final String seconds = duration.inSeconds
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
     final formartedDuration = '$minutes:$seconds';
     final newSong = {
       'name': name,
@@ -138,59 +141,71 @@ class PlaylistUltis {
     for (var song in songs) {
       try {
         final String name = song['name'];
-      final String duration = song['duration'];
-      final String link = song['link'];
-      final String artist = song['artist'];
-      final DateTime dateAdded = DateTime.parse(song['dateAdded']);
-      final String identifier = song['identifier'];
-      parsedSongs.add(
-        Song(
-          name: name,
-          identifier: identifier,
-          duration: duration,
-          link: link,
-          artist: artist,
-          dateAdded: dateAdded,
-        ),
-      );
-      }
-      catch (e) {
+        final String duration = song['duration'];
+        final String link = song['link'];
+        final String artist = song['artist'];
+        final DateTime dateAdded = DateTime.parse(song['dateAdded']);
+        final String identifier = song['identifier'];
+        parsedSongs.add(
+          Song(
+            name: name,
+            identifier: identifier,
+            duration: duration,
+            link: link,
+            artist: artist,
+            dateAdded: dateAdded,
+          ),
+        );
+      } catch (e) {
         errorCount++;
         FolderUtils.writeLog('Error: $e. Unable To Parse Song $song');
       }
     }
     if (errorCount > 0) {
-      MiscUtils.showError('Error: Unable To Parse $errorCount song(s). Check log.txt For More Details');
+      MiscUtils.showWarning(
+        'Error: Unable To Parse $errorCount song(s). Check log.txt For More Details',
+      );
     }
     return parsedSongs;
   }
 
   static Future<void> deletePlaylist(String playlist) async {
-    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
-    final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
+    final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final File playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
     if (!await playlistFile.exists()) {
-      debugPrint('$playlist.json does not exit');
+      FolderUtils.writeLog(
+        'Error: Unable To Delete $playlistFile. $playlistFile Does Not Exist',
+      );
+      MiscUtils.showError('Error: $playlist Does Not Exisit');
       return;
     }
-    await playlistFile.delete();
+    try {
+      await playlistFile.delete();
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Delete $playlistFile');
+      MiscUtils.showError('Error: Unable To Delete $playlist');
+    }
   }
 
   static Future<void> deleteSongFromPlaylist(
     identifier,
     selectedPlaylist,
   ) async {
-    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
-    final playlistFile = File(
+    final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final File playlistFile = File(
       p.join(playlistDir.path, '$selectedPlaylist.json'),
     );
     if (!await playlistFile.exists()) {
-      debugPrint("$selectedPlaylist does not exist");
+      FolderUtils.writeLog(
+        'Error: Unable To Delete $playlistFile. $playlistFile Does Not Exist',
+      );
+      MiscUtils.showError('Error: $selectedPlaylist Does Not Exisit');
       return;
     }
     try {
-      final contents = await playlistFile.readAsString();
+      final String contents = await playlistFile.readAsString();
       List<dynamic> songs = contents.isNotEmpty ? jsonDecode(contents) : [];
-      final updatedList = songs.where((song) {
+      final List<dynamic> updatedList = songs.where((song) {
         return song['identifier'] != identifier;
       }).toList();
       await playlistFile.writeAsString(
@@ -198,66 +213,77 @@ class PlaylistUltis {
         mode: FileMode.write,
       );
     } catch (e) {
-      debugPrint('$e');
+      FolderUtils.writeLog('Error: $e. Unable To Delete $playlistFile');
+      MiscUtils.showError('Error: Unable To Delete Song');
+      return;
     }
+    MiscUtils.showSuccess('Successfully Delete Song From Playlist');
   }
 
   static Future<void> deleteSongFromDevice(identifier) async {
-    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
-    final playlists = playlistDir
+    int errorCount = 0;
+    final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final List<dynamic> playlists = playlistDir
         .listSync()
         .where((file) => file.path.endsWith('.json'))
         .toList();
-    debugPrint('Deleting $identifier from device');
     for (final playlist in playlists) {
       try {
         //delete song from playlist.json
-        final file = File(playlist.path);
-        final contents = await file.readAsString();
+        final File file = File(playlist.path);
+        final String contents = await file.readAsString();
         List<dynamic> songs = contents.isNotEmpty ? jsonDecode(contents) : [];
         final updatedList = songs.where((song) {
           return song['identifier'] != identifier;
         }).toList();
         await file.writeAsString(jsonEncode(updatedList), mode: FileMode.write);
       } catch (e) {
-        debugPrint('$e');
+        FolderUtils.writeLog('Error: $e. Unable To Delete Song Metadata From Device');
+        errorCount++;
       }
     }
     //delete song.mp3 from mp3 folder
-    final mp3Dir = await FolderUtils.checkMP3FolderExist();
-    final mp3File = File(p.join(mp3Dir.path, '$identifier.mp3'));
+    final Directory mp3Dir = await FolderUtils.checkMP3FolderExist();
+    final File mp3File = File(p.join(mp3Dir.path, '$identifier.mp3'));
     try {
       if (await mp3File.exists()) {
-        mp3File.delete();
-      } else {
-        debugPrint('$mp3File does not exist');
+        await mp3File.delete();
       }
     } catch (e) {
-      debugPrint('$e');
+      FolderUtils.writeLog('Error: $e. Unable To Delete Song MP3 From Device');
+      errorCount++;
     }
     //delete song cover from cover fodler
-    final coverDir = await FolderUtils.checkCoverFolderExist();
-    final coverFile = File(p.join(coverDir.path, '$identifier.png'));
+    final Directory coverDir = await FolderUtils.checkCoverFolderExist();
+    final File coverFile = File(p.join(coverDir.path, '$identifier.png'));
     try {
       if (await coverFile.exists()) {
-        coverFile.delete();
-      } else {
-        debugPrint('$coverFile does not exist');
+        await coverFile.delete();
       }
     } catch (e) {
-      debugPrint('$e');
+      FolderUtils.writeLog('Error: $e. Unable To Delete Song Cover From Device');
+      errorCount++;
     }
     //delete song lyric
-    final lyricDir = await FolderUtils.checkLyricFolderExist();
-    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    final Directory lyricDir = await FolderUtils.checkLyricFolderExist();
+    final File lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
     try {
       if (await lyricFile.exists()) {
-        lyricFile.delete();
-      } else {
-        debugPrint('$lyricFile does not exist');
+        await lyricFile.delete();
       }
     } catch (e) {
-      debugPrint('$e');
+      FolderUtils.writeLog('Error: $e. Unable To Delete Song Lyric From Device');
+      errorCount++;
+    }
+    switch (errorCount) {
+      case 0:
+        MiscUtils.showSuccess('Successfully Deleted Song From Device');
+        break;
+      case 1:
+        MiscUtils.showWarning('Warning: Unable To Delete Some Part Of Song From Device'); 
+        break;
+      default:
+        MiscUtils.showError('Error: Unable To Delete Song From Device');
     }
   }
 }

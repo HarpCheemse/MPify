@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/screen/settings_screen.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Homebar extends StatelessWidget {
@@ -15,7 +16,9 @@ class Homebar extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 10, top: 20),
                 child: IconButton(
                   icon: Icon(Icons.settings_outlined, color: Colors.white),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                  },
                 ),
               ),
             ],
