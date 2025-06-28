@@ -1,0 +1,28 @@
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at character 469)
+...67168612fab3af3dd1c99e365b6eec36b"}][{"name":"Mice on Venus","link":"htt...
+                                       ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'
+Error: FormatException: Unexpected character (at line 18, character 2)
+][
+ ^
+. Unable To Decode Json File: 'C:\Github\MPify\mpify\..\playlist\Test2.json'

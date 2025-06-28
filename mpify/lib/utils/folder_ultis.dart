@@ -4,73 +4,77 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 
 class FolderUtils {
   static Future<void> createPlaylistFolder(folderName) async {
-    final current = Directory.current;
-    final target = Directory(p.join(current.path, '..', 'playlist'));
+    final Directory current = Directory.current;
+    final Directory target = Directory(p.join(current.path, '..', 'playlist'));
     if (!await target.exists()) {
       await target.create(recursive: true);
     }
-    final filePath = p.join(target.path, '$folderName.json');
-    final file = File(filePath);
+    final String filePath = p.join(target.path, '$folderName.json');
+    final File file = File(filePath);
     await file.writeAsString('');
   }
 
   static Future<Directory> checkPlaylistFolderExist() async {
-    final currentDir = Directory.current;
-    final playlistDir = Directory(p.join(currentDir.path, '..', 'playlist'));
+    final Directory currentDir = Directory.current;
+    final Directory playlistDir = Directory(
+      p.join(currentDir.path, '..', 'playlist'),
+    );
     if (!await playlistDir.exists()) {
-      debugPrint('Folder playlist missing');
       await playlistDir.create(recursive: true);
     }
     return playlistDir;
   }
 
   static Future<Directory> checkMP3FolderExist() async {
-    final curretDir = Directory.current;
-    final mp3Dir = Directory(p.join(curretDir.path, '..', 'mp3'));
+    final Directory curretDir = Directory.current;
+    final Directory mp3Dir = Directory(p.join(curretDir.path, '..', 'mp3'));
     if (!await mp3Dir.exists()) {
-      debugPrint('Folder mp3 missing. Creating new one ...');
       await mp3Dir.create(recursive: true);
     }
     return mp3Dir;
   }
 
   static Future<Directory> checkCoverFolderExist() async {
-    final currentDir = Directory.current;
-    final coverDir = Directory(p.join(currentDir.path, '..', 'cover'));
+    final Directory currentDir = Directory.current;
+    final Directory coverDir = Directory(
+      p.join(currentDir.path, '..', 'cover'),
+    );
     if (!await coverDir.exists()) {
-      debugPrint('Folder mp3 missing. Creating new one ...');
       await coverDir.create(recursive: true);
     }
     return coverDir;
   }
 
   static Future<Directory> checkLyricFolderExist() async {
-    final currentDir = Directory.current;
-    final lyricDir = Directory(p.join(currentDir.path, '..', 'lyric'));
+    final Directory currentDir = Directory.current;
+    final Directory lyricDir = Directory(
+      p.join(currentDir.path, '..', 'lyric'),
+    );
     if (!await lyricDir.exists()) {
-      debugPrint('Folder lyric missing. Creating new one ...');
       await lyricDir.create(recursive: true);
     }
     return lyricDir;
   }
 
   static Future<Directory> checkBackupFolderExist() async {
-    final currentDir = Directory.current;
-    final backupDir = Directory(p.join(currentDir.path, '..', 'backup'));
+    final Directory currentDir = Directory.current;
+    final Directory backupDir = Directory(
+      p.join(currentDir.path, '..', 'backup'),
+    );
     if (!await backupDir.exists()) {
-      debugPrint('Folder backup missing. Creating new one ...');
       await backupDir.create(recursive: true);
     }
     return backupDir;
   }
 
   static void openFolderInExplorer() async {
-    final path = await FolderUtils.checkPlaylistFolderExist();
+    final Directory path = await FolderUtils.checkPlaylistFolderExist();
     if (Platform.isWindows) {
       Process.run('explorer', [path.path]);
     } else if (Platform.isMacOS) {
@@ -81,114 +85,129 @@ class FolderUtils {
   }
 
   static void writeLyricToFolder(text, identifier) async {
-    final lyricDir = await checkLyricFolderExist();
-    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    final Directory lyricDir = await checkLyricFolderExist();
+    final File lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
     if (!await lyricFile.exists()) {
       lyricFile.create(recursive: true);
     }
     await lyricFile.writeAsString(text);
-    debugPrint('$text');
   }
 
   static Future<String?> getSongLyric(String identifier) async {
-    final lyricDir = await checkLyricFolderExist();
-    final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+    final Directory lyricDir = await checkLyricFolderExist();
+    final File lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
     if (!await lyricFile.exists()) return null;
-    final text = await lyricFile.readAsString();
-    return text;
+    final String lyric = await lyricFile.readAsString();
+    return lyric;
   }
 
   static Future<bool> createBackupFile(String playlist) async {
-    final timeStamp = DateTime.now();
-    final backupDir = await FolderUtils.checkBackupFolderExist();
-    final playlistDir = await FolderUtils.checkPlaylistFolderExist();
-    final backupName =
+    final DateTime timeStamp = DateTime.now();
+    final Directory backupDir = await FolderUtils.checkBackupFolderExist();
+    final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
+    final String backupName =
         '${timeStamp.year}_${timeStamp.month}_${timeStamp.day}_${timeStamp.hour}_${timeStamp.minute}_${timeStamp.second}_backup';
-    final backupFolder = Directory(p.join(backupDir.path, backupName));
+    final Directory backupFolder = Directory(
+      p.join(backupDir.path, backupName),
+    );
     await backupFolder.create(recursive: true);
-    final playlistJson = File(p.join(playlistDir.path, '$playlist.json'));
+    final File playlistJson = File(p.join(playlistDir.path, '$playlist.json'));
     if (!await playlistJson.exists()) {
       return false;
     }
 
     //copy metaData
-    await File(
-      p.join(backupFolder.path, 'metadata.json'),
-    ).create(recursive: true);
+
     List<dynamic> songs = [];
-    final contents = await playlistJson.readAsString();
+    late final String contents;
+    try {
+      contents = await playlistJson.readAsString();
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Read $playlistJson');
+      return false;
+    }
     if (contents.isNotEmpty) {
       songs = jsonDecode(contents);
     }
     await File(
       p.join(backupFolder.path, 'metadata.json'),
     ).writeAsString(jsonEncode(songs), mode: FileMode.write);
+
     //copy cover
+
+    final Directory backupCoverDir = Directory(
+      p.join(backupFolder.path, 'cover'),
+    );
+    await backupCoverDir.create(recursive: true);
+    final Directory coverDir = await checkCoverFolderExist();
     try {
-      final backupCoverDir = Directory(p.join(backupFolder.path, 'cover'));
-      await backupCoverDir.create(recursive: true);
-      final coverDir = await checkCoverFolderExist();
       for (int i = 0; i < songs.length; i++) {
-        final identifier = songs[i]['identifier'];
-        final coverFile = File(p.join(coverDir.path, '$identifier.png'));
+        final String identifier = songs[i]['identifier'];
+        final File coverFile = File(p.join(coverDir.path, '$identifier.png'));
         if (!await coverFile.exists()) continue;
         await File(
           coverFile.path,
         ).copy(p.join(backupCoverDir.path, '$identifier.png'));
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      MiscUtils.showError('Error: Unable To Create Backup Cover');
+      FolderUtils.writeLog('Error: $e. Unable To Create Backup Cover');
       return false;
     }
     //copy lyric
     try {
-      final backupLyricDir = Directory(p.join(backupFolder.path, 'lyric'));
+      final Directory backupLyricDir = Directory(p.join(backupFolder.path, 'lyric'));
       await backupLyricDir.create(recursive: true);
-      final lyricDir = await checkLyricFolderExist();
+      final Directory lyricDir = await checkLyricFolderExist();
       for (int i = 0; i < songs.length; i++) {
-        final identifier = songs[i]['identifier'];
-        final lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
+        final String identifier = songs[i]['identifier'];
+        final File lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
         if (!await lyricFile.exists()) continue;
         await File(
           lyricFile.path,
         ).copy(p.join(backupLyricDir.path, '$identifier.txt'));
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      MiscUtils.showError('Error: Unable To Create Backup Lyric');
+      FolderUtils.writeLog('Error: $e. Unable To Create Backup Lyric');
       return false;
     }
     //copy mp3
     try {
-      final backupMP3Dir = Directory(p.join(backupFolder.path, 'mp3'));
+      final Directory backupMP3Dir = Directory(p.join(backupFolder.path, 'mp3'));
       await backupMP3Dir.create(recursive: true);
-      final mp3Dir = await checkMP3FolderExist();
+      final Directory mp3Dir = await checkMP3FolderExist();
       for (int i = 0; i < songs.length; i++) {
-        final identifier = songs[i]['identifier'];
-        final mp3File = File(p.join(mp3Dir.path, '$identifier.mp3'));
+        final String identifier = songs[i]['identifier'];
+        final File mp3File = File(p.join(mp3Dir.path, '$identifier.mp3'));
         if (!await mp3File.exists()) continue;
         await File(
           mp3File.path,
         ).copy(p.join(backupMP3Dir.path, '$identifier.mp3'));
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      MiscUtils.showError('Error: Unable To Create Backup MP3');
+      FolderUtils.writeLog('Error: $e. Unable To Create Backup MP3');
       return false;
     }
     //zip file
     await Future.delayed(Duration(milliseconds: 500));
     try {
-      final zipPath = backupFolder.path + '.zip';
-      final zipFile = File(zipPath);
+      final String zipPath = backupFolder.path + '.zip';
+      final File zipFile = File(zipPath);
       await zipFolder(backupFolder, zipFile);
     } catch (e) {
-      debugPrint('Error: $e');
+      MiscUtils.showError('Error: Unable To Zip Folder');
+      FolderUtils.writeLog('Error: $e. Unable To Zip Folder');
       return false;
     }
     //delete the Dir
     try {
       await backupFolder.delete(recursive: true);
     } catch (e) {
-      debugPrint('Error: $e');
+      MiscUtils.showError('Error: Unable To Delete Temp BackupFolder');
+      FolderUtils.writeLog('Error: $e. Unable To Delete Temp Backup Cover');
       return false;
     }
     return true;
@@ -202,18 +221,20 @@ class FolderUtils {
   }
 
   static Future<void> importBackupFile(String playlistName) async {
-    final result = await FilePicker.platform.pickFiles(
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.any,
       withData: true,
     );
     if (result == null || result.files.isEmpty) {
+      MiscUtils.showError('Error: No Backup File Choosen');
+      FolderUtils.writeLog('Error: No Song Backup File Choosen');
       return;
     }
-    final playlisrDir = await checkPlaylistFolderExist();
-    final coverDir = await checkCoverFolderExist();
-    final lyricDir = await checkLyricFolderExist();
-    final mp3Dir = await checkMP3FolderExist();
-    final playlistFile = File(p.join(playlisrDir.path, '$playlistName.json'));
+    final Directory playlisrDir = await checkPlaylistFolderExist();
+    final Directory coverDir = await checkCoverFolderExist();
+    final Directory lyricDir = await checkLyricFolderExist();
+    final Directory mp3Dir = await checkMP3FolderExist();
+    final File playlistFile = File(p.join(playlisrDir.path, '$playlistName.json'));
     if (!await playlistFile.exists()) {
       playlistFile.create(recursive: true);
     }
@@ -221,12 +242,12 @@ class FolderUtils {
     final bytes = result.files.first.bytes!;
     final archive = ZipDecoder().decodeBytes(bytes);
 
-    try {
-      for (final file in archive) {
-        if (file.isFile) {
-          final filename = file.name;
-          //copy metadata.json
-          if (filename.endsWith('/metadata.json')) {
+    for (final file in archive) {
+      if (file.isFile) {
+        final filename = file.name;
+        //copy metadata.json
+        if (filename.endsWith('/metadata.json')) {
+          try {
             final jsonString = utf8.decode(file.content as List<int>);
             final List<dynamic> metadata = jsonDecode(jsonString);
             if (metadata.isEmpty) {
@@ -234,12 +255,12 @@ class FolderUtils {
             }
             final List<Song> songs = [];
             for (var song in metadata) {
-              final name = song['name'];
-              final duration = song['duration'];
-              final link = song['link'];
-              final artist = song['artist'];
-              final dateAdded = DateTime.parse(song['dateAdded']);
-              final identifier = song['identifier'];
+              final String name = song['name'];
+              final String duration = song['duration'];
+              final String link = song['link'];
+              final String artist = song['artist'];
+              final DateTime dateAdded = DateTime.parse(song['dateAdded']);
+              final String identifier = song['identifier'];
               songs.add(
                 Song(
                   name: name,
@@ -250,9 +271,8 @@ class FolderUtils {
                   identifier: identifier,
                 ),
               );
-              debugPrint('$name');
             }
-            final playlistFile = File(
+            final File playlistFile = File(
               p.join(playlisrDir.path, '$playlistName.json'),
             );
             await playlistFile.writeAsString(
@@ -272,33 +292,64 @@ class FolderUtils {
               ),
               mode: FileMode.write,
             );
+          } catch (e) {
+            MiscUtils.showError('Error: Unable To Import Metadata');
+            FolderUtils.writeLog('Error: $e. Unable To Import Metadata');
           }
-          //copy image
-          else if (filename.endsWith('.png')) {
-            final filename = p.basename(file.name);
-            final coverFile = File(p.join(coverDir.path, filename));
+        }
+        //copy image
+        else if (filename.endsWith('.png')) {
+          try {
+            final String filename = p.basename(file.name);
+            final File coverFile = File(p.join(coverDir.path, filename));
             await coverFile.create(recursive: true);
             await coverFile.writeAsBytes(file.content as List<int>);
+          } catch (e) {
+            MiscUtils.showError('Error: Unable To Import Png');
+            FolderUtils.writeLog('Error: $e. Unable To Import Png');
+            return;
           }
-          //copy lyric
-          else if (filename.endsWith('.txt')) {
-            final filename = p.basename(file.name);
-            final lyricFile = File(p.join(lyricDir.path, filename));
+        }
+        //copy lyric
+        else if (filename.endsWith('.txt')) {
+          try {
+            final String filename = p.basename(file.name);
+            final File lyricFile = File(p.join(lyricDir.path, filename));
             await lyricFile.create(recursive: true);
             await lyricFile.writeAsBytes(file.content as List<int>);
+          } catch (e) {
+            MiscUtils.showError('Error: Unable To Import Lyric');
+            FolderUtils.writeLog('Error: $e. Unable To Import Lyric');
+            return;
           }
-          //copy mp3
-          else if (filename.endsWith('.mp3')) {
-            final filename = p.basename(file.name);
-            final mp3File = File(p.join(mp3Dir.path, filename));
+        }
+        //copy mp3
+        else if (filename.endsWith('.mp3')) {
+          try {
+            final String filename = p.basename(file.name);
+            final File mp3File = File(p.join(mp3Dir.path, filename));
             await mp3File.create(recursive: true);
             await mp3File.writeAsBytes(file.content as List<int>);
+          } catch (e) {
+            MiscUtils.showError('Error: Unable To Import MP3');
+            FolderUtils.writeLog('Error: $e. Unable To Import MP3');
+            return;
           }
         }
       }
+    }
+  }
+
+  static Future<void> writeLog(String messege) async {
+    final current = Directory.current;
+    final logFile = File(p.join(current.path, '..', 'log.txt'));
+    if (!await logFile.exists()) {
+      await logFile.create(recursive: true);
+    }
+    try {
+      await logFile.writeAsString('$messege\n', mode: FileMode.append);
     } catch (e) {
-      debugPrint('Error: $e');
-      return;
+      debugPrint('Error: $e. Unable to write log');
     }
   }
 }

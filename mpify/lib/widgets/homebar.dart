@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Homebar extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 70,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

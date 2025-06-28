@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/utils/watcher_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -133,31 +134,59 @@ class PlaylistFolder extends StatelessWidget {
                   ],
                 ),
                 onTap: () async {
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (dialogContext) {
-                      Future.microtask(() async {
-                        if (!context.mounted) return;
-                        OverlayController.show(context, Confirmation(headerText: 'Create Backup', warningText: 'Are You Sure You Want To Create A Backup?', function: () async =>  await FolderUtils.createBackupFile(playlistName)));
-                        if (dialogContext.mounted) {
-                          Navigator.of(dialogContext).pop();
-                        }
-                      });
-                      return AlertDialog(
-                        backgroundColor: const Color.fromARGB(255, 24, 24, 24),
-                        title: Center(
-                          child: Text(
-                            'Please Wait A Bit',
-                            style: montserratStyle(),
-                          ),
-                        ),
-                        content: LoadingAnimationWidget.staggeredDotsWave(
-                          color: Colors.white,
-                          size: 10,
-                        ),
-                      );
-                    },
+                  OverlayController.show(
+                    context,
+                    Confirmation(
+                      headerText: 'Create Backup',
+                      warningText: 'Are You Sure You Want To Create A Backup?',
+                      function: () async {
+                        MiscUtils.showNotification(
+                          'Attempting To Create Back Up Of $playlistName',
+                        );
+                        showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (dialogContext) {
+                            Future.microtask(() async {
+                              final bool result =
+                                  await FolderUtils.createBackupFile(
+                                    playlistName,
+                                  );
+                              (result)
+                                  ? MiscUtils.showSuccess(
+                                      'Successfully Created A Back Up Of $playlistName At Backup Folder',
+                                    )
+                                  : MiscUtils.showError(
+                                      'Error: Unable To Create A Back Up Of $playlistName',
+                                    );
+                              if (!context.mounted) return;
+
+                              if (dialogContext.mounted) {
+                                Navigator.of(dialogContext).pop();
+                              }
+                            });
+                            return AlertDialog(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                24,
+                                24,
+                                24,
+                              ),
+                              title: Center(
+                                child: Text(
+                                  'Please Wait A Bit',
+                                  style: montserratStyle(),
+                                ),
+                              ),
+                              content: LoadingAnimationWidget.staggeredDotsWave(
+                                color: Colors.white,
+                                size: 10,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   );
                 },
               ),

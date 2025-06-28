@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:path/path.dart' as p;
 import 'dart:convert';
 
@@ -12,13 +13,11 @@ import 'package:provider/provider.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 
-//Functions that manipulate playlist related stuff
-
 class PlaylistUltis {
   static Future<void> downloadMP3(BuildContext context, name, link) async {
+    MiscUtils.showNotification('Attemping To Download $name');
     final playlist = context.read<PlaylistModels>().selectedPlaylist;
-    final current = Directory.current;
-    final target = Directory(p.join(current.path, '..', 'mp3'));
+    final mp3Dir = await FolderUtils.checkMP3FolderExist();
 
     final trimmedLink = link.split('&')[0];
     final cleanName = name
@@ -26,36 +25,37 @@ class PlaylistUltis {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
     final identifier = StringUltis.hashYoutubeLink(link);
-    if (!await target.exists()) {
-      debugPrint('Folder $target does not exit');
-      target.create(recursive: true);
-      return;
-    }
-    final process = await Process.start(
-      'yt-dlp',
-      [
-        '-x',
-        '--audio-format',
-        'mp3',
-        '--no-continue',
-        '-o',
-        '$identifier.%(ext)s',
-        trimmedLink,
-      ],
-      workingDirectory: target.path,
-      runInShell: true,
-    );
-    process.stdout.transform(SystemEncoding().decoder).listen((data) {
-      debugPrint('[stdout] $data');
-    });
-    process.stderr.transform(SystemEncoding().decoder).listen((data) {
-      debugPrint('[stderr] $data');
-    });
+    try {
+      final process = await Process.start(
+        'yt-dlp',
+        [
+          '-x',
+          '--audio-format',
+          'mp3',
+          '--no-continue',
+          '-o',
+          '$identifier.%(ext)s',
+          trimmedLink,
+        ],
+        workingDirectory: mp3Dir.path,
+        runInShell: true,
+      );
+      process.stdout.transform(SystemEncoding().decoder).listen((data) {
+        FolderUtils.writeLog('[stdout] $data');
+      });
+      process.stderr.transform(SystemEncoding().decoder).listen((data) {
+        FolderUtils.writeLog('[stderr] $data');
+      });
 
-    final exitCode = await process.exitCode;
-    if (exitCode != 0) {
-      debugPrint('Error downloading mp3');
-      return;
+      final exitCode = await process.exitCode;
+      if (exitCode != 0) {
+        MiscUtils.showError('Error: Unable To Download $name');
+        FolderUtils.writeLog('Error: Unable To Download $name');
+        return;
+      }
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Run yt-dlp.exe');
+      MiscUtils.showError('Error: Unable To Run yt-dlp.exe');
     }
     if (await PlaylistUltis.writeSongToPlaylist(
       playlist,
@@ -63,9 +63,9 @@ class PlaylistUltis {
       trimmedLink,
       identifier,
     )) {
-      debugPrint('Download successed');
+      MiscUtils.showSuccess('Download $name Successfully');
     } else {
-      debugPrint('Error. Download Canceled');
+      MiscUtils.showError('Error Writing $name To File. Proccess Canceled');
     }
   }
 
@@ -80,7 +80,9 @@ class PlaylistUltis {
     final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
 
     if (!await playlistFile.exists()) {
-      debugPrint('$playlistFile missing');
+      FolderUtils.writeLog(
+        'Error: Unable To Write Song. $playlist.json Missing',
+      );
       return false;
     }
 
@@ -103,45 +105,62 @@ class PlaylistUltis {
         songs = jsonDecode(contents);
       }
       songs.add(newSong);
-
       await playlistFile.writeAsString(jsonEncode(songs), mode: FileMode.write);
     } catch (e) {
-      debugPrint('Error writing file json $e');
+      FolderUtils.writeLog('Error: $e. Unable To Write Song To $playlist.json');
       return false;
     }
     return true;
   }
 
   static Future<List<Song>> parsePlaylistJSON(file) async {
-    final List<Song> parsedSongs = [];
-    final contents = await file.readAsString();
+    List<Song> parsedSongs = [];
+    String contents;
+    List<dynamic> songs;
     try {
-      if (contents.trim().isEmpty) {
-        debugPrint('file playlist.json empty');
-        return parsedSongs;
-      }
-
-      final List<dynamic> songs = jsonDecode(contents);
-      for (var song in songs) {
-        final name = song['name'];
-        final duration = song['duration'];
-        final link = song['link'];
-        final artist = song['artist'];
-        final dateAdded = DateTime.parse(song['dateAdded']);
-        final identifier = song['identifier'];
-        parsedSongs.add(
-          Song(
-            name: name,
-            identifier: identifier,
-            duration: duration,
-            link: link,
-            artist: artist,
-            dateAdded: dateAdded,
-          ),
-        );
-      }
+      contents = await file.readAsString();
     } catch (e) {
-      debugPrint('$e');
+      FolderUtils.writeLog('Error: $e. Error Reading $file');
+      return parsedSongs;
+    }
+    if (contents.trim().isEmpty) {
+      FolderUtils.writeLog('$file is empty');
+      return parsedSongs;
+    }
+
+    try {
+      songs = jsonDecode(contents);
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Decode Json $file');
+      return parsedSongs;
+    }
+    int errorCount = 0;
+    for (var song in songs) {
+      try {
+        final String name = song['name'];
+      final String duration = song['duration'];
+      final String link = song['link'];
+      final String artist = song['artist'];
+      final DateTime dateAdded = DateTime.parse(song['dateAdded']);
+      final String identifier = song['identifier'];
+      parsedSongs.add(
+        Song(
+          name: name,
+          identifier: identifier,
+          duration: duration,
+          link: link,
+          artist: artist,
+          dateAdded: dateAdded,
+        ),
+      );
+      }
+      catch (e) {
+        errorCount++;
+        FolderUtils.writeLog('Error: $e. Unable To Parse Song $song');
+      }
+    }
+    if (errorCount > 0) {
+      MiscUtils.showError('Error: Unable To Parse $errorCount song(s). Check log.txt For More Details');
     }
     return parsedSongs;
   }

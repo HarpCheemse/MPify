@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:audioplayers/audioplayers.dart';
@@ -11,20 +11,22 @@ class AudioUtils {
   static final AudioPlayer player = AudioPlayer();
 
   static Future<Duration> getSongDuration(String identifier) async {
-    final target = await FolderUtils.checkMP3FolderExist();
-    final mp3FilePath = p.join(target.path, '$identifier.mp3');
-
-    final mp3File = File(mp3FilePath);
+    final Directory mp3Dir = await FolderUtils.checkMP3FolderExist();
+    final String mp3FilePath = p.join(mp3Dir.path, '$identifier.mp3');
+    final File mp3File = File(mp3FilePath);
+    final String ffprobeExecutablePath = p.join(
+      Directory.current.path,
+      '..',
+      'ffprobe.exe',
+    );
     if (!await mp3File.exists()) {
-      debugPrint('ERROR: MP3 file "$mp3FilePath" does NOT exist!');
+      MiscUtils.showError('Error: Unable To Get Song Duration');
+      FolderUtils.writeLog('Error: Unable To Get Song Duration');
       return Duration.zero;
-    } else {
-      debugPrint('SUCCESS: MP3 file "$mp3FilePath" EXISTS.');
     }
-
+    late final Process process;
     try {
-      final String ffprobeExecutable = 'C:\\Github\\MPify\\ffprobe.exe';
-      final process = await Process.start(ffprobeExecutable, [
+      process = await Process.start(ffprobeExecutablePath, [
         '-i',
         mp3FilePath,
         '-v',
@@ -35,98 +37,116 @@ class AudioUtils {
         '-of',
         'default=noprint_wrappers=1:nokey=1',
       ], runInShell: false);
-
-      final List<String> stdoutLines = [];
-      final List<String> stderrLines = [];
-
-      process.stdout.transform(systemEncoding.decoder).listen((String data) {
-        stdoutLines.add(data.trim());
-        debugPrint('FFPROBE STDOUT CHUNK: "${data.trim()}"');
-      });
-
-      process.stderr.transform(systemEncoding.decoder).listen((String data) {
-        stderrLines.add(data.trim());
-        debugPrint('FFPROBE STDERR CHUNK: "${data.trim()}"');
-      });
-
-      final exitCode = await process.exitCode;
-
-      debugPrint('FFPROBE process finished with exit code: $exitCode');
-      debugPrint('Collected STDOUT (full): "${stdoutLines.join('').trim()}"');
-      debugPrint('Collected STDERR (full): "${stderrLines.join('\n').trim()}"');
-
-      if (exitCode != 0) {
-        debugPrint('ffprobe command failed with exit code: $exitCode');
-        debugPrint('Full STDERR from ffprobe: ${stderrLines.join('\n')}');
-        return Duration.zero;
-      }
-
-      final rawOutput = stdoutLines.join('').trim();
-      final seconds = double.tryParse(rawOutput);
-
-      if (seconds == null) {
-        debugPrint('Could not parse duration from output: "$rawOutput"');
-        return Duration.zero;
-      }
-
-      debugPrint('Successfully parsed duration: $seconds seconds');
-      return Duration(microseconds: (seconds * 1000000).toInt());
     } catch (e) {
-      debugPrint('ERROR: Exception during ffprobe execution: $e');
-      if (e is ProcessException) {
-        debugPrint('ProcessException message: ${e.message}');
-        if (e.message.contains('No such file or directory') ||
-            e.errorCode == 2) {
-          debugPrint(
-            'This usually means the ffprobe.exe path is incorrect or ffprobe.exe does not exist at that location.',
-          );
-        }
-      }
+      FolderUtils.writeLog('Error: Unable Run FFProbe');
       return Duration.zero;
     }
+
+    final List<String> stdoutLines = [];
+    final List<String> stderrLines = [];
+
+    process.stdout.transform(systemEncoding.decoder).listen((String data) {
+      stdoutLines.add(data.trim());
+    });
+    process.stderr.transform(systemEncoding.decoder).listen((String data) {
+      stderrLines.add(data.trim());
+    });
+
+    final exitCode = await process.exitCode;
+    if (exitCode != 0) {
+      FolderUtils.writeLog('Full STDERR: ${stderrLines.join('\n')}');
+      return Duration.zero;
+    }
+
+    final rawOutput = stdoutLines.join('').trim();
+    final seconds = double.tryParse(rawOutput);
+
+    if (seconds == null) {
+      FolderUtils.writeLog(
+        'Error: Unable To Parse Duration From: "$rawOutput"',
+      );
+      return Duration.zero;
+    }
+    return Duration(microseconds: (seconds * 1000000).toInt());
   }
 
   static Future<void> playSong(identifier) async {
-    final target = await FolderUtils.checkMP3FolderExist();
-    final songFile = File(p.join(target.path, '$identifier.mp3'));
+    final Directory target = await FolderUtils.checkMP3FolderExist();
+    final File songFile = File(p.join(target.path, '$identifier.mp3'));
     if (!await songFile.exists()) {
-      debugPrint('$identifier.mp3 not found');
+      FolderUtils.writeLog('Error: Unable To Play Song. MP3 File Missing');
+      MiscUtils.showError('Error: Unable To Play Song. MP3 File Missing');
       return;
     }
-    player.stop();
-    await player.play(DeviceFileSource(songFile.path));
+    try {
+      player.stop();
+      await player.play(DeviceFileSource(songFile.path));
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Play Song');
+      MiscUtils.showError('Error: Unable To Play Song');
+    }
   }
 
   static Future<void> pauseSong() async {
-    await player.pause();
+    try {
+      await player.pause();
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Pause Song');
+      MiscUtils.showError('Error: Unable To Pause Song');
+    }
   }
 
   static Future<void> resumeSong() async {
-    await player.resume();
+    try {
+      await player.resume();
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Resume Song');
+      MiscUtils.showError('Error: Unable To Resume Song');
+    }
   }
 
   static Future<void> skipForward() async {
-    final posiotion = await player.getCurrentPosition();
-    if (posiotion != null) {
-      await player.seek(posiotion + const Duration(seconds: 5));
+    try {
+      final position = await player.getCurrentPosition();
+      if (position != null) {
+        await player.seek(position + const Duration(seconds: 5));
+      }
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Skip Forward');
+      MiscUtils.showError('Error: Unable To Skip Forward');
     }
   }
 
   static Future<void> skipBackward() async {
-    final position = await player.getCurrentPosition();
-    if (position != null) {
-      final newPosition = position - const Duration(seconds: 5);
-      await player.seek(
-        newPosition > Duration.zero ? newPosition : Duration.zero,
-      );
+    try {
+      final position = await player.getCurrentPosition();
+      if (position != null) {
+        final newPosition = position - const Duration(seconds: 5);
+        await player.seek(
+          newPosition > Duration.zero ? newPosition : Duration.zero,
+        );
+      }
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Skip Backward');
+      MiscUtils.showError('Error: Unable To Skip Backward');
     }
   }
 
-  static Future<void> setVolume(value) async {
-    await player.setVolume(value);
+  static Future<void> setVolume(double value) async {
+    try {
+      await player.setVolume(value);
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Set Volume To $value');
+      MiscUtils.showError('Error: Unable To Set Volume');
+    }
   }
 
   static Future<void> stopSong() async {
-    player.stop();
+    try {
+      await player.stop();
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Stop Song');
+      MiscUtils.showError('Error: Unable To Stop Song');
+    }
   }
 }

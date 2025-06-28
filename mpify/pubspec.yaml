@@ -20,6 +20,7 @@ dependencies:
   archive:
   loading_animation_widget:
   window_manager: 
+  top_snackbar_flutter: ^3.3.0
 
 
 dev_dependencies:
