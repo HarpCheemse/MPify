@@ -22,7 +22,7 @@ class MiscUtils {
             borderRadius: BorderRadius.circular(10),
             color: const Color.fromARGB(255, 24, 24, 24),
           ),
-          child: Center(child: Text(message, style: montserratStyle(),)),
+          child: Center(child: Text(message, style: montserratStyle(context: context),)),
         ),
       ),
     ));
@@ -43,7 +43,7 @@ class MiscUtils {
             borderRadius: BorderRadius.circular(10),
             color: const Color.fromARGB(164, 177, 41, 41),
           ),
-          child: Center(child: Text(message, style: montserratStyle(),)),
+          child: Center(child: Text(message, style: montserratStyle(context: context),)),
         ),
       ),
     ));
@@ -64,7 +64,7 @@ class MiscUtils {
             borderRadius: BorderRadius.circular(10),
             color: const Color.fromARGB(166, 2, 132, 12),
           ),
-          child: Center(child: Text(message, style: montserratStyle(),)),
+          child: Center(child: Text(message, style: montserratStyle(context: context),)),
         ),
       ),
     ));
@@ -85,7 +85,7 @@ class MiscUtils {
             borderRadius: BorderRadius.circular(10),
             color: const Color.fromARGB(218, 150, 138, 0),
           ),
-          child: Center(child: Text(message, style: montserratStyle(),)),
+          child: Center(child: Text(message, style: montserratStyle(context: context),)),
         ),
       ),
     ));

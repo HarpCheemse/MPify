@@ -135,7 +135,7 @@ class _LyricState extends State<Lyric> {
                                     padding: const EdgeInsets.all(15),
                                     child: Text(
                                       lyric,
-                                      style: montserratStyle(),
+                                      style: montserratStyle(context: context),
                                     ),
                                   ),
                                 );

@@ -81,7 +81,7 @@ class PlaylistFolder extends StatelessWidget {
     return HoverButton(
       baseColor: Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-      textStyle: montserratStyle(),
+      textStyle: montserratStyle(context: context),
       borderRadius: 5,
       width: 320,
       height: 70,
@@ -102,7 +102,7 @@ class PlaylistFolder extends StatelessWidget {
             width: 200,
             child: Text(
               playlistName,
-              style: montserratStyle(),
+              style: montserratStyle(context: context),
               overflow: TextOverflow.fade,
               maxLines: 1,
               softWrap: false,
@@ -110,15 +110,15 @@ class PlaylistFolder extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {},
-            icon: Icon(Icons.more_horiz, color: Colors.grey),
-            color: const Color.fromARGB(255, 53, 53, 53),
+            icon: Icon(Icons.more_horiz, color: Theme.of(context).colorScheme.onSurface),
+            color: Theme.of(context).colorScheme.surface,
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
                 child: Row(
                   children: [
-                    Icon(Icons.file_open_outlined, color: Colors.white),
+                    Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onSurface),
                     SizedBox(width: 10),
-                    Text('Open File Location', style: montserratStyle()),
+                    Text('Open File Location', style: montserratStyle(context: context)),
                   ],
                 ),
                 onTap: () {
@@ -128,9 +128,9 @@ class PlaylistFolder extends StatelessWidget {
               PopupMenuItem(
                 child: Row(
                   children: [
-                    Icon(Icons.backup_outlined, color: Colors.white),
+                    Icon(Icons.backup_outlined, color: Theme.of(context).colorScheme.onSurface),
                     SizedBox(width: 10),
-                    Text('Create A Back Up File', style: montserratStyle()),
+                    Text('Create A Back Up File', style: montserratStyle(context: context)),
                   ],
                 ),
                 onTap: () async {
@@ -175,7 +175,7 @@ class PlaylistFolder extends StatelessWidget {
                               title: Center(
                                 child: Text(
                                   'Please Wait A Bit',
-                                  style: montserratStyle(),
+                                  style: montserratStyle(context: context),
                                 ),
                               ),
                               content: LoadingAnimationWidget.staggeredDotsWave(
@@ -196,9 +196,9 @@ class PlaylistFolder extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.upload_file_outlined, color: Colors.white),
+                    Icon(Icons.upload_file_outlined, color: Theme.of(context).colorScheme.onSurface),
                     SizedBox(width: 10),
-                    Text('Import Backup File', style: montserratStyle()),
+                    Text('Import Backup File', style: montserratStyle(context: context)),
                   ],
                 ),
               ),
@@ -207,7 +207,7 @@ class PlaylistFolder extends StatelessWidget {
                   children: [
                     Icon(Icons.delete_outline, color: Colors.redAccent),
                     SizedBox(width: 10),
-                    Text('Delete Playlist', style: montserratStyle()),
+                    Text('Delete Playlist', style: montserratStyle(context: context)),
                   ],
                 ),
                 onTap: () {

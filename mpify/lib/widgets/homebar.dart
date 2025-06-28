@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/screen/settings_screen.dart';
+import 'package:mpify/models/settings_models.dart';
+import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Homebar extends StatelessWidget {
@@ -14,18 +15,27 @@ class Homebar extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10, top: 20),
-                child: IconButton(
-                  icon: Icon(Icons.settings_outlined, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                child: Consumer<SettingsModels>(
+                  builder: (context, settings, child) {
+                    return IconButton(
+                      icon: (settings.isOpenSettings)
+                          ? Icon(Icons.close)
+                          : Icon(Icons.settings),
+                      onPressed: () {
+                        settings.flipIsOpenSetting();
+                        debugPrint('${settings.isOpenSettings}');
+                      },
+                    );
                   },
                 ),
               ),
             ],
           ),
-          Expanded(child: GestureDetector(
-            onPanStart: (_) => windowManager.startDragging(),
-          )),
+          Expanded(
+            child: GestureDetector(
+              onPanStart: (_) => windowManager.startDragging(),
+            ),
+          ),
           Row(
             children: [
               IconButton(
@@ -33,23 +43,20 @@ class Homebar extends StatelessWidget {
                   await windowManager.minimize();
                 },
                 icon: Icon(Icons.minimize_outlined),
-                color: Colors.white,
               ),
-              SizedBox(width: 10,),
+              SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
                   await windowManager.maximize();
                 },
                 icon: Icon(Icons.rectangle_outlined),
-                color: Colors.white,
               ),
-              SizedBox(width: 10,),
+              SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
                   await windowManager.close();
                 },
                 icon: Icon(Icons.close_outlined),
-                color: Colors.white,
               ),
             ],
           ),

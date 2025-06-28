@@ -174,13 +174,13 @@ class _EditSongFormState extends State<EditSongForm> {
       },
       child: Material(
         borderRadius: BorderRadius.circular(10),
-        color: const Color.fromARGB(255, 43, 43, 43),
+        color: Theme.of(context).colorScheme.surfaceContainer,
         child: Container(
           width: 600,
           height: 600,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: const Color.fromARGB(255, 43, 43, 43),
+            color: Theme.of(context).colorScheme.surface,
           ),
           child: Column(
             children: [
@@ -190,7 +190,7 @@ class _EditSongFormState extends State<EditSongForm> {
                 child: Center(
                   child: Text(
                     'Edit Info',
-                    style: montserratStyle(color: Colors.white, fontSize: 20),
+                    style: montserratStyle(context: context, fontSize: 20),
                   ),
                 ),
               ),
@@ -202,10 +202,10 @@ class _EditSongFormState extends State<EditSongForm> {
                   controller: name,
                   onChanged: (query) {},
                   hintText: 'Edit Name',
-                  fontColor: const Color.fromARGB(255, 255, 255, 255),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.edit,
                 ),
               ),
@@ -216,10 +216,10 @@ class _EditSongFormState extends State<EditSongForm> {
                   controller: artist,
                   onChanged: (query) {},
                   hintText: 'Edit Artist',
-                  fontColor: const Color.fromARGB(255, 255, 255, 255),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.edit,
                 ),
               ),
@@ -253,9 +253,9 @@ class _EditSongFormState extends State<EditSongForm> {
                       width: 210,
                       height: 210,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1),
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1),
                       ),
-                      child: Icon(Icons.add, color: Colors.white),
+                      child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface),
                     ),
                   ),
                 ],
@@ -280,6 +280,7 @@ class _EditSongFormState extends State<EditSongForm> {
                       child: Text(
                         'Reset Image To Default',
                         style: montserratStyle(
+                          context: context,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -305,6 +306,7 @@ class _EditSongFormState extends State<EditSongForm> {
                       child: Text(
                         'Cancel',
                         style: montserratStyle(
+                          context: context,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -338,6 +340,7 @@ class _EditSongFormState extends State<EditSongForm> {
                       child: Text(
                         'Edit',
                         style: montserratStyle(
+                          context: context,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),

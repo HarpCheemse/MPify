@@ -3,6 +3,7 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/widgets/homebar.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
+import 'package:provider/provider.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -12,7 +13,6 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   SettingsCategory _selectedCategory = SettingsCategory.general;
-  bool isDarkmodeToggled = true;
   Widget _buildContent() {
     switch (_selectedCategory) {
       case SettingsCategory.general:
@@ -25,17 +25,18 @@ class _SettingsState extends State<Settings> {
                 Text(
                   'Darkmode',
                   style: montserratStyle(
+                    context: context,
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
                 Switch(
-                  value: isDarkmodeToggled,
+                  value:
+                      context.watch<SettingsModels>().themeMode ==
+                      ThemeMode.dark,
                   activeTrackColor: Colors.green,
                   onChanged: (bool newVal) {
-                    setState(() {
-                      isDarkmodeToggled = newVal;
-                    });
+                    context.read<SettingsModels>().toogleTheme(newVal);
                   },
                 ),
               ],
@@ -55,131 +56,140 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Homebar(),
-        Container(
-          width: 1400,
-          height: 700,
-          color: Colors.transparent,
-          child: Row(
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  HoverButton(
-                    baseColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    hoverFontColor: const Color.fromARGB(255, 175, 175, 175),
-                    borderRadius: 0,
-                    onPressed: () {
-                      setState(() {
-                        _selectedCategory = SettingsCategory.general;
-                      });
-                    },
-                    width: 200,
-                    height: 80,
-                    child: Center(
-                      child: Text(
-                        'General',
-                        style: montserratStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Theme.of(context).colorScheme.surface,
+      child: Column(
+        children: [
+          Homebar(),
+          Container(
+            width: 1400,
+            height: 700,
+            color: Theme.of(context).colorScheme.surface,
+            child: Row(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    HoverButton(
+                      baseColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      borderRadius: 0,
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategory = SettingsCategory.general;
+                        });
+                      },
+                      width: 200,
+                      height: 80,
+                      child: Center(
+                        child: Text(
+                          'General',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  HoverButton(
-                    baseColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    borderRadius: 0,
-                    onPressed: () {
-                      setState(() {
-                        _selectedCategory = SettingsCategory.audio;
-                      });
-                    },
-                    width: 250,
-                    height: 80,
-                    child: Center(
-                      child: Text(
-                        'Audio',
-                        style: montserratStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                    HoverButton(
+                      baseColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      borderRadius: 0,
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategory = SettingsCategory.audio;
+                        });
+                      },
+                      width: 250,
+                      height: 80,
+                      child: Center(
+                        child: Text(
+                          'Audio',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  HoverButton(
-                    baseColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    borderRadius: 0,
-                    onPressed: () {
-                      setState(() {
-                        _selectedCategory = SettingsCategory.backup;
-                      });
-                    },
-                    width: 250,
-                    height: 80,
-                    child: Center(
-                      child: Text(
-                        'Back Up & Restore',
-                        style: montserratStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                    HoverButton(
+                      baseColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      borderRadius: 0,
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategory = SettingsCategory.backup;
+                        });
+                      },
+                      width: 250,
+                      height: 80,
+                      child: Center(
+                        child: Text(
+                          'Back Up & Restore',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  HoverButton(
-                    baseColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    borderRadius: 0,
-                    onPressed: () {
-                      setState(() {
-                        _selectedCategory = SettingsCategory.troubleshooter;
-                      });
-                    },
-                    width: 250,
-                    height: 80,
-                    child: Center(
-                      child: Text(
-                        'Troubleshooter',
-                        style: montserratStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                    HoverButton(
+                      baseColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      borderRadius: 0,
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategory = SettingsCategory.troubleshooter;
+                        });
+                      },
+                      width: 250,
+                      height: 80,
+                      child: Center(
+                        child: Text(
+                          'Troubleshooter',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  HoverButton(
-                    baseColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    borderRadius: 0,
-                    onPressed: () {
-                      _selectedCategory = SettingsCategory.about;
-                    },
-                    width: 200,
-                    height: 80,
-                    child: Center(
-                      child: Text(
-                        'About',
-                        style: montserratStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                    HoverButton(
+                      baseColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      borderRadius: 0,
+                      onPressed: () {
+                        _selectedCategory = SettingsCategory.about;
+                      },
+                      width: 200,
+                      height: 80,
+                      child: Center(
+                        child: Text(
+                          'About',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 30),
-              Container(height: double.infinity, width: 1, color: Colors.white),
-              Expanded(child: _buildContent()),
-            ],
+                  ],
+                ),
+                const SizedBox(width: 30),
+                Container(height: double.infinity, width: 1, color: Theme.of(context).colorScheme.onSurface),
+                Expanded(child: _buildContent()),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

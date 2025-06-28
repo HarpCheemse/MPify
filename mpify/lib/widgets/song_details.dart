@@ -29,7 +29,7 @@ class _SongDetailsState extends State<SongDetails> {
         height: 90,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(10)),
-          color: Colors.transparent,
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
           children: [
@@ -78,7 +78,7 @@ class _SongDetailsState extends State<SongDetails> {
                     child: Text(
                       name,
                       style: montserratStyle(
-                        color: Colors.white,
+                        context: context,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -102,7 +102,8 @@ class _SongDetailsState extends State<SongDetails> {
                     child: Text(
                       artist,
                       style: montserratStyle(
-                        color: Colors.grey,
+                        context: context,
+                        color: const Color.fromARGB(255, 111, 111, 111),
                         fontWeight: FontWeight.w400,
                         fontSize: 14,
                       ),
@@ -198,7 +199,7 @@ class _SongDetailsState extends State<SongDetails> {
                       );
                       return Text(
                         songProgress,
-                        style: montserratStyle(fontWeight: FontWeight.w300),
+                        style: montserratStyle(context: context ,fontWeight: FontWeight.w300),
                       );
                     },
                   ),
@@ -223,7 +224,7 @@ class _SongDetailsState extends State<SongDetails> {
                       );
                       return Text(
                         songDuration,
-                        style: montserratStyle(fontWeight: FontWeight.w300),
+                        style: montserratStyle(context: context,fontWeight: FontWeight.w300),
                       );
                     },
                   ),

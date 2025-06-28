@@ -40,7 +40,7 @@ class _SongsState extends State<Songs> {
         width: 800,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(10)),
-          color: const Color.fromARGB(255, 24, 24, 24),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
           children: [
@@ -54,7 +54,7 @@ class _SongsState extends State<Songs> {
                 gradient: LinearGradient(
                   colors: [
                     const Color.fromARGB(255, 4, 88, 156),
-                    Color.fromARGB(255, 24, 24, 24),
+                    Theme.of(context).colorScheme.surfaceContainer,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -76,11 +76,20 @@ class _SongsState extends State<Songs> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Playlist', style: montserratStyle(fontSize: 10)),
+                        Text(
+                          'Playlist',
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 10,
+                          ),
+                        ),
                         SizedBox(height: 5, width: 10),
                         Text(
                           context.watch<PlaylistModels>().selectedPlaylist,
-                          style: montserratStyle(fontSize: 24),
+                          style: montserratStyle(
+                            context: context,
+                            fontSize: 24,
+                          ),
                         ),
                       ],
                     ),
@@ -95,7 +104,7 @@ class _SongsState extends State<Songs> {
                 builder: (context, value, child) {
                   final songs = context.read<SongModels>();
                   return HoverButton(
-                    baseColor: Colors.green,
+                    baseColor: Colors.white,
                     borderRadius: 50,
                     onPressed: () {
                       songs.isPlaying
@@ -105,9 +114,10 @@ class _SongsState extends State<Songs> {
                     },
                     width: 60,
                     height: 60,
-                    hoverColor: const Color.fromARGB(255, 134, 212, 137),
+                    hoverColor: const Color.fromARGB(255, 206, 206, 206),
                     child: Icon(
                       songs.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.black,
                     ),
                   );
                 },
@@ -126,15 +136,15 @@ class _SongsState extends State<Songs> {
                   },
                   hintText: 'Search Name',
                   searchColor: Colors.transparent,
-                  fontColor: Colors.white,
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.search,
                 ),
               ),
             ),
             Positioned(
-              top: 130,
+              top: 125,
               left: 680,
               child: Consumer<SongModels>(
                 builder: (context, value, child) {
@@ -142,14 +152,18 @@ class _SongsState extends State<Songs> {
                     baseColor: Colors.transparent,
                     hoverColor: Colors.transparent,
                     key: sortByMenuKey,
-                    hoverFontColor: const Color.fromARGB(255, 144, 4, 4),
-                    text: 'Sorted by :=',
-                    textStyle: montserratStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey,
+                    borderRadius: 10,
+                    // ignore: sort_child_properties_last
+                    child: Center(
+                      child: Text(
+                        'Sorted by :=',
+                        style: montserratStyle(
+                          context: context,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    borderRadius: 0,
                     onPressed: () async {
                       final RenderBox button =
                           sortByMenuKey.currentContext!.findRenderObject()
@@ -172,56 +186,62 @@ class _SongsState extends State<Songs> {
                       final selected = await showMenu(
                         context: context,
                         position: position,
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.surface,
                         items: [
                           PopupMenuItem(
                             value: SortOption.newest,
                             child: Text(
                               'Newest Added',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                           PopupMenuItem(
                             value: SortOption.lastest,
                             child: Text(
                               'Lastest Added',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                           PopupMenuItem(
                             value: SortOption.nameAZ,
-                            child: Text('Name (A-Z)', style: montserratStyle()),
+                            child: Text(
+                              'Name (A-Z)',
+                              style: montserratStyle(context: context),
+                            ),
                           ),
                           PopupMenuItem(
                             value: SortOption.nameZA,
-                            child: Text('Name (Z-A)', style: montserratStyle()),
+                            child: Text(
+                              'Name (Z-A)',
+                              style: montserratStyle(context: context),
+                            ),
                           ),
                           PopupMenuItem(
                             value: SortOption.artistAZ,
                             child: Text(
                               'Artist (A-Z)',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                           PopupMenuItem(
                             value: SortOption.artistZA,
                             child: Text(
                               'Artist (Z-A)',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                           PopupMenuItem(
                             value: SortOption.durationLongest,
                             child: Text(
                               'Duration Longest',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                           PopupMenuItem(
                             value: SortOption.durationShortest,
                             child: Text(
                               'Duration Shortest',
-                              style: montserratStyle(),
+                              style: montserratStyle(context: context),
                             ),
                           ),
                         ],
@@ -237,46 +257,18 @@ class _SongsState extends State<Songs> {
                 },
               ),
             ),
-            positionedHeader(
-              180,
-              35,
-              '#',
-              16,
-              500,
-              const Color.fromARGB(255, 157, 157, 157),
-            ),
-            positionedHeader(
-              180,
-              150,
-              'Name',
-              14,
-              500,
-              const Color.fromARGB(255, 157, 157, 157),
-            ),
-            positionedHeader(
-              180,
-              490,
-              'Artist',
-              14,
-              500,
-              const Color.fromARGB(255, 157, 157, 157),
-            ),
-            positionedHeader(
-              180,
-              660,
-              'Duration',
-              14,
-              500,
-              const Color.fromARGB(255, 157, 157, 157),
-            ),
+            positionedHeader(context, 180, 35, '#', 16, 500, null),
+            positionedHeader(context, 180, 150, 'Name', 14, 500, null),
+            positionedHeader(context, 180, 490, 'Artist', 14, 500, null),
+            positionedHeader(context, 180, 660, 'Duration', 14, 500, null),
             Positioned(
               top: 110,
               left: 100,
               child: IconButton(
                 icon: Icon(Icons.shuffle_rounded),
                 color: context.watch<SongModels>().isShuffle
-                    ? Colors.green
-                    : Colors.grey,
+                    ? const Color.fromARGB(255, 44, 124, 47)
+                    : Colors.white,
                 iconSize: 30,
                 onPressed: () {
                   context.read<SongModels>().isShuffle
@@ -306,7 +298,10 @@ class _SongsState extends State<Songs> {
               top: 210,
               left: 20,
               right: 20,
-              child: Container(height: 1, color: Colors.grey),
+              child: Container(
+                height: 1,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             Positioned(
               top: 220,

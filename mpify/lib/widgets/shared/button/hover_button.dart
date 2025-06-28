@@ -68,7 +68,7 @@ class _HoverButtonState extends State<HoverButton> {
                 : widget.child ??
                       Text(
                         widget.text,
-                        style: widget.textStyle ?? montserratStyle(),
+                        style: widget.textStyle ?? montserratStyle(context: context),
                       ),
           ),
         ),

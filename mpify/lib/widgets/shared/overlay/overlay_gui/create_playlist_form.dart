@@ -38,6 +38,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
         child: Stack(
           children: [
             positionedHeader(
+              context,
               30,
               220,
               'New Playlist Folder',
@@ -77,7 +78,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Cancel', style: montserratStyle()),
+                  child: Text('Cancel', style: montserratStyle(context: context)),
                 ),
               ),
             ),
@@ -97,7 +98,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Create', style: montserratStyle()),
+                  child: Text('Create', style: montserratStyle(context: context)),
                 ),
               ),
             ),

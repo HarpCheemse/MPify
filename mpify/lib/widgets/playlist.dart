@@ -29,7 +29,7 @@ class _PlaylistState extends State<Playlist> {
         width: 350,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(10)),
-          color: const Color.fromARGB(255, 24, 24, 24),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
           children: [
@@ -38,7 +38,7 @@ class _PlaylistState extends State<Playlist> {
               left: 20,
               child: Text(
                 'Your Playlists',
-                style: montserratStyle(fontSize: 16),
+                style: montserratStyle(context: context,fontSize: 16),
               ),
             ),
             Positioned(
@@ -50,10 +50,10 @@ class _PlaylistState extends State<Playlist> {
                   controller: controller,
                   onChanged: (query) {},
                   hintText: 'Search Playlist',
-                  fontColor: const Color.fromARGB(255, 140, 140, 140),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.search,
                 ),
               ),
@@ -64,7 +64,7 @@ class _PlaylistState extends State<Playlist> {
               child: HoverButton(
                 baseColor: Colors.transparent,
                 hoverColor: const Color.fromARGB(105, 113, 113, 113),
-                textStyle: montserratStyle(),
+                textStyle: montserratStyle(context: context),
                 borderRadius: 5,
                 width: 320,
                 height: 70,
@@ -75,7 +75,7 @@ class _PlaylistState extends State<Playlist> {
                   children: [
                     Transform.translate(
                       offset: Offset(65, 25),
-                      child: Text('New Playlist', style: montserratStyle()),
+                      child: Text('New Playlist', style: montserratStyle(context: context)),
                     ),
                     Image.asset(
                       'assets/empty_folder.png',

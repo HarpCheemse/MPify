@@ -26,7 +26,7 @@ class CustomInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      style: montserratStyle(color: fontColor),
+      style: montserratStyle(context: context,color: fontColor),
       controller: controller,
       decoration: InputDecoration(
         hintText: hintText,

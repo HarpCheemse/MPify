@@ -9,6 +9,13 @@ enum SettingsCategory {
   about,
 }
 class SettingsModels extends ChangeNotifier {
+  bool _isOpenSettings = false;
+  bool get isOpenSettings => _isOpenSettings;
+  void flipIsOpenSetting() {
+    _isOpenSettings = !_isOpenSettings;
+    notifyListeners();
+  }
+
   SettingsCategory _selectedCategory = SettingsCategory.general;
   SettingsCategory get selectedCategory => _selectedCategory;
 
@@ -21,7 +28,7 @@ class SettingsModels extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   void toogleTheme(bool isDark) {
-    _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
+    _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 }

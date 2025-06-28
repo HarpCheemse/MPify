@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 
-
-
 Widget positionedHeader(
+  BuildContext context,
   double top,
   double left,
   String text,
   double fontSize,
   double fontWeight,
-  Color color,
+  Color? color,
 ) {
   final fontWeightMap = {
     100: FontWeight.w100,
@@ -29,9 +28,10 @@ Widget positionedHeader(
     child: Text(
       text,
       style: montserratStyle(
+        context: context,
         fontSize: fontSize,
         fontWeight: fontWeightMap[fontWeight] ?? FontWeight.normal,
-        color: color,
+        color: color ?? Theme.of(context).colorScheme.onSurface,
       ),
     ),
   );

@@ -2,12 +2,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 
 TextStyle montserratStyle({
-  Color color = Colors.white,
+  required BuildContext context,
+  Color? color,
   double fontSize = 14,
   FontWeight fontWeight = FontWeight.w700,
 }) {
   return GoogleFonts.montserrat(
-    color: color,
+    color: color ?? Theme.of(context).colorScheme.onSurface,
     fontSize: fontSize,
     fontWeight: fontWeight,
   );

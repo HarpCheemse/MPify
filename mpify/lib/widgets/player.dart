@@ -64,7 +64,6 @@ class _PlayerState extends State<Player> {
     Color.fromARGB(100, 0, 229, 255), // Electric Blue
   ];
   @override
-
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 10, top: 20),
@@ -88,7 +87,9 @@ class _PlayerState extends State<Player> {
             width: 350,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              color: (identifier == null) ? const Color.fromARGB(255, 24, 24, 24) : colorList[colorIndex],
+              color: (identifier == null)
+                  ? Theme.of(context).colorScheme.surfaceContainer
+                  : colorList[colorIndex],
             ),
             child: Column(
               children: [
@@ -145,7 +146,7 @@ class _PlayerState extends State<Player> {
                       child: Text(
                         name,
                         style: montserratStyle(
-                          color: Colors.white,
+                          context: context,
                           fontWeight: FontWeight.w700,
                           fontSize: 18,
                         ),
@@ -168,8 +169,7 @@ class _PlayerState extends State<Player> {
                       width: 300,
                       child: Text(
                         artist,
-                        style: montserratStyle(
-                          color: Colors.white,
+                        style: montserratStyle(context: context,
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
                         ),

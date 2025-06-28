@@ -37,7 +37,7 @@ class _CreateSongFormState extends State<CreateSongForm> {
         ),
         child: Stack(
           children: [
-            positionedHeader(30, 250, 'Create Song', 18, 600, Colors.white),
+            positionedHeader(context,30, 250, 'Create Song', 18, 600, Colors.white),
             Positioned(
               left: 45,
               top: 120,
@@ -88,7 +88,7 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Cancel', style: montserratStyle()),
+                  child: Text('Cancel', style: montserratStyle(context: context)),
                 ),
               ),
             ),
@@ -109,7 +109,7 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Create', style: montserratStyle()),
+                  child: Text('Create', style: montserratStyle(context: context)),
                 ),
               ),
             ),

@@ -25,17 +25,17 @@ class _EditLyricFormState extends State<EditLyricForm> {
   Widget build(BuildContext context) {
     return Material(
       borderRadius: BorderRadius.circular(10),
-      color: const Color.fromARGB(255, 43, 43, 43),
+      color: Theme.of(context).colorScheme.surface,
       child: Container(
         width: 600,
         height: 700,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 43, 43, 43),
+          color: Theme.of(context).colorScheme.surface,
         ),
         child: Stack(
           children: [
-            positionedHeader(30, 250, 'Edit Lyric', 18, 600, Colors.white),
+            positionedHeader(context, 30, 250, 'Edit Lyric', 18, 600, null),
             Positioned(
               left: 45,
               top: 120,
@@ -47,7 +47,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   textInputAction: TextInputAction.newline,
-                  style: montserratStyle(), 
+                  style: montserratStyle(context: context), 
                   decoration: InputDecoration(
                     hintText: 'Pase Song Lyric Here',
                     filled: true,
@@ -55,8 +55,8 @@ class _EditLyricFormState extends State<EditLyricForm> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.music_note_outlined, color: Colors.grey),
+                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    prefixIcon: Icon(Icons.music_note_outlined, color: Theme.of(context).colorScheme.onSurface),
                   ),
                 ),
               ),
@@ -75,7 +75,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Cancel', style: montserratStyle()),
+                  child: Text('Cancel', style: montserratStyle(context: context)),
                 ),
               ),
             ),
@@ -99,7 +99,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Create', style: montserratStyle()),
+                  child: Text('Create', style: montserratStyle(context: context)),
                 ),
               ),
             ),

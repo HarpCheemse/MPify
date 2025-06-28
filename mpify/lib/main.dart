@@ -5,7 +5,6 @@ import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/screen/home_screen.dart';
-import 'package:mpify/widgets/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -46,10 +45,28 @@ class MPify extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<SettingsModels>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        brightness: Brightness.light,
+        colorScheme: ColorScheme.light(
+          surface: Colors.white,
+          primary: Colors.lightBlueAccent,
+          onSurface: Colors.black,
+          surfaceContainer: const Color.fromARGB(255, 192, 192, 192)
+        ),
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.dark(
+          surface: Colors.black,
+          primary: Colors.teal,
+          onSurface: Colors.white,
+          surfaceContainer: const Color.fromARGB(255, 24, 24, 24),
+        )
+      ),
+      themeMode: themeProvider.themeMode,
       home: const HomeScreen(),
     );
   }

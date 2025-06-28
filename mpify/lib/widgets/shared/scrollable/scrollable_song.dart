@@ -39,7 +39,7 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
     final playlist = context.read<PlaylistModels>().selectedPlaylist;
     context.read<SongModels>().loadSong(playlist);
   }
-  
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -55,10 +55,10 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
       child: RawScrollbar(
         thumbVisibility: true,
         controller: _scrollController,
-        thumbColor: const Color.fromARGB(116, 255, 255, 255),
+        thumbColor: Theme.of(context).colorScheme.onSurface,
         radius: Radius.circular(5),
         thickness: 10,
-        trackVisibility: true,
+        trackVisibility: false,
         child: Consumer<SongModels>(
           builder: (context, songModels, child) {
             final songs = songModels.songsActive;
@@ -100,12 +100,17 @@ class Song extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coverPath = p.join(Directory.current.path, '..', 'cover', '$identifier.png');
+    final coverPath = p.join(
+      Directory.current.path,
+      '..',
+      'cover',
+      '$identifier.png',
+    );
     final imageExist = File(coverPath).existsSync();
     return HoverButton(
       baseColor: Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-      textStyle: montserratStyle(),
+      textStyle: montserratStyle(context: context),
       borderRadius: 5,
       width: 320,
       height: 70,
@@ -133,9 +138,9 @@ class Song extends StatelessWidget {
               child: Text(
                 '${index + 1}',
                 style: montserratStyle(
+                  context: context,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
                 ),
               ),
             ),
@@ -160,7 +165,7 @@ class Song extends StatelessWidget {
             height: 20,
             child: Text(
               songName,
-              style: montserratStyle(),
+              style: montserratStyle(context: context),
               overflow: TextOverflow.fade,
               maxLines: 1,
               softWrap: false,
@@ -175,7 +180,7 @@ class Song extends StatelessWidget {
               style: montserratStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey,
+                context: context,
               ),
             ),
           ),
@@ -188,14 +193,14 @@ class Song extends StatelessWidget {
               style: montserratStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey,
+                context: context,
               ),
             ),
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {},
-            icon: Icon(Icons.more_horiz, color: Colors.grey),
-            color: const Color.fromARGB(255, 53, 53, 53),
+            icon: Icon(Icons.more_horiz, color: Theme.of(context).colorScheme.onSurface),
+            color: Theme.of(context).colorScheme.surface,
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
                 onTap: () {
@@ -211,24 +216,28 @@ class Song extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, color: Colors.white,),
-                    SizedBox(width: 10,),
+                    Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.onSurface),
+                    SizedBox(width: 10),
                     Text(
-                  'edit',
-                  style: montserratStyle(color: Colors.white),
-                ),
+                      'edit',
+                      style: montserratStyle(
+                        context: context,
+                      ),
+                    ),
                   ],
-                )
+                ),
               ),
               PopupMenuItem<String>(
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, color: Colors.redAccent,),
-                    SizedBox(width: 10,),
+                    Icon(Icons.delete_outline, color: Colors.redAccent),
+                    SizedBox(width: 10),
                     Text(
-                  'Delete From Playlist',
-                  style: montserratStyle(color: Colors.white),
-                ),
+                      'Delete From Playlist',
+                      style: montserratStyle(
+                        context: context,
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
@@ -255,12 +264,14 @@ class Song extends StatelessWidget {
               PopupMenuItem<String>(
                 child: Row(
                   children: [
-                    Icon(Icons.delete, color: Colors.redAccent,),
-                    SizedBox(width: 10,),
+                    Icon(Icons.delete, color: Colors.redAccent),
+                    SizedBox(width: 10),
                     Text(
-                  'Delete From Device',
-                  style: montserratStyle(color: Colors.white),
-                ),
+                      'Delete From Device',
+                      style: montserratStyle(
+                        context: context,
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
