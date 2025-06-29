@@ -5,6 +5,7 @@ import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/screen/home_screen.dart';
+import 'package:mpify/utils/folder_ultis.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -14,6 +15,7 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<Scaffol
 void main() async {
   runZonedGuarded(
     () async {
+      await FolderUtils.clearLog();
       WidgetsFlutterBinding.ensureInitialized();
       await windowManager.ensureInitialized();
       windowManager.waitUntilReadyToShow().then((_) async {

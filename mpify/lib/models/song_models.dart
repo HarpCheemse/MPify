@@ -68,7 +68,8 @@ class SongModels extends ChangeNotifier {
     _sortOption = option;
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('sortOption', option.name);
-    applySort(option);
+    applySortActivePlaylist(option);
+    applySortBackgroundPlaylist(option);
   }
 
   bool _isShuffle = true;
@@ -138,7 +139,8 @@ class SongModels extends ChangeNotifier {
       return;
     }
     _songsActive = await PlaylistUltis.parsePlaylistJSON(playlistFile);
-    applySort(_sortOption);
+    applySortActivePlaylist(_sortOption);
+    applySortBackgroundPlaylist(_sortOption);
     if (_isShuffle) {
       shuffleSongs(_currentSongIndex);
     }
@@ -169,20 +171,10 @@ class SongModels extends ChangeNotifier {
     if (_isShuffle) {
       shuffleSongs(_currentSongIndex);
     }
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-      'backgroundSong',
-      jsonEncode(_songsBackground.map((song) => song.toJson()).toList()),
-    );
   }
 
   void setSongBackGround(List<Song> songs) async {
     _songsBackground = songs;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-      'backgroundSong',
-      jsonEncode(_songsBackground.map((song) => song.toJson()).toList()),
-    );
     notifyListeners();
   }
 
@@ -208,8 +200,9 @@ class SongModels extends ChangeNotifier {
   Future<void> playNextSong() async {
     if (_songsBackground.isEmpty) return;
     setIsPlaying(true);
-    if (_currentSongIndex < 0 || _currentSongIndex > _songsBackground.length)
+    if (_currentSongIndex < 0 || _currentSongIndex > _songsBackground.length) {
       return;
+    }
     if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
     } else {
@@ -221,8 +214,9 @@ class SongModels extends ChangeNotifier {
 
   Future<void> playPreviousSong() async {
     if (_songsBackground.isEmpty) return;
-    if (_currentSongIndex < 0 || currentSongIndex > _songsBackground.length)
+    if (_currentSongIndex < 0 || currentSongIndex > _songsBackground.length) {
       return;
+    }
     if (_currentSongIndex - 1 >= 0) {
       _currentSongIndex--;
     } else {
@@ -251,7 +245,7 @@ class SongModels extends ChangeNotifier {
   void unshuffleSongs() async {
     if (_songsBackground.isEmpty) return;
     String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
-    applySort(_sortOption);
+    applySortBackgroundPlaylist(_sortOption);
     for (int i = 0; i < _songsBackground.length; i++) {
       if (_songsBackground[i].identifier == prevSongIdentifier) {
         _currentSongIndex = i;
@@ -266,6 +260,11 @@ class SongModels extends ChangeNotifier {
 
   Duration get songDuration => _songDuration;
   Duration get songProgress => _songProgress;
+
+  void setSongDurationZero() {
+    _songDuration = Duration.zero;
+    _songProgress = Duration.zero;
+  }
 
   final _audioPlayer = AudioUtils.player;
 
@@ -295,15 +294,10 @@ class SongModels extends ChangeNotifier {
     notifyListeners();
   }
 
-  void applySort(SortOption option) async {
-    if (_songsBackground.isEmpty || _songsActive.isEmpty) return;
-    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
+  void applySortActivePlaylist(SortOption option) async {
     switch (option) {
       case SortOption.nameAZ:
         _songsActive.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        _songsBackground.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
         );
         break;
@@ -311,13 +305,8 @@ class SongModels extends ChangeNotifier {
         _songsActive.sort(
           (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
         );
-        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
-        break;
       case SortOption.artistAZ:
         _songsActive.sort(
-          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
-        );
-        _songsBackground.sort(
           (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
         );
         break;
@@ -325,25 +314,15 @@ class SongModels extends ChangeNotifier {
         _songsActive.sort(
           (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
         );
-        _songsBackground.sort(
-          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
-        );
         break;
       case SortOption.lastest:
         _songsActive.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
-        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
         break;
       case SortOption.newest:
         _songsActive.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
-        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
         break;
       case SortOption.durationLongest:
         _songsActive.sort(
-          (a, b) => StringUltis.getDurationFromString(
-            b.duration,
-          ).compareTo(StringUltis.getDurationFromString(a.duration)),
-        );
-        _songsBackground.sort(
           (a, b) => StringUltis.getDurationFromString(
             b.duration,
           ).compareTo(StringUltis.getDurationFromString(a.duration)),
@@ -355,6 +334,47 @@ class SongModels extends ChangeNotifier {
             a.duration,
           ).compareTo(StringUltis.getDurationFromString(b.duration)),
         );
+        break;
+    }
+    notifyListeners();
+  }
+
+  void applySortBackgroundPlaylist(SortOption option) async {
+    if (_songsBackground.isEmpty) return;
+    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
+    switch (option) {
+      case SortOption.nameAZ:
+        _songsBackground.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.nameZA:
+        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case SortOption.artistAZ:
+        _songsBackground.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.artistZA:
+        _songsBackground.sort(
+          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.lastest:
+        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        break;
+      case SortOption.newest:
+        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        break;
+      case SortOption.durationLongest:
+        _songsBackground.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+        );
+        break;
+      case SortOption.durationShortest:
         _songsBackground.sort(
           (a, b) => StringUltis.getDurationFromString(
             a.duration,

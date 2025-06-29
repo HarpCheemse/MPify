@@ -194,6 +194,7 @@ class FolderUtils {
     //zip file
     await Future.delayed(Duration(milliseconds: 500));
     try {
+      // ignore: prefer_interpolation_to_compose_strings
       final String zipPath = backupFolder.path + '.zip';
       final File zipFile = File(zipPath);
       await zipFolder(backupFolder, zipFile);
@@ -350,6 +351,16 @@ class FolderUtils {
       await logFile.writeAsString('$messege\n', mode: FileMode.append);
     } catch (e) {
       debugPrint('Error: $e. Unable to write log');
+    }
+  }
+  static Future<void> clearLog() async {
+    final Directory current = Directory.current;
+    final File logFile = File(p.join(current.path, '..', 'log.txt'));
+    try {
+      await logFile.writeAsString('', mode: FileMode.write);
+    }
+    catch (e) {
+      MiscUtils.showWarning('Warning: Unable To Clear Log.txt');
     }
   }
 }

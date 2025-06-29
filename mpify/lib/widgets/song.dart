@@ -124,6 +124,7 @@ class _SongsState extends State<Songs> {
 
                         final songsBackground = songModels.songsBackground;
                         if (songsBackground.isEmpty) {
+                          songs.setSongDurationZero();
                           await AudioUtils.stopSong();
                           return;
                         }

@@ -61,16 +61,9 @@ class SettingsModels extends ChangeNotifier {
         context.read<SongModels>().setSongsActive(activeSong);
       });
     }
-    final backgroundSongJson = prefs.getString('backgroundSong');
-    if (backgroundSongJson != null) {
-      final List<dynamic> songs = jsonDecode(backgroundSongJson);
-      final backgroundSong = songs.map((song) => Song.fromJson(song)).toList();
-      context.read<SongModels>().setSongBackGround(backgroundSong);
-    }
-
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SongModels>().applySort(sortOption);
+      context.read<SongModels>().applySortActivePlaylist(sortOption);
     });
   }
 }
