@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:provider/provider.dart';
@@ -115,9 +117,11 @@ class Song extends StatelessWidget {
       width: 320,
       height: 70,
       onPressed: () async {
+        context.read<PlaylistModels>().setPlayingPlaylist();
         final songModels = context.read<SongModels>();
         await songModels
             .loadActivePlaylistSong(); //copy activeSong to background song
+            
         final songsBackground = songModels.songsBackground;
 
         songModels.getSongIndex(identifier);
@@ -127,7 +131,8 @@ class Song extends StatelessWidget {
             songsBackground[songModels.currentSongIndex].identifier,
           );
         } catch (e) {
-          debugPrint('error playing audio: $e');
+          MiscUtils.showError('Error: Unable To Play Audio');
+          FolderUtils.writeLog('Error: $e. Unable To Play Audio');
         }
       },
       child: Row(

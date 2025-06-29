@@ -8,6 +8,9 @@ import 'package:mpify/screen/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   runZonedGuarded(
     () async {
@@ -23,7 +26,15 @@ void main() async {
             providers: [
               ChangeNotifierProvider(create: (_) => PlaylistModels()),
               ChangeNotifierProvider(create: (_) => SongModels()),
-              ChangeNotifierProvider(create: (_) => SettingsModels())
+              ChangeNotifierProvider(
+                create: (context) {
+                  final settingsModel = SettingsModels();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    settingsModel.loadAllPrefs(context);
+                  });
+                  return settingsModel;
+                },
+              ),
             ],
             child: MPify(),
           ),
@@ -54,7 +65,7 @@ class MPify extends StatelessWidget {
           surface: Colors.white,
           primary: Colors.lightBlueAccent,
           onSurface: Colors.black,
-          surfaceContainer: const Color.fromARGB(255, 192, 192, 192)
+          surfaceContainer: const Color.fromARGB(255, 221, 221, 221),
         ),
       ),
       darkTheme: ThemeData(
@@ -64,9 +75,11 @@ class MPify extends StatelessWidget {
           primary: Colors.teal,
           onSurface: Colors.white,
           surfaceContainer: const Color.fromARGB(255, 24, 24, 24),
-        )
+        ),
       ),
       themeMode: themeProvider.themeMode,
+      navigatorKey: navigatorKey,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       home: const HomeScreen(),
     );
   }

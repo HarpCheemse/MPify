@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/settings_models.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:mpify/widgets/homebar.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 
-final String APP_VERSION = "1.0.0";
-final String AUTHOR = "HarpCheemse";
-final List<String> CONTRIBUTOR = [];
+const String appVersion = "1.0.0";
+const String author = "HarpCheemse";
+const List<String> contributor = [];
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -46,6 +48,42 @@ class _SettingsState extends State<Settings> {
                 ),
               ],
             ),
+            const SizedBox(height: 10,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(
+                  'Reset Setting',
+                  style: montserratStyle(
+                    context: context,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                HoverButton(
+                  baseColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  borderRadius: 10,
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    prefs.clear();
+                    MiscUtils.showSuccess('Settings Reset');
+                  },
+                  width: 50,
+                  height: 50,
+                  child: Center(
+                    child: Text(
+                      'Reset',
+                      style: montserratStyle(
+                        context: context,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       case SettingsCategory.audio:
@@ -76,7 +114,7 @@ class _SettingsState extends State<Settings> {
           ],
         );
       case SettingsCategory.about:
-        return Container(
+        return SizedBox(
           width: 100,
           height: 700,
           child: Column(
@@ -87,21 +125,23 @@ class _SettingsState extends State<Settings> {
                 style: montserratStyle(context: context, fontSize: 30),
               ),
               Text(
-                'Version: $APP_VERSION',
+                'Version: $appVersion',
                 style: montserratStyle(context: context),
               ),
-              Text('Author: $AUTHOR', style: montserratStyle(context: context)),
+              Text('Author: $author', style: montserratStyle(context: context)),
               Text(
                 'License: Licensed under the MIT Liscense',
                 style: montserratStyle(context: context),
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(height: 10),
               HoverButton(
                 baseColor: Colors.transparent,
                 hoverColor: Colors.transparent,
                 borderRadius: 10,
                 onPressed: () async {
-                  final url = Uri.parse('https://github.com/HarpCheemse/MPify/blob/main/LICENSE');
+                  final url = Uri.parse(
+                    'https://github.com/HarpCheemse/MPify/blob/main/LICENSE',
+                  );
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url);
                   }
@@ -116,7 +156,7 @@ class _SettingsState extends State<Settings> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(height: 10),
               HoverButton(
                 baseColor: Colors.transparent,
                 hoverColor: Colors.transparent,
@@ -137,13 +177,15 @@ class _SettingsState extends State<Settings> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(height: 10),
               HoverButton(
                 baseColor: Colors.transparent,
                 hoverColor: Colors.transparent,
                 borderRadius: 10,
                 onPressed: () async {
-                  final url = Uri.parse('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1&pp=ygUJcmljayByb2xsoAcB');
+                  final url = Uri.parse(
+                    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1&pp=ygUJcmljayByb2xsoAcB',
+                  );
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url);
                   }

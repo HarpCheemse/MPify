@@ -27,17 +27,17 @@ class _CreateSongFormState extends State<CreateSongForm> {
   Widget build(BuildContext context) {
     return Material(
       borderRadius: BorderRadius.circular(10),
-      color: const Color.fromARGB(255, 43, 43, 43),
+      color: Theme.of(context).colorScheme.surfaceContainer,
       child: Container(
         width: 600,
         height: 400,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 43, 43, 43),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
           children: [
-            positionedHeader(context,30, 250, 'Create Song', 18, 600, Colors.white),
+            positionedHeader(context,30, 250, 'Create Song', 18, 600, null),
             Positioned(
               left: 45,
               top: 120,
@@ -48,10 +48,10 @@ class _CreateSongFormState extends State<CreateSongForm> {
                   onChanged: (query) {},
                   controller: name,
                   hintText: 'Song Name',
-                  fontColor: const Color.fromARGB(255, 255, 255, 255),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.add,
                 ),
               ),
@@ -66,10 +66,10 @@ class _CreateSongFormState extends State<CreateSongForm> {
                   onChanged: (query) {},
                   controller: link,
                   hintText: 'Song Link',
-                  fontColor: const Color.fromARGB(255, 255, 255, 255),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor:  Theme.of(context).colorScheme.onSurface,
+                  hintColor:  Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor:  Theme.of(context).colorScheme.onSurface,
                   icon: Icons.add,
                 ),
               ),

@@ -135,7 +135,7 @@ class _SongDetailsState extends State<SongDetails> {
                     child: IconButton(
                       icon: Icon(Icons.fast_rewind, color: Colors.white),
                       onPressed: () {
-                        AudioUtils.skipBackward();
+                        AudioUtils.skipBackward(context);
                       },
                     ),
                   ),
@@ -171,7 +171,7 @@ class _SongDetailsState extends State<SongDetails> {
                       icon: Icon(Icons.fast_forward),
                       color: Colors.white,
                       onPressed: () {
-                        AudioUtils.skipForward();
+                        AudioUtils.skipForward(context);
                       },
                     ),
                   ),

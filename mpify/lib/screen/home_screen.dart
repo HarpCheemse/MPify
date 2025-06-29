@@ -11,8 +11,6 @@ import 'package:mpify/widgets/player.dart';
 import 'package:mpify/widgets/song_details.dart';
 import 'package:provider/provider.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 

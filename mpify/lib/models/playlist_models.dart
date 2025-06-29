@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlaylistModels extends ChangeNotifier{
   String _selectedPlaylist = 'Playlist Name';
   bool _isPlayerOpen = true;
+
+  String _playingPlaylist = '';
+  String get playingPlaylist => _playingPlaylist;
+  void setPlayingPlaylist() {
+    _playingPlaylist = _selectedPlaylist;
+  }
   
   String get selectedPlaylist => _selectedPlaylist;
   List<String> _playlists = [];
@@ -11,8 +18,9 @@ class PlaylistModels extends ChangeNotifier{
 
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+  
 
-  void updateSongSearchQuery(query) {
+  void updateSongSearchQuery(query) async {
     _searchQuery = query;
     notifyListeners();
   }
@@ -29,8 +37,10 @@ class PlaylistModels extends ChangeNotifier{
   }
 
 
-  void setSelectedPlaylist(String name){
+  void setSelectedPlaylist(String name) async{
     _selectedPlaylist = name;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedPlaylist', name);
     notifyListeners();
   }
   

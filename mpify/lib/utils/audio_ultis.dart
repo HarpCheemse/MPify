@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/misc_utils.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:audioplayers/audioplayers.dart';
 
 import 'package:mpify/utils/folder_ultis.dart';
+import 'package:provider/provider.dart';
 
 class AudioUtils {
   static final AudioPlayer player = AudioPlayer();
@@ -105,7 +108,8 @@ class AudioUtils {
     }
   }
 
-  static Future<void> skipForward() async {
+  static Future<void> skipForward(BuildContext context) async {
+    if (context.read<SongModels>().songDuration.inSeconds <= 0) return;
     try {
       final position = await player.getCurrentPosition();
       if (position != null) {
@@ -117,7 +121,8 @@ class AudioUtils {
     }
   }
 
-  static Future<void> skipBackward() async {
+  static Future<void> skipBackward(BuildContext context) async {
+    if (context.read<SongModels>().songDuration.inSeconds <= 0) return;
     try {
       final position = await player.getCurrentPosition();
       if (position != null) {

@@ -1,5 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
@@ -101,23 +105,63 @@ class _SongsState extends State<Songs> {
               top: 100,
               left: 10,
               child: Consumer<SongModels>(
-                builder: (context, value, child) {
-                  final songs = context.read<SongModels>();
+                builder: (context, songs, child) {
                   return HoverButton(
                     baseColor: Colors.white,
                     borderRadius: 50,
-                    onPressed: () {
-                      songs.isPlaying
-                          ? AudioUtils.pauseSong()
-                          : AudioUtils.resumeSong();
-                      songs.flipIsPlaying();
+                    onPressed: () async {
+                      if (context.read<PlaylistModels>().selectedPlaylist ==
+                          context.read<PlaylistModels>().playingPlaylist) {
+                        songs.isPlaying
+                            ? AudioUtils.pauseSong()
+                            : AudioUtils.resumeSong();
+                        songs.flipIsPlaying();
+                      } else {
+                        context.read<PlaylistModels>().setPlayingPlaylist();
+                        final songModels = context.read<SongModels>();
+                        await songModels
+                            .loadActivePlaylistSong(); //copy activeSong to background song
+
+                        final songsBackground = songModels.songsBackground;
+                        if (songsBackground.isEmpty) {
+                          await AudioUtils.stopSong();
+                          return;
+                        }
+                        final randomIndex = Random().nextInt(
+                          songsBackground.length,
+                        );
+                        final identifier =
+                            songsBackground[randomIndex].identifier;
+                        songModels.getSongIndex(identifier);
+                        songModels.setIsPlaying(true);
+                        try {
+                          AudioUtils.playSong(
+                            songsBackground[songModels.currentSongIndex]
+                                .identifier,
+                          );
+                        } catch (e) {
+                          MiscUtils.showError('Error: Unable To Play Audio');
+                          FolderUtils.writeLog(
+                            'Error: $e. Unable To Play Audio',
+                          );
+                        }
+                      }
                     },
                     width: 60,
                     height: 60,
                     hoverColor: const Color.fromARGB(255, 206, 206, 206),
-                    child: Icon(
-                      songs.isPlaying ? Icons.pause : Icons.play_arrow,
-                      color: Colors.black,
+                    child: Consumer<PlaylistModels>(
+                      builder: (context, playlist, child) {
+                        return Icon(
+                          (playlist.selectedPlaylist ==
+                                  playlist.playingPlaylist)
+                              ? (songs.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow)
+                              : Icons.play_arrow,
+                          color: Colors.black,
+                        );
+                      },
                     ),
                   );
                 },

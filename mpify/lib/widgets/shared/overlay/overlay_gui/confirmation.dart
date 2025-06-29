@@ -31,7 +31,7 @@ class _ConfirmationState extends State<Confirmation> {
         height: 250,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 43, 43, 43),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Column(
           children: [

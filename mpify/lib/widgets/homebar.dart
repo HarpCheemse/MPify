@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Homebar extends StatelessWidget {
+  const Homebar({super.key});
   @override
   Widget build(BuildContext context) {
     return SizedBox(

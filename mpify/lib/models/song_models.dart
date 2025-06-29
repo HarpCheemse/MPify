@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/utils/string_ultis.dart';
@@ -7,6 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/audio_ultis.dart';
 import 'dart:math';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Song {
   final String name;
@@ -23,6 +27,26 @@ class Song {
     required this.dateAdded,
     required this.identifier,
   });
+  factory Song.fromJson(Map<String, dynamic> json) {
+    return Song(
+      name: json['name'],
+      link: json['link'],
+      duration: json['duration'],
+      artist: json['artist'],
+      dateAdded: DateTime.parse(json['dateAdded']),
+      identifier: json['identifier'],
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'link': link,
+      'duration': duration,
+      'artist': artist,
+      'dateAdded': dateAdded.toIso8601String(),
+      'identifier': identifier,
+    };
+  }
 }
 
 enum SortOption {
@@ -39,21 +63,34 @@ enum SortOption {
 class SongModels extends ChangeNotifier {
   SortOption _sortOption = SortOption.newest;
   SortOption get sortOption => _sortOption;
-  
 
-  void updateSortOption(SortOption option) {
+  void updateSortOption(SortOption option) async {
     _sortOption = option;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('sortOption', option.name);
     applySort(option);
   }
 
   bool _isShuffle = true;
   bool get isShuffle => _isShuffle;
-  void flipIsShuffle() {
+  void flipIsShuffle() async {
     _isShuffle = !_isShuffle;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isShuffle', _isShuffle);
+    notifyListeners();
+  }
+
+  void setIsShuffe(isShuffle) {
+    _isShuffle = isShuffle;
     notifyListeners();
   }
 
   List<Song> _songsActive = []; //change when click on playlist
+  void setSongsActive(List<Song> songs) {
+    _songsActive = songs;
+    notifyListeners();
+  }
+
   List<Song> _songsBackground =
       []; //unchange till click on a song in a another playlist
 
@@ -77,6 +114,7 @@ class SongModels extends ChangeNotifier {
   int _currentSongIndex = 0;
   int get currentSongIndex => _currentSongIndex;
 
+  //find the song idex from list after choose a random song by hand
   Future<void> getSongIndex(songIdentifier) async {
     final index = _songsBackground.indexWhere(
       (song) => song.identifier == songIdentifier,
@@ -89,8 +127,6 @@ class SongModels extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getSongIdentifier() async {}
-
   Future<void> loadSong(String playlist) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
     final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
@@ -102,10 +138,20 @@ class SongModels extends ChangeNotifier {
       return;
     }
     _songsActive = await PlaylistUltis.parsePlaylistJSON(playlistFile);
+    applySort(_sortOption);
+    if (_isShuffle) {
+      shuffleSongs(_currentSongIndex);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+      'activeSong',
+      jsonEncode(_songsActive.map((song) => song.toJson()).toList()),
+    );
     notifyListeners();
   }
 
   Future<void> loadActivePlaylistSong() async {
+    if (_songsActive.isEmpty) _songsBackground = [];
     // start when click on a song of active playlist
     _songsBackground = _songsActive
         .map(
@@ -119,9 +165,25 @@ class SongModels extends ChangeNotifier {
           ),
         )
         .toList();
-        if(_isShuffle) {
-          shuffleSongs(_currentSongIndex);
-        }
+    //shufle background except the current index
+    if (_isShuffle) {
+      shuffleSongs(_currentSongIndex);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+      'backgroundSong',
+      jsonEncode(_songsBackground.map((song) => song.toJson()).toList()),
+    );
+  }
+
+  void setSongBackGround(List<Song> songs) async {
+    _songsBackground = songs;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+      'backgroundSong',
+      jsonEncode(_songsBackground.map((song) => song.toJson()).toList()),
+    );
+    notifyListeners();
   }
 
   String _searchQuery = '';
@@ -144,31 +206,33 @@ class SongModels extends ChangeNotifier {
   }
 
   Future<void> playNextSong() async {
+    if (_songsBackground.isEmpty) return;
     setIsPlaying(true);
-    if (_currentSongIndex == -1) return;
+    if (_currentSongIndex < 0 || _currentSongIndex > _songsBackground.length)
+      return;
     if (_currentSongIndex + 1 < _songsBackground.length) {
       _currentSongIndex++;
-      notifyListeners();
     } else {
       _currentSongIndex = 0;
-      notifyListeners();
     }
+    notifyListeners();
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 
   Future<void> playPreviousSong() async {
-    if (_currentSongIndex == -1) return;
+    if (_songsBackground.isEmpty) return;
+    if (_currentSongIndex < 0 || currentSongIndex > _songsBackground.length)
+      return;
     if (_currentSongIndex - 1 >= 0) {
       _currentSongIndex--;
-      notifyListeners();
     } else {
       _currentSongIndex = _songsBackground.length - 1;
-      notifyListeners();
     }
     await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
   }
 
   void shuffleSongs(int fixedIndex) {
+    if (fixedIndex < 0 && fixedIndex > songsBackground.length) return;
     final rand = Random();
     for (int i = 0; i < _songsBackground.length; i++) {
       if (i == fixedIndex) continue;
@@ -180,12 +244,12 @@ class SongModels extends ChangeNotifier {
       _songsBackground[i] = _songsBackground[j];
       _songsBackground[j] = temp;
     }
-
     notifyListeners();
   }
 
-  void unshuffleSongs() {
-    if(_songsBackground.isEmpty) return;
+  //get current index, sort it, and bind _currentIndex to new index
+  void unshuffleSongs() async {
+    if (_songsBackground.isEmpty) return;
     String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
     applySort(_sortOption);
     for (int i = 0; i < _songsBackground.length; i++) {
@@ -194,7 +258,6 @@ class SongModels extends ChangeNotifier {
         break;
       }
     }
-
     notifyListeners();
   }
 
@@ -222,12 +285,19 @@ class SongModels extends ChangeNotifier {
   }
 
   void seek(Duration position) {
-    _audioPlayer.seek(position);
-    _songProgress = position;
+    if (songDuration.inSeconds <= 0) return;
+    try {
+      _audioPlayer.seek(position);
+      _songProgress = position;
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Seek To $position.');
+    }
     notifyListeners();
   }
 
-  void applySort(SortOption option) {
+  void applySort(SortOption option) async {
+    if (_songsBackground.isEmpty || _songsActive.isEmpty) return;
+    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
     switch (option) {
       case SortOption.nameAZ:
         _songsActive.sort(
@@ -270,27 +340,33 @@ class SongModels extends ChangeNotifier {
       case SortOption.durationLongest:
         _songsActive.sort(
           (a, b) => StringUltis.getDurationFromString(
-            a.duration,
-          ).compareTo(StringUltis.getDurationFromString(b.duration)),
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
         );
         _songsBackground.sort(
           (a, b) => StringUltis.getDurationFromString(
-            a.duration,
-          ).compareTo(StringUltis.getDurationFromString(b.duration)),
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
         );
         break;
       case SortOption.durationShortest:
         _songsActive.sort(
           (a, b) => StringUltis.getDurationFromString(
-            b.duration,
-          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+            a.duration,
+          ).compareTo(StringUltis.getDurationFromString(b.duration)),
         );
         _songsBackground.sort(
           (a, b) => StringUltis.getDurationFromString(
-            b.duration,
-          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+            a.duration,
+          ).compareTo(StringUltis.getDurationFromString(b.duration)),
         );
         break;
+    }
+    for (int i = 0; i < _songsBackground.length; i++) {
+      if (_songsBackground[i].identifier == prevSongIdentifier) {
+        _currentSongIndex = i;
+        break;
+      }
     }
     notifyListeners();
   }

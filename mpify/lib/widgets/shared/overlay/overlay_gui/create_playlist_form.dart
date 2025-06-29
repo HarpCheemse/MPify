@@ -27,13 +27,13 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
   Widget build(BuildContext context) {
     return Material(
       borderRadius: BorderRadius.circular(10),
-      color: const Color.fromARGB(255, 43, 43, 43),
+      color: Theme.of(context).colorScheme.surfaceContainer,
       child: Container(
         width: 600,
         height: 400,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 43, 43, 43),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
           children: [
@@ -44,7 +44,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
               'New Playlist Folder',
               18,
               600,
-              Colors.white,
+              null
             ),
             Positioned(
               top: 120,
@@ -56,10 +56,10 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
                   onChanged: (query) {},
                   controller: controller,
                   hintText: 'Playlist Name',
-                  fontColor: const Color.fromARGB(255, 255, 255, 255),
-                  hintColor: const Color.fromARGB(255, 140, 140, 140),
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: const Color.fromARGB(255, 140, 140, 140),
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.add,
                 ),
               ),
@@ -69,7 +69,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
               left: 400,
               child: HoverButton(
                 baseColor: Colors.transparent,
-                borderRadius: 0,
+                borderRadius: 10,
                 onPressed: () {
                   OverlayController.hideOverlay();
                 },
@@ -88,7 +88,7 @@ class _CreatePlaylistFormState extends State<CreatePlaylistForm> {
               child: HoverButton(
                 baseColor: Colors.transparent,
                 hoverColor: Colors.transparent,
-                borderRadius: 0,
+                borderRadius: 10,
                 onPressed: () {
                   final folderName = controller.text;
                   FolderUtils.createPlaylistFolder(folderName);

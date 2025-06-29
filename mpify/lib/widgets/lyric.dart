@@ -7,6 +7,7 @@ import 'package:mpify/widgets/shared/overlay/overlay_gui/edit_lyric_form.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mpify/utils/string_ultis.dart';
+
 class Lyric extends StatefulWidget {
   const Lyric({super.key});
   @override
@@ -85,7 +86,7 @@ class _LyricState extends State<Lyric> {
             width: 350,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              color: colorList[colorIndex]
+              color: colorList[colorIndex],
             ),
             child: Column(
               children: [
@@ -96,13 +97,18 @@ class _LyricState extends State<Lyric> {
                     height: 520,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: Colors.transparent
+                      color: Colors.transparent,
                     ),
                     child: Center(
                       child: Selector<SongModels, String>(
-                        selector: (_, model) => model
-                            .songsBackground[model.currentSongIndex]
-                            .identifier,
+                        selector: (_, model) {
+                          if (model.songsBackground.isEmpty) {
+                            return '';
+                          }
+                          return model
+                              .songsBackground[model.currentSongIndex]
+                              .identifier;
+                        },
                         builder: (context, identifier, child) {
                           return FutureBuilder<String?>(
                             future: FolderUtils.getSongLyric(identifier),

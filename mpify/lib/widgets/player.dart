@@ -73,7 +73,12 @@ class _PlayerState extends State<Player> {
           if (songs.isEmpty) {
             return null;
           } else {
+           if (model.currentSongIndex != -1) {
             return songs[model.currentSongIndex].identifier;
+           }
+           else {
+            return null;
+           }
           }
         },
         builder: (context, identifier, child) {
@@ -200,7 +205,7 @@ class _PlayerState extends State<Player> {
                         child: IconButton(
                           icon: Icon(Icons.fast_rewind, color: Colors.white),
                           onPressed: () {
-                            AudioUtils.skipBackward();
+                            AudioUtils.skipBackward(context);
                           },
                         ),
                       ),
@@ -243,7 +248,7 @@ class _PlayerState extends State<Player> {
                           icon: Icon(Icons.fast_forward),
                           color: Colors.white,
                           onPressed: () {
-                            AudioUtils.skipForward();
+                            AudioUtils.skipForward(context);
                           },
                         ),
                       ),

@@ -22,6 +22,7 @@ dependencies:
   window_manager: 
   top_snackbar_flutter: ^3.3.0
   url_launcher: 
+  shared_preferences: 
 
 
 dev_dependencies:
