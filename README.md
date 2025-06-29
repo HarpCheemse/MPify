@@ -15,7 +15,10 @@ attempts to profit from copyrighted material using this tool.
 - Lightweight and minimal UI.  
   
 # Screenshot  
-![MPify UI Preview](/mpify/assets/example.png)  
+![MPify UI Preview](/mpify/assets/example_1.png)  
+![MPify UI Preview](/mpify/assets/example_2.png)  
+![MPify UI Preview](/mpify/assets/example_3.png)  
+![MPify UI Preview](/mpify/assets/example_4.png)  
   
 # Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install)  
