@@ -66,8 +66,13 @@ class SongModels extends ChangeNotifier {
 
   void updateSortOption(SortOption option) async {
     _sortOption = option;
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
     prefs.setString('sortOption', option.name);
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Saved Sort Option Prefs');
+    }
     applySortActivePlaylist(option);
     applySortBackgroundPlaylist(option);
   }
@@ -76,8 +81,13 @@ class SongModels extends ChangeNotifier {
   bool get isShuffle => _isShuffle;
   void flipIsShuffle() async {
     _isShuffle = !_isShuffle;
-    final prefs = await SharedPreferences.getInstance();
+    try {
+       final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isShuffle', _isShuffle);
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Saved Shuffle Prefs');
+    }
     notifyListeners();
   }
 
@@ -144,11 +154,16 @@ class SongModels extends ChangeNotifier {
     if (_isShuffle) {
       shuffleSongs(_currentSongIndex);
     }
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
     prefs.setString(
       'activeSong',
       jsonEncode(_songsActive.map((song) => song.toJson()).toList()),
     );
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Save Active Playlist Prefs');
+    }
     notifyListeners();
   }
 

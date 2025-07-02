@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,13 +30,25 @@ class SettingsModels extends ChangeNotifier {
 
   void toogleTheme(bool isDark) async {
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isDarkmode', isDark);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isDarkmode', isDark);
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Saved Dark Mode Prefs');
+    }
+    
     notifyListeners();
   }
 
   Future<void> loadAllPrefs(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable to Load Prefs');
+      return;
+    }
     final selectedPlaylist =
         prefs.getString('selectedPlaylist') ?? 'Playlist Name';
     if (!context.mounted) return;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/utils/folder_ultis.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlaylistModels extends ChangeNotifier{
@@ -39,8 +40,13 @@ class PlaylistModels extends ChangeNotifier{
 
   void setSelectedPlaylist(String name) async{
     _selectedPlaylist = name;
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
     prefs.setString('selectedPlaylist', name);
+    }
+    catch (e) {
+      FolderUtils.writeLog('Error: $e. Unable To Save Selected Playlist Pref');
+    }
     notifyListeners();
   }
   

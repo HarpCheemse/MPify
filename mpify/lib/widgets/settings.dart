@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/settings_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/misc_utils.dart';
 import 'package:mpify/widgets/homebar.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
@@ -65,10 +66,15 @@ class _SettingsState extends State<Settings> {
                   hoverColor: Colors.transparent,
                   borderRadius: 10,
                   onPressed: () async {
-                    final prefs = await SharedPreferences.getInstance();
+                    try {
+                      final prefs = await SharedPreferences.getInstance();
                     prefs.clear();
                     MiscUtils.showSuccess('Settings Reset');
-                  },
+                    }
+                    catch (e) {
+                      FolderUtils.writeLog('Error: $e. Error Reset Prefs');
+                    }
+                   },
                   width: 50,
                   height: 50,
                   child: Center(

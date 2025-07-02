@@ -166,12 +166,7 @@ class PlaylistFolder extends StatelessWidget {
                               }
                             });
                             return AlertDialog(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                24,
-                                24,
-                                24,
-                              ),
+                              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                               title: Center(
                                 child: Text(
                                   'Please Wait A Bit',
@@ -179,7 +174,7 @@ class PlaylistFolder extends StatelessWidget {
                                 ),
                               ),
                               content: LoadingAnimationWidget.staggeredDotsWave(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 size: 10,
                               ),
                             );

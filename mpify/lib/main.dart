@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/settings_models.dart';
@@ -10,18 +11,24 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   runZonedGuarded(
     () async {
       await FolderUtils.clearLog();
-      WidgetsFlutterBinding.ensureInitialized();
-      await windowManager.ensureInitialized();
-      windowManager.waitUntilReadyToShow().then((_) async {
-        await windowManager.maximize();
+      if (defaultTargetPlatform == TargetPlatform.linux ||
+          defaultTargetPlatform == TargetPlatform.macOS ||
+          defaultTargetPlatform == TargetPlatform.windows) {
+        WidgetsFlutterBinding.ensureInitialized();
+        await windowManager.ensureInitialized();
+
+        await windowManager.waitUntilReadyToShow();
         await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-      });
+        await windowManager.maximize();
+      }
+
       try {
         runApp(
           MultiProvider(
