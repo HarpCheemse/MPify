@@ -10,14 +10,14 @@ import 'package:archive/archive_io.dart';
 
 class FolderUtils {
   static Future<void> createPlaylistFolder(folderName) async {
-    final Directory current = Directory.current;
-    final Directory target = Directory(p.join(current.path, '..', 'playlist'));
-    if (!await target.exists()) {
-      await target.create(recursive: true);
+    final playlistDir = await checkPlaylistFolderExist();
+    final String filePath = p.join(playlistDir.path, '$folderName.json');
+    final File playlistFile = File(filePath);
+    if (!await playlistFile.exists()) {
+      playlistFile.create(recursive: true);
+      return;
     }
-    final String filePath = p.join(target.path, '$folderName.json');
-    final File file = File(filePath);
-    await file.writeAsString('');
+    MiscUtils.showError('Playlist $folderName Already Existed');
   }
 
   static Future<Directory> checkPlaylistFolderExist() async {
@@ -221,25 +221,13 @@ class FolderUtils {
     zipEncoder.close();
   }
 
-  static Future<void> importBackupFile(String playlistName) async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.any,
-      withData: true,
-    );
-    if (result == null || result.files.isEmpty) {
-      MiscUtils.showError('Error: No Backup File Choosen');
-      FolderUtils.writeLog('Error: No Song Backup File Choosen');
-      return;
-    }
+  static Future<void> importBackupFile(String playlistName, FilePickerResult result) async {
+    MiscUtils.showNotification('Attempting To Import Backup File');
+    int errorCount = 0;
     final Directory playlisrDir = await checkPlaylistFolderExist();
     final Directory coverDir = await checkCoverFolderExist();
     final Directory lyricDir = await checkLyricFolderExist();
     final Directory mp3Dir = await checkMP3FolderExist();
-    final File playlistFile = File(p.join(playlisrDir.path, '$playlistName.json'));
-    if (!await playlistFile.exists()) {
-      playlistFile.create(recursive: true);
-    }
-
     final bytes = result.files.first.bytes!;
     final archive = ZipDecoder().decodeBytes(bytes);
 
@@ -296,6 +284,7 @@ class FolderUtils {
           } catch (e) {
             MiscUtils.showError('Error: Unable To Import Metadata');
             FolderUtils.writeLog('Error: $e. Unable To Import Metadata');
+            return;
           }
         }
         //copy image
@@ -306,9 +295,8 @@ class FolderUtils {
             await coverFile.create(recursive: true);
             await coverFile.writeAsBytes(file.content as List<int>);
           } catch (e) {
-            MiscUtils.showError('Error: Unable To Import Png');
             FolderUtils.writeLog('Error: $e. Unable To Import Png');
-            return;
+            errorCount++;
           }
         }
         //copy lyric
@@ -319,9 +307,8 @@ class FolderUtils {
             await lyricFile.create(recursive: true);
             await lyricFile.writeAsBytes(file.content as List<int>);
           } catch (e) {
-            MiscUtils.showError('Error: Unable To Import Lyric');
             FolderUtils.writeLog('Error: $e. Unable To Import Lyric');
-            return;
+            errorCount++;
           }
         }
         //copy mp3
@@ -332,12 +319,17 @@ class FolderUtils {
             await mp3File.create(recursive: true);
             await mp3File.writeAsBytes(file.content as List<int>);
           } catch (e) {
-            MiscUtils.showError('Error: Unable To Import MP3');
             FolderUtils.writeLog('Error: $e. Unable To Import MP3');
-            return;
+            errorCount++;
           }
         }
       }
+    }
+    if (errorCount > 0) {
+      MiscUtils.showWarning('Warning: Imported Back Up File With $errorCount Error(s)');
+    }
+    else {
+      MiscUtils.showSuccess('Successfully Imported Backup File');
     }
   }
 

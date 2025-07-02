@@ -13,6 +13,7 @@ import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
 
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ScrollableListPlaylist extends StatefulWidget {
   final double width;
@@ -110,15 +111,24 @@ class PlaylistFolder extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {},
-            icon: Icon(Icons.more_horiz, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.more_horiz,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             color: Theme.of(context).colorScheme.surface,
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
                 child: Row(
                   children: [
-                    Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onSurface),
+                    Icon(
+                      Icons.file_open_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     SizedBox(width: 10),
-                    Text('Open File Location', style: montserratStyle(context: context)),
+                    Text(
+                      'Open File Location',
+                      style: montserratStyle(context: context),
+                    ),
                   ],
                 ),
                 onTap: () {
@@ -128,9 +138,15 @@ class PlaylistFolder extends StatelessWidget {
               PopupMenuItem(
                 child: Row(
                   children: [
-                    Icon(Icons.backup_outlined, color: Theme.of(context).colorScheme.onSurface),
+                    Icon(
+                      Icons.backup_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     SizedBox(width: 10),
-                    Text('Create A Back Up File', style: montserratStyle(context: context)),
+                    Text(
+                      'Create A Back Up File',
+                      style: montserratStyle(context: context),
+                    ),
                   ],
                 ),
                 onTap: () async {
@@ -166,7 +182,9 @@ class PlaylistFolder extends StatelessWidget {
                               }
                             });
                             return AlertDialog(
-                              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainer,
                               title: Center(
                                 child: Text(
                                   'Please Wait A Bit',
@@ -187,13 +205,61 @@ class PlaylistFolder extends StatelessWidget {
               ),
               PopupMenuItem(
                 onTap: () async {
-                  await FolderUtils.importBackupFile(playlistName);
+                  final FilePickerResult? result = await FilePicker.platform
+                      .pickFiles(type: FileType.any, withData: true);
+                  if (result == null || result.files.isEmpty) {
+                    MiscUtils.showError('Error: No Backup File Choosen');
+                    FolderUtils.writeLog('Error: No Song Backup File Choosen');
+                    return;
+                  }
+                  if (!context.mounted) {
+                    MiscUtils.showWarning('Warning: Contexted Removed');
+                    return;
+                  }
+                  showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (dialogContext) {
+                      Future.microtask(() async {
+                        await FolderUtils.importBackupFile(
+                          playlistName,
+                          result,
+                        );
+                        if (!context.mounted) return;
+
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
+                        }
+                      });
+                      return AlertDialog(
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainer,
+                        title: Center(
+                          child: Text(
+                            'Please Wait A Bit',
+                            style: montserratStyle(context: context),
+                          ),
+                        ),
+                        content: LoadingAnimationWidget.staggeredDotsWave(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          size: 10,
+                        ),
+                      );
+                    },
+                  );
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.upload_file_outlined, color: Theme.of(context).colorScheme.onSurface),
+                    Icon(
+                      Icons.upload_file_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     SizedBox(width: 10),
-                    Text('Import Backup File', style: montserratStyle(context: context)),
+                    Text(
+                      'Import Backup File',
+                      style: montserratStyle(context: context),
+                    ),
                   ],
                 ),
               ),
@@ -202,7 +268,10 @@ class PlaylistFolder extends StatelessWidget {
                   children: [
                     Icon(Icons.delete_outline, color: Colors.redAccent),
                     SizedBox(width: 10),
-                    Text('Delete Playlist', style: montserratStyle(context: context)),
+                    Text(
+                      'Delete Playlist',
+                      style: montserratStyle(context: context),
+                    ),
                   ],
                 ),
                 onTap: () {

@@ -185,6 +185,7 @@ class PlaylistUltis {
       FolderUtils.writeLog('Error: $e. Unable To Delete $playlistFile');
       MiscUtils.showError('Error: Unable To Delete $playlist');
     }
+    MiscUtils.showSuccess('Successfully Deleted Playlist From Device');
   }
 
   static Future<void> deleteSongFromPlaylist(
