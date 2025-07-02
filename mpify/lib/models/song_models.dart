@@ -61,6 +61,13 @@ enum SortOption {
 }
 
 class SongModels extends ChangeNotifier {
+  List<String> _artistList = [];
+  List<String> get artistList => _artistList;
+  void loadArtistList() {
+    _artistList = _songsActive.map((song) => song.artist).toSet().toList();
+    _artistList.sort((a,b) => a.compareTo(b));
+  }
+
   SortOption _sortOption = SortOption.newest;
   SortOption get sortOption => _sortOption;
 

@@ -84,6 +84,7 @@ class MPify extends StatelessWidget {
           primary: Colors.teal,
           onSurface: Colors.white,
           surfaceContainer: const Color.fromARGB(255, 24, 24, 24),
+          
         ),
       ),
       themeMode: themeProvider.themeMode,

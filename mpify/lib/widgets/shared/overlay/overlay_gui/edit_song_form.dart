@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/widgets/shared/input_bar/autocomplete_artist_input_bar.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
@@ -206,22 +207,13 @@ class _EditSongFormState extends State<EditSongForm> {
                   hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
                   iconColor: Theme.of(context).colorScheme.onSurface,
-                  icon: Icons.edit,
+                  icon: Icons.edit_outlined,
                 ),
               ),
               SizedBox(
                 width: 500,
                 height: 80,
-                child: CustomInputBar(
-                  controller: artist,
-                  onChanged: (query) {},
-                  hintText: 'Edit Artist',
-                  fontColor: Theme.of(context).colorScheme.onSurface,
-                  hintColor: Theme.of(context).colorScheme.onSurface,
-                  searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor: Theme.of(context).colorScheme.onSurface,
-                  icon: Icons.edit,
-                ),
+                child: AutocompleteArtistInputBar(controller: artist,),
               ),
               Row(
                 children: [
@@ -253,9 +245,15 @@ class _EditSongFormState extends State<EditSongForm> {
                       width: 210,
                       height: 210,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          width: 1,
+                        ),
                       ),
-                      child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface),
+                      child: Icon(
+                        Icons.add,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ],

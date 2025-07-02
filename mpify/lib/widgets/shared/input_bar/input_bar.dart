@@ -26,11 +26,14 @@ class CustomInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      style: montserratStyle(context: context,color: fontColor),
+      style: montserratStyle(context: context, color: fontColor),
       controller: controller,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: hintColor),
+        hintStyle: montserratStyle(
+          context: context,
+          color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
+        ),
         prefixIcon: Icon(icon, color: iconColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
