@@ -3,8 +3,15 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-class Homebar extends StatelessWidget {
+bool _isMaximized = true;
+
+class Homebar extends StatefulWidget {
   const Homebar({super.key});
+  @override
+  State<Homebar> createState() => _HomeBarState();
+}
+
+class _HomeBarState extends State<Homebar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -41,16 +48,27 @@ class Homebar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () async {
-                  await windowManager.minimize();
+                  windowManager.minimize();
                 },
                 icon: Icon(Icons.minimize_outlined),
               ),
               SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
-                  await windowManager.maximize();
+                  (_isMaximized) ? await windowManager.restore() : await windowManager.maximize();
+                  setState(() {
+                    _isMaximized = !_isMaximized;
+                  });
                 },
-                icon: Icon(Icons.rectangle_outlined),
+                icon: (_isMaximized)
+                    ? Icon(
+                        Icons.filter_none,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      )
+                    : Icon(
+                        Icons.rectangle_outlined,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
               ),
               SizedBox(width: 10),
               IconButton(

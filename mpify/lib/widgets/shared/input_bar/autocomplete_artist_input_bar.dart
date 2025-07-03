@@ -66,9 +66,7 @@ class AutocompleteArtistInputBar extends StatelessWidget {
             final itemKeys = List.generate(options.length, (_) => GlobalKey());
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (highLighted != null &&
-                  highLighted >= 0 &&
-                  highLighted < itemKeys.length) {
+              if (highLighted >= 0 && highLighted < itemKeys.length) {
                 final key = itemKeys[highLighted];
                 if (key.currentContext != null) {
                   Scrollable.ensureVisible(
