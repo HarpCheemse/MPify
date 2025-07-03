@@ -335,6 +335,10 @@ class _SongsState extends State<Songs> {
                   color: Colors.white,
                 ),
                 onPressed: () {
+                  if (context.read<PlaylistModels>().selectedPlaylist == "Playlist Name") {
+                    MiscUtils.showWarning('Warning:  Please Select A Playlist First');
+                    return;
+                  }
                   OverlayController.show(context, CreateSongForm());
                 },
               ),

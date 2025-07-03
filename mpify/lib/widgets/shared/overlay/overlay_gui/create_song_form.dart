@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playlist_models.dart';
+import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/input_bar/input_bar.dart';
 import 'package:mpify/widgets/shared/text/positioned_header.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
 import 'package:mpify/widgets/shared/button/hover_button.dart';
+import 'package:provider/provider.dart';
 
 class CreateSongForm extends StatefulWidget {
   const CreateSongForm({super.key});
@@ -23,6 +26,7 @@ class _CreateSongFormState extends State<CreateSongForm> {
     link.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -37,7 +41,7 @@ class _CreateSongFormState extends State<CreateSongForm> {
         ),
         child: Stack(
           children: [
-            positionedHeader(context,30, 250, 'Create Song', 18, 600, null),
+            positionedHeader(context, 30, 250, 'Create Song', 18, 600, null),
             Positioned(
               left: 45,
               top: 120,
@@ -66,11 +70,39 @@ class _CreateSongFormState extends State<CreateSongForm> {
                   onChanged: (query) {},
                   controller: link,
                   hintText: 'Song Link',
-                  fontColor:  Theme.of(context).colorScheme.onSurface,
-                  hintColor:  Theme.of(context).colorScheme.onSurface,
+                  fontColor: Theme.of(context).colorScheme.onSurface,
+                  hintColor: Theme.of(context).colorScheme.onSurface,
                   searchColor: const Color.fromARGB(134, 95, 95, 95),
-                  iconColor:  Theme.of(context).colorScheme.onSurface,
+                  iconColor: Theme.of(context).colorScheme.onSurface,
                   icon: Icons.add,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 340,
+              left: 40,
+              child: HoverButton(
+                baseColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                borderRadius: 10,
+                onPressed: () async {
+                  final String selectedPlaylist = context.read<PlaylistModels>().selectedPlaylist;
+                  await FolderUtils.addCustomMP3(selectedPlaylist);
+                  OverlayController.hideOverlay();
+                },
+                width: 180,
+                height: 40,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.add_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    Text(
+                      'Add Custome MP3',
+                      style: montserratStyle(context: context),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -88,7 +120,10 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Cancel', style: montserratStyle(context: context)),
+                  child: Text(
+                    'Cancel',
+                    style: montserratStyle(context: context),
+                  ),
                 ),
               ),
             ),
@@ -109,7 +144,10 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Create', style: montserratStyle(context: context)),
+                  child: Text(
+                    'Create',
+                    style: montserratStyle(context: context),
+                  ),
                 ),
               ),
             ),

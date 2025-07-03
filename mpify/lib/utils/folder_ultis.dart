@@ -1,15 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mpify/models/song_models.dart';
+import 'package:mpify/utils/audio_ultis.dart';
 import 'package:mpify/utils/misc_utils.dart';
+import 'package:mpify/utils/string_ultis.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 
 class FolderUtils {
   static Future<void> createPlaylistFolder(folderName) async {
+    if (folderName == 'Playlist Name') {
+      MiscUtils.showWarning(
+        'Warning: Cannot Create A Playlist With The Name "Playlist Name"',
+      );
+      return;
+    }
     final playlistDir = await checkPlaylistFolderExist();
     final String filePath = p.join(playlistDir.path, '$folderName.json');
     final File playlistFile = File(filePath);
@@ -122,8 +131,7 @@ class FolderUtils {
     late final String contents;
     try {
       contents = await playlistJson.readAsString();
-    }
-    catch (e) {
+    } catch (e) {
       FolderUtils.writeLog('Error: $e. Unable To Read $playlistJson');
       return false;
     }
@@ -157,7 +165,9 @@ class FolderUtils {
     }
     //copy lyric
     try {
-      final Directory backupLyricDir = Directory(p.join(backupFolder.path, 'lyric'));
+      final Directory backupLyricDir = Directory(
+        p.join(backupFolder.path, 'lyric'),
+      );
       await backupLyricDir.create(recursive: true);
       final Directory lyricDir = await checkLyricFolderExist();
       for (int i = 0; i < songs.length; i++) {
@@ -175,7 +185,9 @@ class FolderUtils {
     }
     //copy mp3
     try {
-      final Directory backupMP3Dir = Directory(p.join(backupFolder.path, 'mp3'));
+      final Directory backupMP3Dir = Directory(
+        p.join(backupFolder.path, 'mp3'),
+      );
       await backupMP3Dir.create(recursive: true);
       final Directory mp3Dir = await checkMP3FolderExist();
       for (int i = 0; i < songs.length; i++) {
@@ -221,7 +233,10 @@ class FolderUtils {
     zipEncoder.close();
   }
 
-  static Future<void> importBackupFile(String playlistName, FilePickerResult result) async {
+  static Future<void> importBackupFile(
+    String playlistName,
+    FilePickerResult result,
+  ) async {
     MiscUtils.showNotification('Attempting To Import Backup File');
     int errorCount = 0;
     final Directory playlisrDir = await checkPlaylistFolderExist();
@@ -326,9 +341,10 @@ class FolderUtils {
       }
     }
     if (errorCount > 0) {
-      MiscUtils.showWarning('Warning: Imported Back Up File With $errorCount Error(s)');
-    }
-    else {
+      MiscUtils.showWarning(
+        'Warning: Imported Back Up File With $errorCount Error(s)',
+      );
+    } else {
       MiscUtils.showSuccess('Successfully Imported Backup File');
     }
   }
@@ -345,14 +361,83 @@ class FolderUtils {
       debugPrint('Error: $e. Unable to write log');
     }
   }
+
   static Future<void> clearLog() async {
     final Directory current = Directory.current;
     final File logFile = File(p.join(current.path, '..', 'log.txt'));
     try {
       await logFile.writeAsString('', mode: FileMode.write);
-    }
-    catch (e) {
+    } catch (e) {
       MiscUtils.showWarning('Warning: Unable To Clear Log.txt');
     }
+  }
+
+  static Future<void> addCustomMP3(String selectedPlaylist) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) {
+      MiscUtils.showError('Error: No MP3 File Choosen');
+      return;
+    }
+    final PlatformFile mp3File = result.files.first;
+    if (mp3File.extension != "mp3") {
+      MiscUtils.showError("Error: Please Pick A MP3 File");
+      return;
+    }
+    Uint8List? fileBytes = mp3File.bytes;
+    if (fileBytes == null) {
+      MiscUtils.showError('Error: Unable To Read File');
+      FolderUtils.writeLog('Error Unable To Read File');
+      return;
+    }
+
+    final String identifier = sha256.convert(fileBytes).toString();
+
+    final Directory mp3Dir = await checkMP3FolderExist();
+    final File savedMp3 = File(p.join(mp3Dir.path, '$identifier.mp3'));
+    await savedMp3.writeAsBytes(fileBytes);
+
+    final String name = mp3File.name;
+    final String link = "";
+    final String duration = StringUltis.formatDuration(await AudioUtils.getSongDuration(identifier));
+    final String artist = 'Unknown';
+    final DateTime dateAdded = DateTime.now();
+
+    final Directory playlisrDir = await checkPlaylistFolderExist();
+    final File playlistFile = File(
+      p.join(playlisrDir.path, '$selectedPlaylist.json'),
+    );
+    if (!await playlistFile.exists()) {
+      await playlistFile.create(recursive: true);
+    }
+    try {
+      String content = await playlistFile.readAsString();
+      List<Song> playlist = [];
+      if (content.isNotEmpty) {
+        final List<dynamic> raw = jsonDecode(content);
+        playlist = raw.map((song) => Song.fromJson(song)).toList();
+      }
+      final Song newMp3 = Song(
+        name: name,
+        link: link,
+        duration: duration,
+        artist: artist,
+        dateAdded: dateAdded,
+        identifier: identifier,
+      );
+      playlist.add(newMp3);
+      await playlistFile.writeAsString(
+        jsonEncode(playlist.map((song) => song.toJson()).toList()),
+      );
+    } catch (e) {
+      MiscUtils.showError(
+        "Error: Unabled To Write To Playlist: $selectedPlaylist",
+      );
+      writeLog("Error: $e. Unable To Write In Playlist: $selectedPlaylist");
+      return;
+    }
+    MiscUtils.showSuccess('Successfully Added Custom MP3');
   }
 }
