@@ -102,6 +102,11 @@ class Song extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPlaylist = context.watch<PlaylistModels>().selectedPlaylist;
+    final playingPlaylist = context.watch<PlaylistModels>().playingPlaylist;
+    final backgroungSong = context.watch<SongModels>().songsBackground;
+    final currentSongIdentifier = backgroungSong.isEmpty ? "None" : backgroungSong[context.watch<SongModels>().currentSongIndex].identifier;
+    bool isSelected = (selectedPlaylist == playingPlaylist) && (identifier == currentSongIdentifier);
     final coverPath = p.join(
       Directory.current.path,
       '..',
@@ -110,7 +115,7 @@ class Song extends StatelessWidget {
     );
     final imageExist = File(coverPath).existsSync();
     return HoverButton(
-      baseColor: Colors.transparent,
+      baseColor: (isSelected) ? Color.fromRGBO(158, 158, 158, 0.7): Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
       textStyle: montserratStyle(context: context),
       borderRadius: 5,
@@ -121,7 +126,7 @@ class Song extends StatelessWidget {
         final songModels = context.read<SongModels>();
         await songModels
             .loadActivePlaylistSong(); //copy activeSong to background song
-            
+
         final songsBackground = songModels.songsBackground;
 
         songModels.getSongIndex(identifier);
@@ -204,7 +209,10 @@ class Song extends StatelessWidget {
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {},
-            icon: Icon(Icons.more_horiz, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Icons.more_horiz,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             color: Theme.of(context).colorScheme.surface,
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
@@ -221,14 +229,12 @@ class Song extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.onSurface),
-                    SizedBox(width: 10),
-                    Text(
-                      'edit',
-                      style: montserratStyle(
-                        context: context,
-                      ),
+                    Icon(
+                      Icons.edit_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
+                    SizedBox(width: 10),
+                    Text('edit', style: montserratStyle(context: context)),
                   ],
                 ),
               ),
@@ -239,9 +245,7 @@ class Song extends StatelessWidget {
                     SizedBox(width: 10),
                     Text(
                       'Delete From Playlist',
-                      style: montserratStyle(
-                        context: context,
-                      ),
+                      style: montserratStyle(context: context),
                     ),
                   ],
                 ),
@@ -273,9 +277,7 @@ class Song extends StatelessWidget {
                     SizedBox(width: 10),
                     Text(
                       'Delete From Device',
-                      style: montserratStyle(
-                        context: context,
-                      ),
+                      style: montserratStyle(context: context),
                     ),
                   ],
                 ),

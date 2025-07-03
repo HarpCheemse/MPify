@@ -79,8 +79,9 @@ class PlaylistFolder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSelected = context.watch<PlaylistModels>().selectedPlaylist == playlistName;
     return HoverButton(
-      baseColor: Colors.transparent,
+      baseColor: (isSelected) ? Color.fromRGBO(158, 158, 158, 0.7): Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
       textStyle: montserratStyle(context: context),
       borderRadius: 5,

@@ -10,6 +10,7 @@ class PlaylistModels extends ChangeNotifier{
   String get playingPlaylist => _playingPlaylist;
   void setPlayingPlaylist() {
     _playingPlaylist = _selectedPlaylist;
+    notifyListeners();
   }
   
   String get selectedPlaylist => _selectedPlaylist;
