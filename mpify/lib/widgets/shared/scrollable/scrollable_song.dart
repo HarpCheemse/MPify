@@ -61,15 +61,15 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
         radius: Radius.circular(5),
         thickness: 10,
         trackVisibility: false,
-        child: Consumer<SongModels>(
-          builder: (context, songModels, child) {
-            final songs = songModels.songsActive;
+        child: Selector<SongModels, List<Song>>(
+          selector: (_, model) => model.songsActive,
+          builder: (context, songs, child) {
             return ListView.builder(
               controller: _scrollController,
               itemCount: songs.length,
               itemBuilder: (BuildContext content, int index) {
                 final song = songs[index];
-                return Song(
+                return SongTitle(
                   songName: song.name,
                   artist: song.artist,
                   duration: song.duration,
@@ -85,13 +85,13 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
   }
 }
 
-class Song extends StatelessWidget {
+class SongTitle extends StatelessWidget {
   final String songName;
   final String duration;
   final String artist;
   final String identifier;
   final int index;
-  const Song({
+  const SongTitle({
     super.key,
     required this.songName,
     required this.duration,
@@ -102,22 +102,39 @@ class Song extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedPlaylist = context.watch<PlaylistModels>().selectedPlaylist;
-    final playingPlaylist = context.watch<PlaylistModels>().playingPlaylist;
-    final backgroungSong = context.watch<SongModels>().songsBackground;
-    final currentSongIdentifier = backgroungSong.isEmpty ? "None" : backgroungSong[context.watch<SongModels>().currentSongIndex].identifier;
-    bool isSelected = (selectedPlaylist == playingPlaylist) && (identifier == currentSongIdentifier);
-    final coverPath = p.join(
-      Directory.current.path,
-      '..',
-      'cover',
-      '$identifier.png',
+    final TextStyle textStyle = montserratStyle(context: context);
+    final TextStyle textStyle_16 = montserratStyle(
+      context: context,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
     );
-    final imageExist = File(coverPath).existsSync();
+    final TextStyle textStyle_12 = montserratStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      context: context,
+    );
+    final selectedPlaylist = context.select<PlaylistModels, String>(
+      (model) => model.selectedPlaylist,
+    );
+    final playingPlaylist = context.select<PlaylistModels, String>(
+      (model) => model.playingPlaylist,
+    );
+    final currentSongIdentifier = context.select<SongModels, String>((model) {
+      final backgroundSong = model.songsBackground;
+      final index = model.currentSongIndex;
+      return (backgroundSong.isEmpty)
+          ? "None"
+          : backgroundSong[index].identifier;
+    });
+    bool isSelected =
+        (selectedPlaylist == playingPlaylist) &&
+        (identifier == currentSongIdentifier);
     return HoverButton(
-      baseColor: (isSelected) ? Color.fromRGBO(158, 158, 158, 0.7): Colors.transparent,
+      baseColor: (isSelected)
+          ? Color.fromRGBO(158, 158, 158, 0.7)
+          : Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-      textStyle: montserratStyle(context: context),
+      textStyle: textStyle,
       borderRadius: 5,
       width: 320,
       height: 70,
@@ -144,38 +161,23 @@ class Song extends StatelessWidget {
         children: [
           SizedBox(
             width: 40,
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: montserratStyle(
-                  context: context,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
+            child: Center(child: Text('${index + 1}', style: textStyle_16)),
           ),
           Padding(
             padding: EdgeInsets.only(left: 20),
             child: SizedBox(
               width: 50,
               height: 50,
-              child: imageExist
-                  ? Image.file(
-                      File(coverPath),
-                      key: UniqueKey(), //Important to clear image cached
-                      fit: BoxFit.cover,
-                    )
-                  : Image.asset('assets/placeholder.png', fit: BoxFit.contain),
+              child: CoverImage(identifier: identifier),
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           SizedBox(
             width: 330,
             height: 20,
             child: Text(
               songName,
-              style: montserratStyle(context: context),
+              style: textStyle,
               overflow: TextOverflow.fade,
               maxLines: 1,
               softWrap: false,
@@ -185,122 +187,189 @@ class Song extends StatelessWidget {
           SizedBox(
             width: 170,
             height: 20,
-            child: Text(
-              artist,
-              style: montserratStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                context: context,
-              ),
-            ),
+            child: Text(artist, style: textStyle_12),
           ),
           const SizedBox(width: 20),
           SizedBox(
             width: 50,
             height: 20,
-            child: Text(
-              duration,
-              style: montserratStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                context: context,
-              ),
-            ),
+            child: Text(duration, style: textStyle_12),
           ),
-          PopupMenuButton<String>(
-            onSelected: (String value) {},
-            icon: Icon(
-              Icons.more_horiz,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            color: Theme.of(context).colorScheme.surface,
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                onTap: () {
-                  OverlayController.show(
-                    context,
-                    EditSongForm(
-                      playlist: context.read<PlaylistModels>().selectedPlaylist,
-                      identifier: identifier,
-                      name: songName,
-                      artist: artist,
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.edit_outlined,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    SizedBox(width: 10),
-                    Text('edit', style: montserratStyle(context: context)),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline, color: Colors.redAccent),
-                    SizedBox(width: 10),
-                    Text(
-                      'Delete From Playlist',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  final selectedPlaylist = context
-                      .read<PlaylistModels>()
-                      .selectedPlaylist;
-                  Future.delayed(Duration.zero, () {
-                    if (!context.mounted) return;
-                    OverlayController.show(
-                      context,
-                      Confirmation(
-                        headerText: 'Delete Song',
-                        warningText:
-                            'This action is pernament are you sure you want to delete this song?',
-                        function: () => PlaylistUltis.deleteSongFromPlaylist(
-                          identifier,
-                          selectedPlaylist,
-                        ),
-                      ),
-                    );
-                  });
-                },
-              ),
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.redAccent),
-                    SizedBox(width: 10),
-                    Text(
-                      'Delete From Device',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  Future.delayed(Duration.zero, () {
-                    if (!context.mounted) return;
-                    OverlayController.show(
-                      context,
-                      Confirmation(
-                        headerText: 'Delete Song',
-                        warningText:
-                            'This action is pernament are you sure you want to delete this song pernamently from your device?',
-                        function: () =>
-                            PlaylistUltis.deleteSongFromDevice(identifier),
-                      ),
-                    );
-                  });
-                },
-              ),
-            ],
+          SongOptionMenu(
+            identifier: identifier,
+            songName: songName,
+            artist: artist,
+            textStyle: textStyle,
           ),
         ],
       ),
     );
+  }
+}
+
+class SongOptionMenu extends StatelessWidget {
+  final String identifier;
+  final String songName;
+  final String artist;
+  final TextStyle textStyle;
+  const SongOptionMenu({
+    super.key,
+    required this.identifier,
+    required this.songName,
+    required this.artist,
+    required this.textStyle,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: (String value) {},
+      icon: Icon(
+        Icons.more_horiz,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      color: Theme.of(context).colorScheme.surface,
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          onTap: () {
+            OverlayController.show(
+              context,
+              EditSongForm(
+                playlist: context.read<PlaylistModels>().selectedPlaylist,
+                identifier: identifier,
+                name: songName,
+                artist: artist,
+              ),
+            );
+          },
+          child: Row(
+            children: [
+              Icon(
+                Icons.edit_outlined,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              const SizedBox(width: 10),
+              Text('edit', style: textStyle),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.redAccent),
+              const SizedBox(width: 10),
+              Text(
+                'Delete From Playlist',
+                style: montserratStyle(context: context),
+              ),
+            ],
+          ),
+          onTap: () {
+            final selectedPlaylist = context
+                .read<PlaylistModels>()
+                .selectedPlaylist;
+            Future.delayed(Duration.zero, () {
+              if (!context.mounted) return;
+              OverlayController.show(
+                context,
+                Confirmation(
+                  headerText: 'Delete Song',
+                  warningText:
+                      'This action is pernament are you sure you want to delete this song?',
+                  function: () => PlaylistUltis.deleteSongFromPlaylist(
+                    identifier,
+                    selectedPlaylist,
+                  ),
+                ),
+              );
+            });
+          },
+        ),
+        PopupMenuItem<String>(
+          child: Row(
+            children: [
+              Icon(Icons.delete, color: Colors.redAccent),
+              const SizedBox(width: 10),
+              Text(
+                'Delete From Device',
+                style: montserratStyle(context: context),
+              ),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              if (!context.mounted) return;
+              OverlayController.show(
+                context,
+                Confirmation(
+                  headerText: 'Delete Song',
+                  warningText:
+                      'This action is pernament are you sure you want to delete this song pernamently from your device?',
+                  function: () =>
+                      PlaylistUltis.deleteSongFromDevice(identifier),
+                ),
+              );
+            });
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class CoverImage extends StatefulWidget {
+  final String identifier;
+  const CoverImage({super.key, required this.identifier});
+  @override
+  State<CoverImage> createState() => _CoverImageState();
+}
+
+class _CoverImageState extends State<CoverImage> {
+  late bool imageExist;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkImageExist();
+  }
+
+  @override
+  void didUpdateWidget(covariant CoverImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The identifier may stay the same, but the file could have changed
+    _checkImageExist(); // re‑evaluate file existence
+    setState(() {}); // rebuild with the new image
+  }
+
+  void _checkImageExist() {
+    final imageFile = File(
+      p.join(Directory.current.path, '..', 'cover', '${widget.identifier}.png'),
+    );
+    imageExist = imageFile.existsSync();
+  }
+
+  void reload() {
+    setState(() {
+      _checkImageExist();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return imageExist
+        ? Image.file(
+            File(
+              p.join(
+                Directory.current.path,
+                '..',
+                'cover',
+                '${widget.identifier}.png',
+              ),
+            ),
+            key: UniqueKey(), //Important to clear image cached
+            fit: BoxFit.cover,
+            cacheWidth: 50,
+            cacheHeight: 50,
+          )
+        : Image.asset('assets/placeholder.png', fit: BoxFit.contain);
   }
 }

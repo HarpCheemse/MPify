@@ -9,70 +9,59 @@ import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/models/playlist_models.dart';
 
 class Watcher {
-  static Timer? _debounceTimer;
-  static bool _isLoading = false;
+  static Timer? _debounce;
+  static StreamSubscription<FileSystemEvent>? _sub;
 
-  static Future<void> playlistSongWatcher(
-    BuildContext context,
-    String playlist,
-  ) async {
+  static void playlistSongWatcher(BuildContext context, String playlist) {
+    _sub?.cancel();
+    _debounce?.cancel();
+
     final songModels = context.read<SongModels>();
-    _debounceTimer?.cancel();
+    final playlistFile = File(
+      p.join(Directory.current.path, '..', 'playlist', '$playlist.json'),
+    );
 
-    final currentDir = Directory.current;
-    final targetDir = Directory(p.join(currentDir.path, '..', 'playlist'));
-    final playlistFile = File(p.join(targetDir.path, '$playlist.json'));
-
-    if (!await playlistFile.exists()) {
+    if (!playlistFile.existsSync()) {
       debugPrint('playlist does not exist');
       return;
     }
-    if (!context.mounted) return;
 
-    targetDir.watch(events: FileSystemEvent.modify).listen((event) {
-      if (event.path.endsWith('$playlist.json')) {
-        _debounceTimer?.cancel();
-
-        _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-          if(_isLoading) return;
-          _isLoading = true;
-          try {
-            await songModels.loadSong(playlist);
-          } catch (e) {
-            debugPrint('Failed to load playlist: $e');
-          }
-          finally {
-            _isLoading = false;
-          }
-        });
-      }
+    _sub = playlistFile.watch(events: FileSystemEvent.modify).listen((event) {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        if (!context.mounted) return;
+        songModels
+            .loadSong(playlist)
+            .catchError((e) => debugPrint('Failed to load playlist: $e'));
+      });
     });
   }
+
   static Future<void> playlistWatcher(BuildContext context) async {
     final playlistModels = context.read<PlaylistModels>();
     final target = await FolderUtils.checkPlaylistFolderExist();
     List<String> listOfPlaylist = playlistModels.playlists;
 
     //get all .json when init
-     listOfPlaylist = await target
+    listOfPlaylist = await target
         .list()
         .where((entity) => entity is File && entity.path.endsWith('.json'))
         .map((entity) => entity.uri.pathSegments.last.replaceAll('.json', ''))
         .toList();
-      playlistModels.updateListOfPlaylist(listOfPlaylist);
+    playlistModels.updateListOfPlaylist(listOfPlaylist);
 
     //update .json
     target.watch().listen((event) async {
       if (event.path.endsWith('json')) {
         debugPrint('updated');
-          listOfPlaylist = await target
+        listOfPlaylist = await target
             .list()
             .where((entity) => entity is File && entity.path.endsWith('.json'))
             .map(
               (entity) => entity.uri.pathSegments.last.replaceAll('.json', ''),
             )
             .toList();
-            playlistModels.updateListOfPlaylist(listOfPlaylist);
+        playlistModels.updateListOfPlaylist(listOfPlaylist);
       }
     });
   }

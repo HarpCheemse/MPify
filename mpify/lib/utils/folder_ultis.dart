@@ -24,6 +24,7 @@ class FolderUtils {
     final File playlistFile = File(filePath);
     if (!await playlistFile.exists()) {
       playlistFile.create(recursive: true);
+      MiscUtils.showSuccess('Successfully Created Playlist: $folderName');
       return;
     }
     MiscUtils.showError('Playlist $folderName Already Existed');

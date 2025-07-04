@@ -61,6 +61,7 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
             return ListView.builder(
               controller: _scrollController,
               itemCount: length,
+              itemExtent: 70,
               itemBuilder: (BuildContext content, int index) {
                 final playlistName = playlist.playlists[index];
                 return PlaylistFolder(playlistName: playlistName);
@@ -79,11 +80,16 @@ class PlaylistFolder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = context.watch<PlaylistModels>().selectedPlaylist == playlistName;
+    final TextStyle textStyle = montserratStyle(context: context);
+    final isSelected = context.select<PlaylistModels, bool>(
+      (model) => model.selectedPlaylist == playlistName,
+    );
     return HoverButton(
-      baseColor: (isSelected) ? Color.fromRGBO(158, 158, 158, 0.7): Colors.transparent,
+      baseColor: (isSelected)
+          ? Color.fromRGBO(158, 158, 158, 0.7)
+          : Colors.transparent,
       hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-      textStyle: montserratStyle(context: context),
+      textStyle: textStyle,
       borderRadius: 5,
       width: 320,
       height: 70,
@@ -99,133 +105,89 @@ class PlaylistFolder extends StatelessWidget {
             height: 60,
             child: Image.asset('assets/folder.png', fit: BoxFit.contain),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           SizedBox(
             width: 200,
             child: Text(
               playlistName,
-              style: montserratStyle(context: context),
+              style: textStyle,
               overflow: TextOverflow.fade,
               maxLines: 1,
               softWrap: false,
             ),
           ),
-          PopupMenuButton<String>(
-            onSelected: (String value) {},
-            icon: Icon(
-              Icons.more_horiz,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            color: Theme.of(context).colorScheme.surface,
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.file_open_outlined,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Open File Location',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  FolderUtils.openFolderInExplorer();
-                },
-              ),
-              PopupMenuItem(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.backup_outlined,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Create A Back Up File',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
-                onTap: () async {
-                  OverlayController.show(
-                    context,
-                    Confirmation(
-                      headerText: 'Create Backup',
-                      warningText: 'Are You Sure You Want To Create A Backup?',
-                      function: () async {
-                        MiscUtils.showNotification(
-                          'Attempting To Create Back Up Of $playlistName',
-                        );
-                        showDialog(
-                          barrierDismissible: false,
-                          context: context,
-                          builder: (dialogContext) {
-                            Future.microtask(() async {
-                              final bool result =
-                                  await FolderUtils.createBackupFile(
-                                    playlistName,
-                                  );
-                              (result)
-                                  ? MiscUtils.showSuccess(
-                                      'Successfully Created A Back Up Of $playlistName At Backup Folder',
-                                    )
-                                  : MiscUtils.showError(
-                                      'Error: Unable To Create A Back Up Of $playlistName',
-                                    );
-                              if (!context.mounted) return;
+          PlaylistOptionMenu(playlistName: playlistName),
+        ],
+      ),
+    );
+  }
+}
 
-                              if (dialogContext.mounted) {
-                                Navigator.of(dialogContext).pop();
-                              }
-                            });
-                            return AlertDialog(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainer,
-                              title: Center(
-                                child: Text(
-                                  'Please Wait A Bit',
-                                  style: montserratStyle(context: context),
-                                ),
-                              ),
-                              content: LoadingAnimationWidget.staggeredDotsWave(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                size: 10,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
+class PlaylistOptionMenu extends StatelessWidget {
+  final String playlistName;
+  const PlaylistOptionMenu({super.key, required this.playlistName});
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle textStyle = montserratStyle(context: context);
+    return PopupMenuButton<String>(
+      onSelected: (String value) {},
+      icon: Icon(
+        Icons.more_horiz,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      color: Theme.of(context).colorScheme.surface,
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          child: Row(
+            children: [
+              Icon(
+                Icons.file_open_outlined,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              PopupMenuItem(
-                onTap: () async {
-                  final FilePickerResult? result = await FilePicker.platform
-                      .pickFiles(type: FileType.any, withData: true);
-                  if (result == null || result.files.isEmpty) {
-                    MiscUtils.showError('Error: No Backup File Choosen');
-                    FolderUtils.writeLog('Error: No Song Backup File Choosen');
-                    return;
-                  }
-                  if (!context.mounted) {
-                    MiscUtils.showWarning('Warning: Contexted Removed');
-                    return;
-                  }
+              const SizedBox(width: 10),
+              Text('Open File Location', style: textStyle),
+            ],
+          ),
+          onTap: () {
+            FolderUtils.openFolderInExplorer();
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(
+                Icons.backup_outlined,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              const SizedBox(width: 10),
+              Text('Create A Back Up File', style: textStyle),
+            ],
+          ),
+          onTap: () async {
+            OverlayController.show(
+              context,
+              Confirmation(
+                headerText: 'Create Backup',
+                warningText: 'Are You Sure You Want To Create A Backup?',
+                function: () async {
+                  MiscUtils.showNotification(
+                    'Attempting To Create Back Up Of $playlistName',
+                  );
                   showDialog(
                     barrierDismissible: false,
                     context: context,
                     builder: (dialogContext) {
                       Future.microtask(() async {
-                        await FolderUtils.importBackupFile(
+                        final bool result = await FolderUtils.createBackupFile(
                           playlistName,
-                          result,
                         );
+                        (result)
+                            ? MiscUtils.showSuccess(
+                                'Successfully Created A Back Up Of $playlistName At Backup Folder',
+                              )
+                            : MiscUtils.showError(
+                                'Error: Unable To Create A Back Up Of $playlistName',
+                              );
                         if (!context.mounted) return;
 
                         if (dialogContext.mounted) {
@@ -237,10 +199,7 @@ class PlaylistFolder extends StatelessWidget {
                           context,
                         ).colorScheme.surfaceContainer,
                         title: Center(
-                          child: Text(
-                            'Please Wait A Bit',
-                            style: montserratStyle(context: context),
-                          ),
+                          child: Text('Please Wait A Bit', style: textStyle),
                         ),
                         content: LoadingAnimationWidget.staggeredDotsWave(
                           color: Theme.of(context).colorScheme.onSurface,
@@ -250,51 +209,89 @@ class PlaylistFolder extends StatelessWidget {
                     },
                   );
                 },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.upload_file_outlined,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Import Backup File',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
               ),
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline, color: Colors.redAccent),
-                    SizedBox(width: 10),
-                    Text(
-                      'Delete Playlist',
-                      style: montserratStyle(context: context),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  Future.delayed(Duration.zero, () {
-                    if (!context.mounted) return;
-                    OverlayController.show(
-                      context,
-                      Confirmation(
-                        headerText: 'Delete Playlist',
-                        warningText:
-                            'This action is pernament are you sure you want to delete this playlist?',
-                        function: () =>
-                            PlaylistUltis.deletePlaylist(playlistName),
-                      ),
-                    );
-                  });
-                },
+            );
+          },
+        ),
+        PopupMenuItem(
+          onTap: () async {
+            final FilePickerResult? result = await FilePicker.platform
+                .pickFiles(type: FileType.any, withData: true);
+            if (result == null || result.files.isEmpty) {
+              MiscUtils.showError('Error: No Backup File Choosen');
+              FolderUtils.writeLog('Error: No Song Backup File Choosen');
+              return;
+            }
+            if (!context.mounted) {
+              MiscUtils.showWarning('Warning: Contexted Removed');
+              return;
+            }
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (dialogContext) {
+                Future.microtask(() async {
+                  await FolderUtils.importBackupFile(playlistName, result);
+                  if (context.read<PlaylistModels>().selectedPlaylist ==
+                      playlistName) {
+                    context.read<SongModels>().loadSong(playlistName);
+                  }
+                  if (!context.mounted) return;
+
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                });
+                return AlertDialog(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainer,
+                  title: Center(
+                    child: Text('Please Wait A Bit', style: textStyle),
+                  ),
+                  content: LoadingAnimationWidget.staggeredDotsWave(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 10,
+                  ),
+                );
+              },
+            );
+          },
+          child: Row(
+            children: [
+              Icon(
+                Icons.upload_file_outlined,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
+              const SizedBox(width: 10),
+              Text('Import Backup File', style: textStyle),
             ],
           ),
-        ],
-      ),
+        ),
+        PopupMenuItem<String>(
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.redAccent),
+              const SizedBox(width: 10),
+              Text('Delete Playlist', style: textStyle),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              if (!context.mounted) return;
+              OverlayController.show(
+                context,
+                Confirmation(
+                  headerText: 'Delete Playlist',
+                  warningText:
+                      'This action is pernament are you sure you want to delete this playlist?',
+                  function: () => PlaylistUltis.deletePlaylist(playlistName),
+                ),
+              );
+            });
+          },
+        ),
+      ],
     );
   }
 }
