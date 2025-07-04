@@ -15,7 +15,6 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
-  debugPrintRebuildDirtyWidgets = true;
   runZonedGuarded(
     () async {
       await FolderUtils.clearLog();

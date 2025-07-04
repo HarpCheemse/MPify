@@ -8,3 +8,5 @@ yt-dlp.exe
 backup
 log.txt
 mpify/installers
+ffmpeg.exe
+ffprobe.exe

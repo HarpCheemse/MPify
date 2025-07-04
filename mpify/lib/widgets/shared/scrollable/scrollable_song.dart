@@ -335,9 +335,8 @@ class _CoverImageState extends State<CoverImage> {
   @override
   void didUpdateWidget(covariant CoverImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // The identifier may stay the same, but the file could have changed
-    _checkImageExist(); // re‑evaluate file existence
-    setState(() {}); // rebuild with the new image
+    _checkImageExist();
+    setState(() {});
   }
 
   void _checkImageExist() {

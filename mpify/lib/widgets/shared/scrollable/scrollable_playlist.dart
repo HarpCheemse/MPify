@@ -232,6 +232,7 @@ class PlaylistOptionMenu extends StatelessWidget {
               builder: (dialogContext) {
                 Future.microtask(() async {
                   await FolderUtils.importBackupFile(playlistName, result);
+                  if (!context.mounted) return;
                   if (context.read<PlaylistModels>().selectedPlaylist ==
                       playlistName) {
                     context.read<SongModels>().loadSong(playlistName);
