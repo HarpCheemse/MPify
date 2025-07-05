@@ -3,17 +3,51 @@ import 'package:mpify/models/song_models.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:provider/provider.dart';
 
-class AutocompleteArtistInputBar extends StatelessWidget {
+class AutocompleteArtistInputBar extends StatefulWidget {
   final TextEditingController controller;
   const AutocompleteArtistInputBar({super.key, required this.controller});
 
   @override
+  State<AutocompleteArtistInputBar> createState() =>
+      _AutocompleteArtistInputBarState();
+}
+
+class _AutocompleteArtistInputBarState
+    extends State<AutocompleteArtistInputBar> {
+  final FocusNode focusNode = FocusNode();
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      // ignore: use_build_context_synchronously
+      context.read<SongModels>().loadArtistList();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    focusNode.dispose();
+    scrollController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    context.read<SongModels>().loadArtistList();
-    final List<String> artistList = context.read<SongModels>().artistList;
+    final List<String> artistList = context.select<SongModels, List<String>>((
+      models,
+    ) {
+      return models.artistList;
+    });
+    final textStyle = montserratStyle(context: context);
+    final hintTextStyle = montserratStyle(
+      context: context,
+      color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
+    );
     return RawAutocomplete<String>(
-      textEditingController: controller,
-      focusNode: FocusNode(),
+      textEditingController: widget.controller,
+      focusNode: focusNode,
       optionsBuilder: (TextEditingValue textEditingValue) {
         return artistList.where((String option) {
           return option.toLowerCase().contains(
@@ -29,7 +63,7 @@ class AutocompleteArtistInputBar extends StatelessWidget {
             VoidCallback onFieldSubmitted,
           ) {
             return TextFormField(
-              style: montserratStyle(context: context),
+              style: textStyle,
               controller: textEditingController,
               focusNode: focusNode,
               onFieldSubmitted: (String value) {
@@ -37,10 +71,7 @@ class AutocompleteArtistInputBar extends StatelessWidget {
               },
               decoration: InputDecoration(
                 hintText: 'Artist Name',
-                hintStyle: montserratStyle(
-                  context: context,
-                  color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
-                ),
+                hintStyle: hintTextStyle,
                 fillColor: const Color.fromARGB(134, 95, 95, 95),
                 prefixIcon: Icon(
                   Icons.edit_outlined,
@@ -61,7 +92,6 @@ class AutocompleteArtistInputBar extends StatelessWidget {
             Iterable<String> options,
           ) {
             final int highLighted = AutocompleteHighlightedOption.of(context);
-            final scrollController = ScrollController();
 
             final itemKeys = List.generate(options.length, (_) => GlobalKey());
 
@@ -96,14 +126,14 @@ class AutocompleteArtistInputBar extends StatelessWidget {
                       itemCount: options.length,
                       itemBuilder: (BuildContext context, int index) {
                         final String option = options.elementAt(index);
-                        final bool isHighLighed = index == highLighted;
+                        final bool isHighlighted = index == highLighted;
                         return SizedBox(
                           key: itemKeys[index],
                           width: 100,
                           child: MouseRegion(
                             cursor: SystemMouseCursors.click,
                             child: Material(
-                              color: isHighLighed
+                              color: isHighlighted
                                   ? Theme.of(context).colorScheme.surface
                                   : Colors.transparent,
                               child: InkWell(
@@ -118,10 +148,7 @@ class AutocompleteArtistInputBar extends StatelessWidget {
                                     vertical: 12,
                                     horizontal: 20,
                                   ),
-                                  child: Text(
-                                    option,
-                                    style: montserratStyle(context: context),
-                                  ),
+                                  child: Text(option, style: textStyle),
                                 ),
                               ),
                             ),

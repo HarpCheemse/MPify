@@ -66,6 +66,7 @@ class SongModels extends ChangeNotifier {
   void loadArtistList() {
     _artistList = _songsActive.map((song) => song.artist).toSet().toList();
     _artistList.sort((a,b) => a.compareTo(b));
+    notifyListeners();
   }
 
   SortOption _sortOption = SortOption.newest;

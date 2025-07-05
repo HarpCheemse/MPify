@@ -16,27 +16,45 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: (context.watch<SettingsModels>().isOpenSettings)
-          ? const Settings()
-          : Column(
-              children: [
-                Homebar(),
-                Row(
-                  children: [
-                    Playlist(),
-                    Songs(),
-                    Consumer<PlaylistModels>(
-                      builder: (context, value, child) {
-                        return value.isPlayerOpen ? Player() : Lyric();
-                      },
+    final isOpenSettings = context.select<SettingsModels, bool>(
+      (settings) => settings.isOpenSettings,
+    );
+    final colorSchemeSurface = Theme.of(context).colorScheme.surface;
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: colorSchemeSurface,
+        body: (isOpenSettings)
+            ? const Settings()
+            : Column(
+                children: const [
+                  Homebar(),
+                  Expanded(
+                    child: Row(
+                      children: [Playlist(), Songs(), PlayerOrLyric()],
                     ),
-                  ],
-                ),
-                SongDetails(),
-              ],
-            ),
+                  ),
+                  SongDetails(),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class PlayerOrLyric extends StatelessWidget {
+  const PlayerOrLyric({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Selector<PlaylistModels, bool>(
+      selector: (context, model) => model.isPlayerOpen,
+      builder: (context, isPlayerOpen, child) {
+        return AnimatedSwitcher(
+          duration: Duration(milliseconds: 200),
+          child: isPlayerOpen
+              ? const Player(key: ValueKey('player'))
+              : const Lyric(key: ValueKey('lyric')),
+        );
+      },
     );
   }
 }

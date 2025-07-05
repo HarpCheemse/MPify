@@ -27,6 +27,8 @@ void main() async {
         await windowManager.waitUntilReadyToShow();
         await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
         await windowManager.maximize();
+
+        windowManager.setMinimumSize(const Size(720, 720));
       }
 
       try {

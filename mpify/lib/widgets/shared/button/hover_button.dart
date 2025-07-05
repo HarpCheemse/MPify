@@ -5,8 +5,8 @@ class HoverButton extends StatefulWidget {
   final String text;
   final VoidCallback onPressed;
   final TextStyle? textStyle;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final double borderRadius;
   final Color? hoverColor;
   final Color? hoverFontColor;
@@ -49,27 +49,34 @@ class _HoverButtonState extends State<HoverButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: Material(
-        color: _hovering ? widget.hoverColor : widget.baseColor,
-        borderRadius: BorderRadius.circular(widget.borderRadius),
-        child: InkWell(
-          splashColor: widget.splashColor,
-          highlightColor: widget.highlightColor,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 150),
+        decoration:BoxDecoration(
+          color: _hovering ? widget.hoverColor : widget.baseColor,
           borderRadius: BorderRadius.circular(widget.borderRadius),
-          onTap: widget.onPressed,
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(widget.borderRadius),
+        ),
+        child: Material(
+          color: _hovering ? widget.hoverColor : widget.baseColor,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          child: InkWell(
+            mouseCursor: SystemMouseCursors.click,
+            splashColor: widget.splashColor,
+            highlightColor: widget.highlightColor,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            onTap: widget.onPressed,
+            child: SizedBox(
+              width: widget.width,
+              height: widget.height,
+              child: widget.childBuilder != null
+                  ? widget.childBuilder!(_hovering)
+                  : widget.child ??
+                        Text(
+                          widget.text,
+                          style:
+                              widget.textStyle ??
+                              montserratStyle(context: context),
+                        ),
             ),
-            child: widget.childBuilder != null
-                ? widget.childBuilder!(_hovering)
-                : widget.child ??
-                      Text(
-                        widget.text,
-                        style: widget.textStyle ?? montserratStyle(context: context),
-                      ),
           ),
         ),
       ),
