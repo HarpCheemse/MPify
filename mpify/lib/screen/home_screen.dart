@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/main.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/widgets/homebar.dart';
@@ -26,11 +27,23 @@ class HomeScreen extends StatelessWidget {
         body: (isOpenSettings)
             ? const Settings()
             : Column(
-                children: const [
+                children: [
                   Homebar(),
                   Expanded(
-                    child: Row(
-                      children: [Playlist(), Songs(), PlayerOrLyric()],
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+                        final showPlaylist = width > maxScreenWidth - 350;
+                        final showPlayerOrLyric = width> maxScreenWidth - 700;
+                        return Row(
+                          children: [
+                            if (showPlaylist) const Playlist(),
+                            Expanded(child: const Songs()),
+                            if (showPlayerOrLyric) const PlayerOrLyric(),
+                            const SizedBox(width: 10,)
+                          ],
+                        );
+                      },
                     ),
                   ),
                   SongDetails(),

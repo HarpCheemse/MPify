@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/main.dart';
+import 'package:screen_retriever/screen_retriever.dart';
 
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -132,4 +133,25 @@ class MiscUtils {
       );
     });
   }
+ static Future<double> getPhysicalScreenWidth() async {
+  try {
+    final screen = await screenRetriever.getPrimaryDisplay();
+    return screen.size.width;
+  }
+  catch (e) {
+    FolderUtils.writeLog('Error: $e. Unable To Get Screen Width. Default To 1920');
+    return 1920;
+  }
+  
+}
+static Future<double> getPhysicalScreenHeight() async {
+  try {
+    final screen = await screenRetriever.getPrimaryDisplay();
+    return screen.size.height;
+  }
+  catch (e) {
+    FolderUtils.writeLog('Error: $e. Unable To Get Screen Height. Default To 1080');
+    return 1080;
+  }
+}
 }

@@ -7,12 +7,16 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/screen/home_screen.dart';
 import 'package:mpify/utils/folder_ultis.dart';
+import 'package:mpify/utils/misc_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
+
+double maxScreenWidth = 1920;
+double maxScreenHeight = 1080;
 
 void main() async {
   runZonedGuarded(
@@ -29,6 +33,8 @@ void main() async {
         await windowManager.maximize();
 
         windowManager.setMinimumSize(const Size(720, 720));
+        maxScreenWidth = await MiscUtils.getPhysicalScreenWidth();
+        maxScreenHeight = await MiscUtils.getPhysicalScreenHeight();
       }
 
       try {

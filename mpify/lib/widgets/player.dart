@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/main.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/string_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
+import 'package:mpify/widgets/song_details.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:mpify/widgets/shared/slider.dart/duration.dart';
-import 'package:mpify/widgets/shared/button/hover_button.dart';
-
-import 'package:mpify/utils/audio_ultis.dart';
 
 class Player extends StatefulWidget {
   const Player({super.key});
@@ -73,12 +71,11 @@ class _PlayerState extends State<Player> {
           if (songs.isEmpty) {
             return null;
           } else {
-           if (model.currentSongIndex != -1) {
-            return songs[model.currentSongIndex].identifier;
-           }
-           else {
-            return null;
-           }
+            if (model.currentSongIndex != -1) {
+              return songs[model.currentSongIndex].identifier;
+            } else {
+              return null;
+            }
           }
         },
         builder: (context, identifier, child) {
@@ -97,8 +94,19 @@ class _PlayerState extends State<Player> {
                   : colorList[colorIndex],
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(height: 50),
+                LayoutBuilder(
+                  builder: (context, _) {
+                    final diffHeightSize = maxScreenHeight - 720;
+                    final currentHeight = MediaQuery.of(context).size.height;
+                    final percentage =
+                        (((currentHeight - 720) / diffHeightSize) / 2) + 0.5;
+                    //generate a number between 0.5 to 1 depending on screen size
+                    final width = percentage * 50;
+                    return SizedBox(height: width);
+                  },
+                ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Consumer<SongModels>(
@@ -138,7 +146,17 @@ class _PlayerState extends State<Player> {
                     },
                   ),
                 ),
-                SizedBox(height: 20),
+                LayoutBuilder(
+                  builder: (context, _) {
+                    final diffHeightSize = maxScreenHeight - 720;
+                    final currentHeight = MediaQuery.of(context).size.height;
+                    final percentage =
+                        (((currentHeight - 720) / diffHeightSize) / 2) + 0.5;
+                    //generate a number between 0.5 to 1 depending on screen size
+                    final width = 20 * percentage;
+                    return SizedBox(height: width);
+                  },
+                ),
                 Consumer<SongModels>(
                   builder: (context, value, child) {
                     final songs = value.songsBackground;
@@ -162,7 +180,7 @@ class _PlayerState extends State<Player> {
                     );
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Consumer<SongModels>(
                   builder: (context, value, child) {
                     final songs = value.songsBackground;
@@ -174,7 +192,8 @@ class _PlayerState extends State<Player> {
                       width: 300,
                       child: Text(
                         artist,
-                        style: montserratStyle(context: context,
+                        style: montserratStyle(
+                          context: context,
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
                         ),
@@ -185,99 +204,20 @@ class _PlayerState extends State<Player> {
                     );
                   },
                 ),
-                SizedBox(height: 50),
-                SizedBox(
-                  width: 330,
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(right: 30),
-                        child: IconButton(
-                          icon: Icon(Icons.skip_previous, color: Colors.white),
-                          onPressed: () {
-                            final songModels = context.read<SongModels>();
-                            songModels.playPreviousSong();
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(right: 30),
-                        child: IconButton(
-                          icon: Icon(Icons.fast_rewind, color: Colors.white),
-                          onPressed: () {
-                            AudioUtils.skipBackward(context);
-                          },
-                        ),
-                      ),
-                      Center(
-                        child: Consumer<SongModels>(
-                          builder: (context, model, child) {
-                            return HoverButton(
-                              baseColor: Colors.white,
-                              borderRadius: 50,
-                              onPressed: () {
-                                model.isPlaying
-                                    ? AudioUtils.pauseSong()
-                                    : AudioUtils.resumeSong();
-                                model.flipIsPlaying();
-                              },
-                              width: 45,
-                              height: 45,
-                              hoverColor: const Color.fromARGB(
-                                255,
-                                150,
-                                150,
-                                150,
-                              ),
-                              child: Transform.translate(
-                                offset: Offset(0, 0),
-                                child: Icon(
-                                  model.isPlaying
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                      color: Colors.black,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 30),
-                        child: IconButton(
-                          icon: Icon(Icons.fast_forward),
-                          color: Colors.white,
-                          onPressed: () {
-                            AudioUtils.skipForward(context);
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 30),
-                        child: IconButton(
-                          icon: Icon(Icons.skip_next, color: Colors.white),
-                          onPressed: () {
-                            final songModels = context.read<SongModels>();
-                            songModels.playNextSong();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                LayoutBuilder(
+                  builder: (context, _) {
+                    final diffHeightSize = maxScreenHeight - 720;
+                    final currentHeight = MediaQuery.of(context).size.height;
+                    final percentage =
+                        (((currentHeight - 720) / diffHeightSize) / 2) + 0.5;
+                    //generate a number between 0.5 to 1 depending on screen size
+                    final width = 50 * percentage;
+                    return SizedBox(height: width);
+                  },
                 ),
-                SizedBox(height: 20),
-                Center(
-                  child: DurationSlider(
-                    width: 650,
-                    height: 2,
-                    value: 0,
-                    baseColor: const Color.fromARGB(255, 150, 150, 150),
-                    progressColor: Colors.white,
-                    hoverColor: Colors.green,
-                    thumbSize: 6,
-                    thumbColor: Colors.green,
-                    onChanged: (double value) {},
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: DurationBar(width: 240),
                 ),
               ],
             ),

@@ -3,7 +3,7 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-bool _isMaximized = true;
+
 
 class Homebar extends StatefulWidget {
   const Homebar({super.key});
@@ -11,7 +11,40 @@ class Homebar extends StatefulWidget {
   State<Homebar> createState() => _HomeBarState();
 }
 
-class _HomeBarState extends State<Homebar> {
+class _HomeBarState extends State<Homebar> with WindowListener {
+  bool _isMaximized = true;
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+    _syncInitState();
+  }
+
+  Future<void> _syncInitState() async {
+    _isMaximized = await windowManager.isMaximized();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    windowManager.removeListener(this);
+  }
+
+  @override
+  void onWindowMaximize() {
+    setState(() {
+      _isMaximized = true;
+    });
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    setState(() {
+      _isMaximized = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -41,7 +74,10 @@ class _HomeBarState extends State<Homebar> {
           ),
           Expanded(
             child: GestureDetector(
-              onPanStart: (_) => windowManager.startDragging(),
+              onPanStart: (_) async {
+                await windowManager.restore();
+                windowManager.startDragging();
+              },
             ),
           ),
           Row(
@@ -55,7 +91,9 @@ class _HomeBarState extends State<Homebar> {
               SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
-                  (_isMaximized) ? await windowManager.restore() : await windowManager.maximize();
+                  (_isMaximized)
+                      ? await windowManager.restore()
+                      : await windowManager.maximize();
                   setState(() {
                     _isMaximized = !_isMaximized;
                   });
