@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/misc_utils.dart';
@@ -16,15 +17,8 @@ import 'package:mpify/widgets/shared/overlay/overlay_gui/confirmation.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 
 class ScrollableListSong extends StatefulWidget {
-  final double width;
-  final double height;
   final Color? color;
-  const ScrollableListSong({
-    super.key,
-    required this.width,
-    required this.height,
-    this.color = Colors.white,
-  });
+  const ScrollableListSong({super.key, this.color = Colors.white});
 
   @override
   State<ScrollableListSong> createState() => _ScrollableListSongState();
@@ -51,8 +45,6 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: widget.width,
-      height: widget.height,
       color: widget.color,
       child: RawScrollbar(
         thumbVisibility: true,
@@ -129,80 +121,95 @@ class SongTitle extends StatelessWidget {
     bool isSelected =
         (selectedPlaylist == playingPlaylist) &&
         (identifier == currentSongIdentifier);
-    return HoverButton(
-      baseColor: (isSelected)
-          ? Color.fromRGBO(158, 158, 158, 0.7)
-          : Colors.transparent,
-      hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-      textStyle: textStyle,
-      borderRadius: 5,
-      width: 320,
-      height: 70,
-      onPressed: () async {
-        context.read<PlaylistModels>().setPlayingPlaylist();
-        final songModels = context.read<SongModels>();
-        await songModels
-            .loadActivePlaylistSong(); //copy activeSong to background song
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showArtist = constraints.maxWidth > 600;
+        final showDuration = constraints.maxWidth > 400;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<SettingsModels>().setShowArtist(showArtist);
+          context.read<SettingsModels>().setShowDuration(showDuration);
+        });
 
-        final songsBackground = songModels.songsBackground;
+        return HoverButton(
+          baseColor: (isSelected)
+              ? Color.fromRGBO(158, 158, 158, 0.7)
+              : Colors.transparent,
+          hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
+          textStyle: textStyle,
+          borderRadius: 5,
+          width: 320,
+          height: 80,
+          onPressed: () async {
+            context.read<PlaylistModels>().setPlayingPlaylist();
+            final songModels = context.read<SongModels>();
+            await songModels
+                .loadActivePlaylistSong(); //copy activeSong to background song
 
-        songModels.getSongIndex(identifier);
-        songModels.setIsPlaying(true);
-        try {
-          AudioUtils.playSong(
-            songsBackground[songModels.currentSongIndex].identifier,
-          );
-        } catch (e) {
-          MiscUtils.showError('Error: Unable To Play Audio');
-          FolderUtils.writeLog('Error: $e. Unable To Play Audio');
-        }
+            final songsBackground = songModels.songsBackground;
+
+            songModels.getSongIndex(identifier);
+            songModels.setIsPlaying(true);
+            try {
+              AudioUtils.playSong(
+                songsBackground[songModels.currentSongIndex].identifier,
+              );
+            } catch (e) {
+              MiscUtils.showError('Error: Unable To Play Audio');
+              FolderUtils.writeLog('Error: $e. Unable To Play Audio');
+            }
+          },
+          child: Row(
+            children: [
+              SizedBox(
+                width: 40,
+                child: Center(child: Text('${index + 1}', style: textStyle_16)),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CoverImage(identifier: identifier),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                flex: 10,
+                child: Text(
+                  songName,
+                  style: textStyle,
+                  overflow: TextOverflow.fade,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (showArtist)
+                Flexible(
+                  flex: 4,
+                  child: SizedBox(
+                    width: 170,
+                    height: 20,
+                    child: Text(artist, style: textStyle_12),
+                  ),
+                ),
+              const SizedBox(width: 20),
+              if (showDuration)
+                SizedBox(
+                  width: 50,
+                  height: 20,
+                  child: Text(duration, style: textStyle_12),
+                ),
+              SongOptionMenu(
+                identifier: identifier,
+                songName: songName,
+                artist: artist,
+                textStyle: textStyle,
+              ),
+            ],
+          ),
+        );
       },
-      child: Row(
-        children: [
-          SizedBox(
-            width: 40,
-            child: Center(child: Text('${index + 1}', style: textStyle_16)),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 20),
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: CoverImage(identifier: identifier),
-            ),
-          ),
-          const SizedBox(width: 20),
-          SizedBox(
-            width: 330,
-            height: 20,
-            child: Text(
-              songName,
-              style: textStyle,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              softWrap: false,
-            ),
-          ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 170,
-            height: 20,
-            child: Text(artist, style: textStyle_12),
-          ),
-          const SizedBox(width: 20),
-          SizedBox(
-            width: 50,
-            height: 20,
-            child: Text(duration, style: textStyle_12),
-          ),
-          SongOptionMenu(
-            identifier: identifier,
-            songName: songName,
-            artist: artist,
-            textStyle: textStyle,
-          ),
-        ],
-      ),
     );
   }
 }
@@ -278,6 +285,7 @@ class SongOptionMenu extends StatelessWidget {
                   function: () => PlaylistUltis.deleteSongFromPlaylist(
                     identifier,
                     selectedPlaylist,
+                    context
                   ),
                 ),
               );
@@ -305,7 +313,7 @@ class SongOptionMenu extends StatelessWidget {
                   warningText:
                       'This action is pernament are you sure you want to delete this song pernamently from your device?',
                   function: () =>
-                      PlaylistUltis.deleteSongFromDevice(identifier),
+                      PlaylistUltis.deleteSongFromDevice(identifier, context),
                 ),
               );
             });

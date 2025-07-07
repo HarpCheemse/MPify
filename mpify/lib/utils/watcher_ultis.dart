@@ -53,7 +53,6 @@ class Watcher {
     //update .json
     target.watch().listen((event) async {
       if (event.path.endsWith('json')) {
-        debugPrint('updated');
         listOfPlaylist = await target
             .list()
             .where((entity) => entity is File && entity.path.endsWith('.json'))

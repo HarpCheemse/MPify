@@ -373,25 +373,25 @@ class FolderUtils {
     }
   }
 
-  static Future<void> addCustomMP3(String selectedPlaylist) async {
+  static Future<bool> addCustomMP3(String selectedPlaylist) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.audio,
       withData: true,
     );
     if (result == null || result.files.isEmpty) {
       MiscUtils.showError('Error: No MP3 File Choosen');
-      return;
+      return false;
     }
     final PlatformFile mp3File = result.files.first;
     if (mp3File.extension != "mp3") {
       MiscUtils.showError("Error: Please Pick A MP3 File");
-      return;
+      return false;
     }
     Uint8List? fileBytes = mp3File.bytes;
     if (fileBytes == null) {
       MiscUtils.showError('Error: Unable To Read File');
       FolderUtils.writeLog('Error Unable To Read File');
-      return;
+      return false;
     }
 
     final String identifier = sha256.convert(fileBytes).toString();
@@ -437,8 +437,9 @@ class FolderUtils {
         "Error: Unabled To Write To Playlist: $selectedPlaylist",
       );
       writeLog("Error: $e. Unable To Write In Playlist: $selectedPlaylist");
-      return;
+      return false;
     }
     MiscUtils.showSuccess('Successfully Added Custom MP3');
+    return true;
   }
 }

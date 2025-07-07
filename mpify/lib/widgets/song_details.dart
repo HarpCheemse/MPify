@@ -56,8 +56,8 @@ class SongDetailsOptions extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, _) {
         final width = MediaQuery.of(context).size.width;
-        final infoWidth = (width/maxScreenWidth) * 330;
-        final sliderWidth = (width/maxScreenWidth) * 650;
+        final infoWidth = (width / maxScreenWidth) * 330;
+        final sliderWidth = (width / maxScreenWidth) * 650;
         final showSongDetailsOptions = 400 + infoWidth + sliderWidth < width;
         if (showSongDetailsOptions) {
           return Row(
@@ -87,7 +87,21 @@ class SongDetailsOptions extends StatelessWidget {
             ],
           );
         } else {
-          return const SizedBox();
+          return Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.music_note_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: () {
+                  context.read<PlaylistModels>().tooglePlayer();
+                },
+              ),
+              const SizedBox(width: 10,),
+            ],
+          );
         }
       },
     );
@@ -95,8 +109,8 @@ class SongDetailsOptions extends StatelessWidget {
 }
 
 class DurationBar extends StatelessWidget {
-  double? width;
-  DurationBar({super.key, this.width,});
+  final double? width;
+  const DurationBar({super.key, this.width});
   @override
   Widget build(BuildContext context) {
     return Column(

@@ -34,12 +34,11 @@ class HomeScreen extends StatelessWidget {
                       builder: (context, constraints) {
                         final width = constraints.maxWidth;
                         final showPlaylist = width > maxScreenWidth - 350;
-                        final showPlayerOrLyric = width> maxScreenWidth - 700;
                         return Row(
                           children: [
                             if (showPlaylist) const Playlist(),
                             Expanded(child: const Songs()),
-                            if (showPlayerOrLyric) const PlayerOrLyric(),
+                            const PlayerOrLyric(),
                             const SizedBox(width: 10,)
                           ],
                         );

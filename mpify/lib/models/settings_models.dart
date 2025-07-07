@@ -74,9 +74,20 @@ class SettingsModels extends ChangeNotifier {
         context.read<SongModels>().setSongsActive(activeSong);
       });
     }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SongModels>().applySortActivePlaylist(sortOption);
     });
+  }
+  bool _showArtist = true;
+  bool get showArtist => _showArtist;
+  void setShowArtist(bool value) {
+    _showArtist = value;
+    notifyListeners();
+  }
+  bool _showDuration = true;
+  bool get showDuration => _showDuration;
+  void setShowDuration(bool value) {
+    _showDuration = value;
+    notifyListeners();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/models/playlist_models.dart';
+import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -86,8 +87,12 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 hoverColor: Colors.transparent,
                 borderRadius: 10,
                 onPressed: () async {
-                  final String selectedPlaylist = context.read<PlaylistModels>().selectedPlaylist;
+                  final String selectedPlaylist = context
+                      .read<PlaylistModels>()
+                      .selectedPlaylist;
+                  final songModels = context.read<SongModels>();
                   await FolderUtils.addCustomMP3(selectedPlaylist);
+                  songModels.loadSong(selectedPlaylist);
                   OverlayController.hideOverlay();
                 },
                 width: 180,
@@ -134,11 +139,14 @@ class _CreateSongFormState extends State<CreateSongForm> {
                 baseColor: Colors.transparent,
                 hoverColor: Colors.transparent,
                 borderRadius: 0,
-                onPressed: () {
+                onPressed: () async {
                   final songName = name.text;
                   final songLink = link.text;
-                  PlaylistUltis.downloadMP3(context, songName, songLink);
+                  final playlistModels = context.read<PlaylistModels>();
+                  final songModels = context.read<SongModels>();
                   OverlayController.hideOverlay();
+                  await PlaylistUltis.downloadMP3(context, songName, songLink);
+                  songModels.loadSong(playlistModels.selectedPlaylist);
                 },
                 width: 80,
                 height: 40,

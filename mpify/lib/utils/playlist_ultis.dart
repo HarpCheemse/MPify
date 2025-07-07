@@ -116,7 +116,7 @@ class PlaylistUltis {
     return true;
   }
 
-  static Future<List<Song>> parsePlaylistJSON(file) async {
+  static Future<List<Song>> parsePlaylistJSON(File file) async {
     List<Song> parsedSongs = [];
     String contents;
     List<dynamic> songs;
@@ -189,9 +189,11 @@ class PlaylistUltis {
   }
 
   static Future<void> deleteSongFromPlaylist(
-    identifier,
-    selectedPlaylist,
+    String identifier,
+    String selectedPlaylist,
+    BuildContext context,
   ) async {
+    final songModels = context.read<SongModels>();
     final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
     final File playlistFile = File(
       p.join(playlistDir.path, '$selectedPlaylist.json'),
@@ -219,10 +221,14 @@ class PlaylistUltis {
       return;
     }
     MiscUtils.showSuccess('Successfully Delete Song From Playlist');
+    songModels.loadSong(selectedPlaylist);
+    debugPrint(selectedPlaylist);
   }
 
-  static Future<void> deleteSongFromDevice(identifier) async {
+  static Future<void> deleteSongFromDevice(String identifier, BuildContext context) async {
     int errorCount = 0;
+    final selectedPlaylist = context.read<PlaylistModels>().selectedPlaylist;
+    final songModels = context.read<SongModels>();
     final Directory playlistDir = await FolderUtils.checkPlaylistFolderExist();
     final List<dynamic> playlists = playlistDir
         .listSync()
@@ -239,7 +245,9 @@ class PlaylistUltis {
         }).toList();
         await file.writeAsString(jsonEncode(updatedList), mode: FileMode.write);
       } catch (e) {
-        FolderUtils.writeLog('Error: $e. Unable To Delete Song Metadata From Device');
+        FolderUtils.writeLog(
+          'Error: $e. Unable To Delete Song Metadata From Device',
+        );
         errorCount++;
       }
     }
@@ -262,7 +270,9 @@ class PlaylistUltis {
         await coverFile.delete();
       }
     } catch (e) {
-      FolderUtils.writeLog('Error: $e. Unable To Delete Song Cover From Device');
+      FolderUtils.writeLog(
+        'Error: $e. Unable To Delete Song Cover From Device',
+      );
       errorCount++;
     }
     //delete song lyric
@@ -273,7 +283,9 @@ class PlaylistUltis {
         await lyricFile.delete();
       }
     } catch (e) {
-      FolderUtils.writeLog('Error: $e. Unable To Delete Song Lyric From Device');
+      FolderUtils.writeLog(
+        'Error: $e. Unable To Delete Song Lyric From Device',
+      );
       errorCount++;
     }
     switch (errorCount) {
@@ -281,10 +293,13 @@ class PlaylistUltis {
         MiscUtils.showSuccess('Successfully Deleted Song From Device');
         break;
       case 1:
-        MiscUtils.showWarning('Warning: Unable To Delete Some Part Of Song From Device'); 
+        MiscUtils.showWarning(
+          'Warning: Unable To Delete Some Part Of Song From Device',
+        );
         break;
       default:
         MiscUtils.showError('Error: Unable To Delete Song From Device');
     }
+    songModels.loadSong(selectedPlaylist);
   }
 }

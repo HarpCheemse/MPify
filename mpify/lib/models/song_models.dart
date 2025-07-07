@@ -61,6 +61,9 @@ enum SortOption {
 }
 
 class SongModels extends ChangeNotifier {
+  void refresh() {
+    notifyListeners();
+  }
   List<String> _artistList = [];
   List<String> get artistList => _artistList;
   void loadArtistList() {
@@ -156,7 +159,7 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _songsActive = await PlaylistUltis.parsePlaylistJSON(playlistFile);
+    _songsActive = List<Song>.from(await PlaylistUltis.parsePlaylistJSON(playlistFile));
     applySortActivePlaylist(_sortOption);
     applySortBackgroundPlaylist(_sortOption);
     if (_isShuffle) {
@@ -171,6 +174,7 @@ class SongModels extends ChangeNotifier {
     }
     catch (e) {
       FolderUtils.writeLog('Error: $e. Unable To Save Active Playlist Prefs');
+      return;
     }
     notifyListeners();
   }

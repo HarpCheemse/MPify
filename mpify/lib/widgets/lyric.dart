@@ -91,64 +91,65 @@ class _LyricState extends State<Lyric> {
             child: Column(
               children: [
                 SizedBox(height: 20),
-                Center(
-                  child: Container(
-                    width: 300,
-                    height: 520,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.transparent,
-                    ),
-                    child: Center(
-                      child: Selector<SongModels, String>(
-                        selector: (_, model) {
-                          if (model.songsBackground.isEmpty) {
-                            return '';
-                          }
-                          return model
-                              .songsBackground[model.currentSongIndex]
-                              .identifier;
-                        },
-                        builder: (context, identifier, child) {
-                          return FutureBuilder<String?>(
-                            future: FolderUtils.getSongLyric(identifier),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                return Text('Error Loading lyric');
-                              } else {
-                                final lyric =
-                                    snapshot.data ??
-                                    'This Song Does Not Has Lyric :<. Try Add Some!';
-                                return ShaderMask(
-                                  shaderCallback: (Rect bounds) {
-                                    return LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black,
-                                        Colors.black,
-                                        Colors.transparent,
-                                      ],
-                                      stops: [0.0, 0.05, 0.95, 1],
-                                    ).createShader(bounds);
-                                  },
-                                  blendMode: BlendMode.dstIn,
-                                  child: SingleChildScrollView(
-                                    padding: const EdgeInsets.all(15),
-                                    child: Text(
-                                      lyric,
-                                      style: montserratStyle(context: context),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.transparent,
+                      ),
+                      child: Center(
+                        child: Selector<SongModels, String>(
+                          selector: (_, model) {
+                            if (model.songsBackground.isEmpty) {
+                              return '';
+                            }
+                            return model
+                                .songsBackground[model.currentSongIndex]
+                                .identifier;
+                          },
+                          builder: (context, identifier, child) {
+                            return FutureBuilder<String?>(
+                              future: FolderUtils.getSongLyric(identifier),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (snapshot.hasError) {
+                                  return Text('Error Loading lyric');
+                                } else {
+                                  final lyric =
+                                      snapshot.data ??
+                                      'This Song Does Not Has Lyric :<. Try Add Some!';
+                                  return ShaderMask(
+                                    shaderCallback: (Rect bounds) {
+                                      return LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.black,
+                                          Colors.black,
+                                          Colors.transparent,
+                                        ],
+                                        stops: [0.0, 0.05, 0.95, 1],
+                                      ).createShader(bounds);
+                                    },
+                                    blendMode: BlendMode.dstIn,
+                                    child: SingleChildScrollView(
+                                      padding: const EdgeInsets.all(15),
+                                      child: Text(
+                                        lyric,
+                                        style: montserratStyle(context: context),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                            },
-                          );
-                        },
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
