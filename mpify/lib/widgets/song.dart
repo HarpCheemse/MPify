@@ -69,43 +69,90 @@ class _SongsState extends State<Songs> {
                           ),
                         ),
                       ),
-                      Selector<SettingsModels, bool>(
-                        selector: (_, models) => models.showArtist,
-                        builder: (_, showArtist, _) {
-                          if (showArtist) {
-                            return Expanded(
-                              flex: 4,
-                              child: SizedBox(
-                                width: 170,
-                                child: Text(
-                                  'Artist',
-                                  style: montserratStyle(
-                                    context: context,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
+                      //Prevent Label from updating when list is empty
+                      Selector<SongModels, List<Song>>(
+                        selector: (_, models) => models.songsActive,
+                        builder: (_, songActive, _) {
+                          if (songActive.isNotEmpty) {
+                            return Selector<SettingsModels, bool>(
+                              selector: (_, models) => models.showArtist,
+                              builder: (_, showArtist, _) {
+                                if (showArtist) {
+                                  return Expanded(
+                                    flex: 4,
+                                    child: SizedBox(
+                                      width: 170,
+                                      child: Text(
+                                        'Artist',
+                                        style: montserratStyle(
+                                          context: context,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              },
                             );
                           } else {
-                            return SizedBox();
+                            if (constraints.maxWidth > 600) {
+                              return Expanded(
+                                flex: 4,
+                                child: SizedBox(
+                                  width: 170,
+                                  child: Text(
+                                    'Artist',
+                                    style: montserratStyle(
+                                      context: context,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return SizedBox();
+                            }
                           }
                         },
                       ),
-                      Selector<SettingsModels, bool>(
-                        selector: (_, models) => models.showDuration,
-                        builder: (_, showDuration, _) {
-                          if (showDuration) {
-                            return Text(
-                              'Duration',
-                              style: montserratStyle(
-                                context: context,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
+                      Selector<SongModels, List<Song>>(
+                        selector: (_, models) => models.songsActive,
+                        builder: (_, songActive, _) {
+                          if (songActive.isNotEmpty) {
+                            return Selector<SettingsModels, bool>(
+                              selector: (_, models) => models.showDuration,
+                              builder: (_, showDuration, _) {
+                                if (showDuration) {
+                                  return Text(
+                                    'Duration',
+                                    style: montserratStyle(
+                                      context: context,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              },
                             );
                           } else {
-                            return SizedBox();
+                            if (constraints.maxWidth > 400) {
+                              return Text(
+                                'Duration',
+                                style: montserratStyle(
+                                  context: context,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            } else {
+                              return SizedBox();
+                            }
                           }
                         },
                       ),
@@ -210,7 +257,10 @@ class _SongHeader extends State<SongHeader> {
               LayoutBuilder(
                 builder: (context, constraints) {
                   //generate a number between 0.5 to 1;
-                  final searchSizePercentage = ((constraints.maxWidth - 720)/(maxScreenWidth - 720))/2 + 0.5;
+                  final searchSizePercentage =
+                      ((constraints.maxWidth - 720) / (maxScreenWidth - 720)) /
+                          2 +
+                      0.5;
                   return Row(
                     children: [
                       const SizedBox(width: 10),
