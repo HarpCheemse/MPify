@@ -1,15 +1,24 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+//Handle Setting Related
+
+
 enum SettingsCategory { general, audio, backup, troubleshooter, about }
 
 class SettingsModels extends ChangeNotifier {
+  final SongModels songModels;
+  final PlaybackModels playbackModels;
+  SettingsModels({required this.songModels, required this.playbackModels});
+  
   bool _isOpenSettings = false;
   bool get isOpenSettings => _isOpenSettings;
   void flipIsOpenSetting() {
@@ -57,7 +66,7 @@ class SettingsModels extends ChangeNotifier {
     toogleTheme(isDark);
 
     final isShuffle = prefs.getBool('isShuffle') ?? true;
-    context.read<SongModels>().setIsShuffe(isShuffle);
+    playbackModels.setIsShuffe(isShuffle);
 
     final sortOptioStr = prefs.getString('sortOption');
     final sortOption = SortOption.values.firstWhere(

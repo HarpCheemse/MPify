@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/main.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/string_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -65,18 +66,9 @@ class _PlayerState extends State<Player> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 10, top: 20),
-      child: Selector<SongModels, String?>(
+      child: Selector<PlaybackModels, String?>(
         selector: (_, model) {
-          final songs = model.songsBackground;
-          if (songs.isEmpty) {
-            return null;
-          } else {
-            if (model.currentSongIndex != -1) {
-              return songs[model.currentSongIndex].identifier;
-            } else {
-              return null;
-            }
-          }
+          return model.getCurrentIdentifier();
         },
         builder: (context, identifier, child) {
           final colorIndex = (identifier == null)
@@ -112,7 +104,7 @@ class _PlayerState extends State<Player> {
                   child: Consumer<SongModels>(
                     builder: (context, value, child) {
                       final songs = value.songsBackground;
-                      final index = value.currentSongIndex;
+                      final index = context.read<PlaybackModels>().currentSongIndex;
                       final identifier = (songs.isEmpty)
                           ? null
                           : songs[index].identifier;
@@ -160,7 +152,7 @@ class _PlayerState extends State<Player> {
                 Consumer<SongModels>(
                   builder: (context, value, child) {
                     final songs = value.songsBackground;
-                    final index = value.currentSongIndex;
+                    final index = context.read<PlaybackModels>().currentSongIndex;
                     final name = (songs.isEmpty)
                         ? 'Song Name'
                         : songs[index].name;
@@ -184,7 +176,7 @@ class _PlayerState extends State<Player> {
                 Consumer<SongModels>(
                   builder: (context, value, child) {
                     final songs = value.songsBackground;
-                    final index = value.currentSongIndex;
+                    final index = context.read<PlaybackModels>().currentSongIndex;
                     final artist = (songs.isEmpty)
                         ? 'Unknown'
                         : songs[index].artist;

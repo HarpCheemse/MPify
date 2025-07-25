@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mpify/models/song_models.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/shared/overlay/overlay_controller.dart';
@@ -66,14 +66,9 @@ class _LyricState extends State<Lyric> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 10, top: 20),
-      child: Selector<SongModels, String?>(
+      child: Selector<PlaybackModels, String?>(
         selector: (_, model) {
-          final songs = model.songsBackground;
-          if (songs.isEmpty) {
-            return null;
-          } else {
-            return songs[model.currentSongIndex].identifier;
-          }
+          return model.getCurrentIdentifier();
         },
         builder: (context, identifier, child) {
           final colorIndex = (identifier == null)
@@ -100,14 +95,9 @@ class _LyricState extends State<Lyric> {
                         color: Colors.transparent,
                       ),
                       child: Center(
-                        child: Selector<SongModels, String>(
+                        child: Selector<PlaybackModels, String?>(
                           selector: (_, model) {
-                            if (model.songsBackground.isEmpty) {
-                              return '';
-                            }
-                            return model
-                                .songsBackground[model.currentSongIndex]
-                                .identifier;
+                            return model.getCurrentIdentifier();
                           },
                           builder: (context, identifier, child) {
                             return FutureBuilder<String?>(

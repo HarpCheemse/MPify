@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+//Handle playlist related
+
+
 class PlaylistModels extends ChangeNotifier{
   String _selectedPlaylist = 'Playlist Name';
   bool _isPlayerOpen = true;

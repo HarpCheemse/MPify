@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/utils/playlist_ultis.dart';
 import 'package:mpify/utils/string_ultis.dart';
 import 'dart:io';
@@ -8,9 +10,10 @@ import 'package:path/path.dart' as p;
 
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/utils/audio_ultis.dart';
-import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
+
+//Handle Song Related
 
 class Song {
   final String name;
@@ -61,14 +64,18 @@ enum SortOption {
 }
 
 class SongModels extends ChangeNotifier {
+  final PlaybackModels playbackModels;
+  SongModels({required this.playbackModels});
   void refresh() {
     notifyListeners();
   }
+
   List<String> _artistList = [];
   List<String> get artistList => _artistList;
+
   void loadArtistList() {
     _artistList = _songsActive.map((song) => song.artist).toSet().toList();
-    _artistList.sort((a,b) => a.compareTo(b));
+    _artistList.sort((a, b) => a.compareTo(b));
     notifyListeners();
   }
 
@@ -79,32 +86,12 @@ class SongModels extends ChangeNotifier {
     _sortOption = option;
     try {
       final prefs = await SharedPreferences.getInstance();
-    prefs.setString('sortOption', option.name);
-    }
-    catch (e) {
+      prefs.setString('sortOption', option.name);
+    } catch (e) {
       FolderUtils.writeLog('Error: $e. Unable To Saved Sort Option Prefs');
     }
     applySortActivePlaylist(option);
     applySortBackgroundPlaylist(option);
-  }
-
-  bool _isShuffle = true;
-  bool get isShuffle => _isShuffle;
-  void flipIsShuffle() async {
-    _isShuffle = !_isShuffle;
-    try {
-       final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isShuffle', _isShuffle);
-    }
-    catch (e) {
-      FolderUtils.writeLog('Error: $e. Unable To Saved Shuffle Prefs');
-    }
-    notifyListeners();
-  }
-
-  void setIsShuffe(isShuffle) {
-    _isShuffle = isShuffle;
-    notifyListeners();
   }
 
   List<Song> _songsActive = []; //change when click on playlist
@@ -133,21 +120,7 @@ class SongModels extends ChangeNotifier {
 
   List<Song> get songsBackground => _songsBackground;
 
-  int _currentSongIndex = 0;
-  int get currentSongIndex => _currentSongIndex;
-
   //find the song idex from list after choose a random song by hand
-  Future<void> getSongIndex(songIdentifier) async {
-    final index = _songsBackground.indexWhere(
-      (song) => song.identifier == songIdentifier,
-    );
-    if (index == -1) {
-      debugPrint('$songIdentifier does not exit in the list');
-      return;
-    }
-    _currentSongIndex = index;
-    notifyListeners();
-  }
 
   Future<void> loadSong(String playlist) async {
     final playlistDir = await FolderUtils.checkPlaylistFolderExist();
@@ -159,20 +132,21 @@ class SongModels extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _songsActive = List<Song>.from(await PlaylistUltis.parsePlaylistJSON(playlistFile));
+    _songsActive = List<Song>.from(
+      await PlaylistUltis.parsePlaylistJSON(playlistFile),
+    );
     applySortActivePlaylist(_sortOption);
     applySortBackgroundPlaylist(_sortOption);
-    if (_isShuffle) {
-      shuffleSongs(_currentSongIndex);
+    if (playbackModels.isShuffle) {
+      shuffleSongs(playbackModels.currentSongIndex);
     }
     try {
       final prefs = await SharedPreferences.getInstance();
-    prefs.setString(
-      'activeSong',
-      jsonEncode(_songsActive.map((song) => song.toJson()).toList()),
-    );
-    }
-    catch (e) {
+      prefs.setString(
+        'activeSong',
+        jsonEncode(_songsActive.map((song) => song.toJson()).toList()),
+      );
+    } catch (e) {
       FolderUtils.writeLog('Error: $e. Unable To Save Active Playlist Prefs');
       return;
     }
@@ -195,8 +169,8 @@ class SongModels extends ChangeNotifier {
         )
         .toList();
     //shufle background except the current index
-    if (_isShuffle) {
-      shuffleSongs(_currentSongIndex);
+    if (playbackModels.isShuffle) {
+      shuffleSongs(playbackModels.currentSongIndex);
     }
   }
 
@@ -226,97 +200,88 @@ class SongModels extends ChangeNotifier {
 
   Future<void> playNextSong() async {
     if (_songsBackground.isEmpty) return;
+    final index = playbackModels.currentSongIndex;
     setIsPlaying(true);
-    if (_currentSongIndex < 0 || _currentSongIndex > _songsBackground.length) {
+    if (index < 0 || index > _songsBackground.length) {
       return;
     }
-    if (_currentSongIndex + 1 < _songsBackground.length) {
-      _currentSongIndex++;
+    if (index + 1 < _songsBackground.length) {
+      playbackModels.setSongIndex(index + 1);
     } else {
-      _currentSongIndex = 0;
+      playbackModels.setSongIndex(0);
     }
     notifyListeners();
-    await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
+    await AudioUtils.playSong(
+      _songsBackground[playbackModels.currentSongIndex].identifier,
+    );
   }
 
   Future<void> playPreviousSong() async {
     if (_songsBackground.isEmpty) return;
-    if (_currentSongIndex < 0 || currentSongIndex > _songsBackground.length) {
+    final index = playbackModels.currentSongIndex;
+    if (index < 0 || index > _songsBackground.length) {
       return;
     }
-    if (_currentSongIndex - 1 >= 0) {
-      _currentSongIndex--;
+    if (index - 1 >= 0) {
+      playbackModels.setSongIndex(index - 1);
     } else {
-      _currentSongIndex = _songsBackground.length - 1;
-    }
-    await AudioUtils.playSong(_songsBackground[_currentSongIndex].identifier);
-  }
-
-  void shuffleSongs(int fixedIndex) {
-    if (fixedIndex < 0 && fixedIndex > songsBackground.length) return;
-    final rand = Random();
-    for (int i = 0; i < _songsBackground.length; i++) {
-      if (i == fixedIndex) continue;
-      int j;
-      do {
-        j = rand.nextInt(i + 1);
-      } while (j == fixedIndex);
-      final temp = songsBackground[i];
-      _songsBackground[i] = _songsBackground[j];
-      _songsBackground[j] = temp;
+      playbackModels.setSongIndex(_songsBackground.length - 1);
     }
     notifyListeners();
+    await AudioUtils.playSong(
+      _songsBackground[playbackModels.currentSongIndex].identifier,
+    );
   }
 
-  //get current index, sort it, and bind _currentIndex to new index
-  void unshuffleSongs() async {
+  void applySortBackgroundPlaylist(SortOption option) async {
     if (_songsBackground.isEmpty) return;
-    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
-    applySortBackgroundPlaylist(_sortOption);
+    String prevSongIdentifier =
+        _songsBackground[playbackModels.currentSongIndex].identifier;
+    switch (option) {
+      case SortOption.nameAZ:
+        _songsBackground.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.nameZA:
+        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case SortOption.artistAZ:
+        _songsBackground.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.artistZA:
+        _songsBackground.sort(
+          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
+        );
+        break;
+      case SortOption.lastest:
+        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        break;
+      case SortOption.newest:
+        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        break;
+      case SortOption.durationLongest:
+        _songsBackground.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            b.duration,
+          ).compareTo(StringUltis.getDurationFromString(a.duration)),
+        );
+        break;
+      case SortOption.durationShortest:
+        _songsBackground.sort(
+          (a, b) => StringUltis.getDurationFromString(
+            a.duration,
+          ).compareTo(StringUltis.getDurationFromString(b.duration)),
+        );
+        break;
+    }
     for (int i = 0; i < _songsBackground.length; i++) {
       if (_songsBackground[i].identifier == prevSongIdentifier) {
-        _currentSongIndex = i;
+        playbackModels.setSongIndex(i);
         break;
       }
-    }
-    notifyListeners();
-  }
-
-  Duration _songDuration = Duration.zero;
-  Duration _songProgress = Duration.zero;
-
-  Duration get songDuration => _songDuration;
-  Duration get songProgress => _songProgress;
-
-  void setSongDurationZero() {
-    _songDuration = Duration.zero;
-    _songProgress = Duration.zero;
-  }
-
-  final _audioPlayer = AudioUtils.player;
-
-  SongModels() {
-    AudioUtils.player.onPlayerComplete.listen((event) {
-      playNextSong();
-    });
-    _audioPlayer.onDurationChanged.listen((duration) {
-      _songDuration = duration;
-      notifyListeners();
-    });
-
-    _audioPlayer.onPositionChanged.listen((position) {
-      _songProgress = position;
-      notifyListeners();
-    });
-  }
-
-  void seek(Duration position) {
-    if (songDuration.inSeconds <= 0) return;
-    try {
-      _audioPlayer.seek(position);
-      _songProgress = position;
-    } catch (e) {
-      FolderUtils.writeLog('Error: $e. Unable To Seek To $position.');
     }
     notifyListeners();
   }
@@ -366,54 +331,31 @@ class SongModels extends ChangeNotifier {
     notifyListeners();
   }
 
-  void applySortBackgroundPlaylist(SortOption option) async {
+  void unshuffleSongs() async {
     if (_songsBackground.isEmpty) return;
-    String prevSongIdentifier = _songsBackground[_currentSongIndex].identifier;
-    switch (option) {
-      case SortOption.nameAZ:
-        _songsBackground.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        break;
-      case SortOption.nameZA:
-        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
-        break;
-      case SortOption.artistAZ:
-        _songsBackground.sort(
-          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
-        );
-        break;
-      case SortOption.artistZA:
-        _songsBackground.sort(
-          (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
-        );
-        break;
-      case SortOption.lastest:
-        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
-        break;
-      case SortOption.newest:
-        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
-        break;
-      case SortOption.durationLongest:
-        _songsBackground.sort(
-          (a, b) => StringUltis.getDurationFromString(
-            b.duration,
-          ).compareTo(StringUltis.getDurationFromString(a.duration)),
-        );
-        break;
-      case SortOption.durationShortest:
-        _songsBackground.sort(
-          (a, b) => StringUltis.getDurationFromString(
-            a.duration,
-          ).compareTo(StringUltis.getDurationFromString(b.duration)),
-        );
-        break;
-    }
+    String prevSongIdentifier = _songsBackground[playbackModels.currentSongIndex].identifier;
+    applySortBackgroundPlaylist(_sortOption);
     for (int i = 0; i < _songsBackground.length; i++) {
       if (_songsBackground[i].identifier == prevSongIdentifier) {
-        _currentSongIndex = i;
+        playbackModels.setSongIndex(i);
         break;
       }
+    }
+    notifyListeners();
+  }
+
+  void shuffleSongs(int fixedIndex) {
+    if (fixedIndex < 0 && fixedIndex > songsBackground.length) return;
+    final rand = Random();
+    for (int i = 0; i < _songsBackground.length; i++) {
+      if (i == fixedIndex) continue;
+      int j;
+      do {
+        j = rand.nextInt(i + 1);
+      } while (j == fixedIndex);
+      final temp = songsBackground[i];
+      _songsBackground[i] = _songsBackground[j];
+      _songsBackground[j] = temp;
     }
     notifyListeners();
   }

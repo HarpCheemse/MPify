@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mpify/main.dart';
+import 'package:mpify/models/duration_models.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
@@ -241,12 +243,17 @@ class _SongHeader extends State<SongHeader> {
                           ),
                         ),
                         SizedBox(height: 5, width: 10),
-                        Text(
-                          context.watch<PlaylistModels>().selectedPlaylist,
-                          style: montserratStyle(
-                            context: context,
-                            fontSize: 24,
-                          ),
+                        Selector<PlaylistModels, String>(
+                          selector: (_, models) => models.selectedPlaylist,
+                          builder: (_, playlist, _) {
+                            return Text(
+                              playlist,
+                              style: montserratStyle(
+                                context: context,
+                                fontSize: 24,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -264,97 +271,91 @@ class _SongHeader extends State<SongHeader> {
                   return Row(
                     children: [
                       const SizedBox(width: 10),
-                      Consumer<SongModels>(
-                        builder: (context, songs, child) {
-                          return HoverButton(
-                            baseColor: Colors.white,
-                            borderRadius: 50,
-                            onPressed: () async {
-                              if (context
-                                      .read<PlaylistModels>()
-                                      .selectedPlaylist ==
-                                  context
-                                      .read<PlaylistModels>()
-                                      .playingPlaylist) {
-                                songs.isPlaying
-                                    ? AudioUtils.pauseSong()
-                                    : AudioUtils.resumeSong();
-                                songs.flipIsPlaying();
-                              } else {
-                                context
-                                    .read<PlaylistModels>()
-                                    .setPlayingPlaylist();
-                                final songModels = context.read<SongModels>();
-                                await songModels
-                                    .loadActivePlaylistSong(); //copy activeSong to background song
-
-                                final songsBackground =
-                                    songModels.songsBackground;
-                                if (songsBackground.isEmpty) {
-                                  songs.setSongDurationZero();
-                                  await AudioUtils.stopSong();
-                                  return;
-                                }
-                                final randomIndex = Random().nextInt(
-                                  songsBackground.length,
-                                );
-                                final identifier =
-                                    songsBackground[randomIndex].identifier;
-                                songModels.getSongIndex(identifier);
-                                songModels.setIsPlaying(true);
-                                try {
-                                  AudioUtils.playSong(
-                                    songsBackground[songModels.currentSongIndex]
-                                        .identifier,
-                                  );
-                                } catch (e) {
-                                  MiscUtils.showError(
-                                    'Error: Unable To Play Audio',
-                                  );
-                                  FolderUtils.writeLog(
-                                    'Error: $e. Unable To Play Audio',
-                                  );
-                                }
-                              }
-                            },
-                            width: 60,
-                            height: 60,
-                            hoverColor: const Color.fromARGB(
-                              255,
-                              206,
-                              206,
-                              206,
-                            ),
-                            child: Consumer<PlaylistModels>(
-                              builder: (context, playlist, child) {
-                                return Icon(
-                                  (playlist.selectedPlaylist ==
-                                          playlist.playingPlaylist)
-                                      ? (songs.isPlaying
-                                            ? Icons.pause
-                                            : Icons.play_arrow)
-                                      : Icons.play_arrow,
-                                  color: Colors.black,
-                                );
-                              },
-                            ),
-                          );
+                      HoverButton(
+                        baseColor: Colors.white,
+                        borderRadius: 50,
+                        onPressed: () async {
+                          PlaylistModels playlistModels = context
+                              .read<PlaylistModels>();
+                          PlaybackModels playbackModels = context
+                              .read<PlaybackModels>();
+                          DurationModels durationModels = context
+                              .read<DurationModels>();
+                          SongModels songModels = context.read<SongModels>();
+                          if (playlistModels.selectedPlaylist ==
+                              playlistModels.playingPlaylist) {
+                            songModels.isPlaying
+                                ? AudioUtils.pauseSong()
+                                : AudioUtils.resumeSong();
+                            songModels.flipIsPlaying();
+                          } else {
+                            playlistModels.setPlayingPlaylist();
+                            await songModels
+                                .loadActivePlaylistSong(); //copy activeSong to background song
+                            final songsBackground = songModels.songsBackground;
+                            if (songsBackground.isEmpty) {
+                              await AudioUtils.stopSong();
+                              if (!context.mounted) return;
+                              durationModels.setSongDurationZero();
+                              return;
+                            }
+                            final randomIndex = Random().nextInt(
+                              songsBackground.length,
+                            );
+                            playbackModels.setSongIndex(randomIndex);
+                            final identifier = playbackModels
+                                .getCurrentIdentifier();
+                            songModels.setIsPlaying(true);
+                            try {
+                              AudioUtils.playSong(identifier);
+                            } catch (e) {
+                              MiscUtils.showError(
+                                'Error: Unable To Play Audio',
+                              );
+                              FolderUtils.writeLog(
+                                'Error: $e. Unable To Play Audio',
+                              );
+                            }
+                          }
                         },
+                        width: 60,
+                        height: 60,
+                        hoverColor: const Color.fromARGB(255, 206, 206, 206),
+                        child: Consumer<PlaylistModels>(
+                          builder: (context, playlist, child) {
+                            return Icon(
+                              (playlist.selectedPlaylist ==
+                                      playlist.playingPlaylist)
+                                  ? (context.read<SongModels>().isPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow)
+                                  : Icons.play_arrow,
+                              color: Colors.black,
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(width: 30),
-                      IconButton(
-                        icon: Icon(Icons.shuffle_rounded),
-                        color: context.watch<SongModels>().isShuffle
-                            ? const Color.fromARGB(255, 44, 124, 47)
-                            : Colors.white,
-                        iconSize: 30,
-                        onPressed: () {
-                          context.read<SongModels>().isShuffle
-                              ? context.read<SongModels>().unshuffleSongs()
-                              : context.read<SongModels>().shuffleSongs(
-                                  context.read<SongModels>().currentSongIndex,
-                                );
-                          context.read<SongModels>().flipIsShuffle();
+                      Selector<PlaybackModels, bool>(
+                        selector: (_, models) => models.isShuffle,
+                        builder: (_, isShuffle, _) {
+                          return IconButton(
+                            icon: Icon(Icons.shuffle_rounded),
+                            color: isShuffle
+                                ? const Color.fromARGB(255, 44, 124, 47)
+                                : Colors.white,
+                            iconSize: 30,
+                            onPressed: () {
+                              context.read<PlaybackModels>().isShuffle
+                                  ? context.read<SongModels>().unshuffleSongs()
+                                  : context.read<SongModels>().shuffleSongs(
+                                      context
+                                          .read<PlaybackModels>()
+                                          .currentSongIndex,
+                                    );
+                              context.read<PlaybackModels>().flipIsShuffle();
+                            },
+                          );
                         },
                       ),
                       const SizedBox(width: 30),
@@ -464,7 +465,7 @@ class SongSortOption extends StatelessWidget {
                 PopupMenuItem(
                   value: SortOption.lastest,
                   child: Text(
-                    'Lastest Added',
+                    'Latest Added',
                     style: montserratStyle(context: context),
                   ),
                 ),

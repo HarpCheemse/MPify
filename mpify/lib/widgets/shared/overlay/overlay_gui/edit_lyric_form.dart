@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
@@ -88,7 +89,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
                 borderRadius: 0,
                 onPressed: () {
                   final songModel = context.read<SongModels>();
-                  final index = songModel.currentSongIndex;
+                  final index = context.read<PlaybackModels>().currentSongIndex;
                   final backgroundSong = songModel.songsBackground;
                   final identifier = backgroundSong[index].identifier;
                   OverlayController.hideOverlay();

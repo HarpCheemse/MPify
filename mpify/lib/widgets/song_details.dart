@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/main.dart';
+import 'package:mpify/models/duration_models.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/string_ultis.dart';
@@ -99,7 +101,7 @@ class SongDetailsOptions extends StatelessWidget {
                   context.read<PlaylistModels>().tooglePlayer();
                 },
               ),
-              const SizedBox(width: 10,),
+              const SizedBox(width: 10),
             ],
           );
         }
@@ -191,7 +193,7 @@ class DurationBar extends StatelessWidget {
         ),
         Row(
           children: [
-            Consumer<SongModels>(
+            Consumer<DurationModels>(
               builder: (context, value, child) {
                 final songProgress = StringUltis.formatDuration(
                   value.songProgress,
@@ -228,7 +230,7 @@ class DurationBar extends StatelessWidget {
               },
             ),
             const SizedBox(width: 10),
-            Consumer<SongModels>(
+            Consumer<DurationModels>(
               builder: (context, value, child) {
                 final songDuration = StringUltis.formatDuration(
                   value.songDuration,
@@ -266,7 +268,7 @@ class MiniSongDetails extends StatelessWidget {
             child: Consumer<SongModels>(
               builder: (context, value, child) {
                 final songs = value.songsBackground;
-                final index = value.currentSongIndex;
+                final index = context.read<PlaybackModels>().currentSongIndex;
                 final identifier = (songs.isEmpty)
                     ? null
                     : songs[index].identifier;
@@ -298,7 +300,7 @@ class MiniSongDetails extends StatelessWidget {
           children: [
             Consumer<SongModels>(
               builder: (context, value, child) {
-                final index = value.currentSongIndex;
+                final index = context.read<PlaybackModels>().currentSongIndex;
                 final songs = value.songsBackground;
                 final name = (songs.isEmpty) ? 'Song Name' : songs[index].name;
                 return LayoutBuilder(
@@ -329,7 +331,7 @@ class MiniSongDetails extends StatelessWidget {
             Consumer<SongModels>(
               builder: (context, value, child) {
                 final songs = value.songsBackground;
-                final index = value.currentSongIndex;
+                final index = context.read<PlaybackModels>().currentSongIndex;
                 final artist = (songs.isEmpty) ? 'Artist' : songs[index].artist;
                 return SizedBox(
                   width: 160,

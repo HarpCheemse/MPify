@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/folder_ultis.dart';
@@ -111,12 +112,8 @@ class SongTitle extends StatelessWidget {
     final playingPlaylist = context.select<PlaylistModels, String>(
       (model) => model.playingPlaylist,
     );
-    final currentSongIdentifier = context.select<SongModels, String>((model) {
-      final backgroundSong = model.songsBackground;
-      final index = model.currentSongIndex;
-      return (backgroundSong.isEmpty)
-          ? "None"
-          : backgroundSong[index].identifier;
+    final String? currentSongIdentifier = context.select<PlaybackModels, String?>((model) {
+      return model.getCurrentIdentifier();
     });
     bool isSelected =
         (selectedPlaylist == playingPlaylist) &&
@@ -147,11 +144,11 @@ class SongTitle extends StatelessWidget {
 
             final songsBackground = songModels.songsBackground;
 
-            songModels.getSongIndex(identifier);
+            context.read<PlaybackModels>().getSongIndex(identifier);
             songModels.setIsPlaying(true);
             try {
               AudioUtils.playSong(
-                songsBackground[songModels.currentSongIndex].identifier,
+                songsBackground[context.read<PlaybackModels>().currentSongIndex].identifier,
               );
             } catch (e) {
               MiscUtils.showError('Error: Unable To Play Audio');

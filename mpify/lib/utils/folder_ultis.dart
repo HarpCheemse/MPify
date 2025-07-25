@@ -103,7 +103,7 @@ class FolderUtils {
     await lyricFile.writeAsString(text);
   }
 
-  static Future<String?> getSongLyric(String identifier) async {
+  static Future<String?> getSongLyric(String? identifier) async {
     final Directory lyricDir = await checkLyricFolderExist();
     final File lyricFile = File(p.join(lyricDir.path, '$identifier.txt'));
     if (!await lyricFile.exists()) return null;

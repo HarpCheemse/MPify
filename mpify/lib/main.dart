@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mpify/models/duration_models.dart';
+import 'package:mpify/models/playback_models.dart';
 import 'package:mpify/models/playlist_models.dart';
 import 'package:mpify/models/settings_models.dart';
 import 'package:mpify/models/song_models.dart';
@@ -19,13 +21,24 @@ double maxScreenWidth = 1920;
 double maxScreenHeight = 1080;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final PlaylistModels playlistModels = PlaylistModels();
+  final PlaybackModels playbackModels = PlaybackModels();
+  final SongModels songModels = SongModels(playbackModels: playbackModels);
+  final SettingsModels settingsModels = SettingsModels(
+    songModels: songModels,
+    playbackModels: playbackModels,
+  );
+  final DurationModels durationModels = DurationModels(songModels: songModels);
+  playbackModels.songModels = songModels;
+
   runZonedGuarded(
     () async {
       await FolderUtils.clearLog();
       if (defaultTargetPlatform == TargetPlatform.linux ||
           defaultTargetPlatform == TargetPlatform.macOS ||
           defaultTargetPlatform == TargetPlatform.windows) {
-        WidgetsFlutterBinding.ensureInitialized();
         await windowManager.ensureInitialized();
 
         await windowManager.waitUntilReadyToShow();
@@ -41,17 +54,11 @@ void main() async {
         runApp(
           MultiProvider(
             providers: [
-              ChangeNotifierProvider(create: (_) => PlaylistModels()),
-              ChangeNotifierProvider(create: (_) => SongModels()),
-              ChangeNotifierProvider(
-                create: (context) {
-                  final settingsModel = SettingsModels();
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    settingsModel.loadAllPrefs(context);
-                  });
-                  return settingsModel;
-                },
-              ),
+              ChangeNotifierProvider.value(value: playbackModels),
+              ChangeNotifierProvider.value(value: playlistModels),
+              ChangeNotifierProvider.value(value: settingsModels),
+              ChangeNotifierProvider.value(value: songModels),
+              ChangeNotifierProvider.value(value: durationModels),
             ],
             child: MPify(),
           ),
@@ -92,7 +99,6 @@ class MPify extends StatelessWidget {
           primary: Colors.teal,
           onSurface: Colors.white,
           surfaceContainer: const Color.fromARGB(255, 24, 24, 24),
-          
         ),
       ),
       themeMode: themeProvider.themeMode,
