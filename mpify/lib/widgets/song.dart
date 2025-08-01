@@ -33,12 +33,12 @@ class _SongsState extends State<Songs> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 20),
+      padding: const EdgeInsets.only(left: 10, top: 20),
       child: Container(
         height: 600,
         width: 800,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Column(
@@ -95,7 +95,7 @@ class _SongsState extends State<Songs> {
                                     ),
                                   );
                                 } else {
-                                  return SizedBox();
+                                  return const SizedBox();
                                 }
                               },
                             );
@@ -116,7 +116,7 @@ class _SongsState extends State<Songs> {
                                 ),
                               );
                             } else {
-                              return SizedBox();
+                              return const SizedBox();
                             }
                           }
                         },
@@ -138,7 +138,7 @@ class _SongsState extends State<Songs> {
                                     ),
                                   );
                                 } else {
-                                  return SizedBox();
+                                  return const SizedBox();
                                 }
                               },
                             );
@@ -153,7 +153,7 @@ class _SongsState extends State<Songs> {
                                 ),
                               );
                             } else {
-                              return SizedBox();
+                              return const SizedBox();
                             }
                           }
                         },
@@ -189,13 +189,26 @@ class _SongsState extends State<Songs> {
 }
 
 class SongHeader extends StatefulWidget {
-  final TextEditingController controller = TextEditingController();
-  SongHeader({super.key});
+  const SongHeader({super.key});
   @override
   State<SongHeader> createState() => _SongHeader();
 }
 
 class _SongHeader extends State<SongHeader> {
+  late final TextEditingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -206,7 +219,7 @@ class _SongHeader extends State<SongHeader> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.blue,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
             gradient: LinearGradient(
               colors: [
                 const Color.fromARGB(255, 4, 88, 156),
@@ -242,7 +255,7 @@ class _SongHeader extends State<SongHeader> {
                             fontSize: 10,
                           ),
                         ),
-                        SizedBox(height: 5, width: 10),
+                        const SizedBox(height: 5, width: 10),
                         Selector<PlaylistModels, String>(
                           selector: (_, models) => models.selectedPlaylist,
                           builder: (_, playlist, _) {
@@ -321,15 +334,18 @@ class _SongHeader extends State<SongHeader> {
                         width: 60,
                         height: 60,
                         hoverColor: const Color.fromARGB(255, 206, 206, 206),
-                        child: Consumer<PlaylistModels>(
-                          builder: (context, playlist, child) {
+                        child: Selector<SongModels, bool>(
+                          selector: (_, models) {
+                            final PlaylistModels playlistModels = context
+                                .read<PlaylistModels>();
+                            return (playlistModels.playingPlaylist ==
+                                    playlistModels.selectedPlaylist) ==
+                                models.isPlaying;
+                            //Return only true when selected playlist == playing playlist and is playing
+                          },
+                          builder: (_, isPlaying, _) {
                             return Icon(
-                              (playlist.selectedPlaylist ==
-                                      playlist.playingPlaylist)
-                                  ? (context.read<SongModels>().isPlaying
-                                        ? Icons.pause
-                                        : Icons.play_arrow)
-                                  : Icons.play_arrow,
+                              (isPlaying) ? Icons.pause : Icons.play_arrow,
                               color: Colors.black,
                             );
                           },
@@ -346,14 +362,16 @@ class _SongHeader extends State<SongHeader> {
                                 : Colors.white,
                             iconSize: 30,
                             onPressed: () {
-                              context.read<PlaybackModels>().isShuffle
-                                  ? context.read<SongModels>().unshuffleSongs()
-                                  : context.read<SongModels>().shuffleSongs(
-                                      context
-                                          .read<PlaybackModels>()
-                                          .currentSongIndex,
+                              final PlaybackModels playbackModels = context
+                                  .read<PlaybackModels>();
+                              final SongModels songModels = context
+                                  .read<SongModels>();
+                              playbackModels.isShuffle
+                                  ? songModels.unshuffleSongs()
+                                  : songModels.shuffleSongs(
+                                      playbackModels.currentSongIndex,
                                     );
-                              context.read<PlaybackModels>().flipIsShuffle();
+                              playbackModels.flipIsShuffle();
                             },
                           );
                         },
@@ -376,12 +394,12 @@ class _SongHeader extends State<SongHeader> {
                           OverlayController.show(context, CreateSongForm());
                         },
                       ),
-                      const Expanded(child: SizedBox()),
+                      const Spacer(),
                       SizedBox(
                         width: 300 * searchSizePercentage,
                         height: 50,
                         child: CustomInputBar(
-                          controller: widget.controller,
+                          controller: controller,
                           onChanged: (query) {
                             context.read<SongModels>().updateSongSearchQuery(
                               query,
@@ -396,9 +414,9 @@ class _SongHeader extends State<SongHeader> {
                         ),
                       ),
                       if (constraints.maxWidth > 700)
-                        SongSortOption()
+                        const SongSortOption()
                       else
-                        SizedBox(),
+                        const SizedBox(),
                     ],
                   );
                 },
@@ -415,113 +433,106 @@ class SongSortOption extends StatelessWidget {
   const SongSortOption({super.key});
   @override
   Widget build(BuildContext context) {
-    return Consumer<SongModels>(
-      builder: (context, value, child) {
-        return HoverButton(
-          baseColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          key: sortByMenuKey,
-          borderRadius: 10,
-          // ignore: sort_child_properties_last
-          child: Center(
-            child: Text(
-              'Sorted by :=',
-              style: montserratStyle(
-                context: context,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+    return HoverButton(
+      baseColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      key: sortByMenuKey,
+      borderRadius: 10,
+      // ignore: sort_child_properties_last
+      child: Center(
+        child: Text(
+          'Sorted by :=',
+          style: montserratStyle(
+            context: context,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      onPressed: () async {
+        final RenderBox button =
+            sortByMenuKey.currentContext!.findRenderObject() as RenderBox;
+        final overlay =
+            Overlay.of(context).context.findRenderObject() as RenderBox;
+        final topLeft = button.localToGlobal(Offset(0, 50), ancestor: overlay);
+        final bottomRight = button.localToGlobal(
+          button.size.bottomRight(Offset(0, 50)),
+          ancestor: overlay,
+        );
+        final position = RelativeRect.fromRect(
+          Rect.fromPoints(topLeft, bottomRight),
+          Offset.zero & overlay.size,
+        );
+        final selected = await showMenu(
+          context: context,
+          position: position,
+          color: Theme.of(context).colorScheme.surface,
+          items: [
+            PopupMenuItem(
+              value: SortOption.newest,
+              child: Text(
+                'Newest Added',
+                style: montserratStyle(context: context),
               ),
             ),
-          ),
-          onPressed: () async {
-            final RenderBox button =
-                sortByMenuKey.currentContext!.findRenderObject() as RenderBox;
-            final overlay =
-                Overlay.of(context).context.findRenderObject() as RenderBox;
-            final topLeft = button.localToGlobal(
-              Offset(0, 50),
-              ancestor: overlay,
-            );
-            final bottomRight = button.localToGlobal(
-              button.size.bottomRight(Offset(0, 50)),
-              ancestor: overlay,
-            );
-            final position = RelativeRect.fromRect(
-              Rect.fromPoints(topLeft, bottomRight),
-              Offset.zero & overlay.size,
-            );
-            final selected = await showMenu(
-              context: context,
-              position: position,
-              color: Theme.of(context).colorScheme.surface,
-              items: [
-                PopupMenuItem(
-                  value: SortOption.newest,
-                  child: Text(
-                    'Newest Added',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.lastest,
-                  child: Text(
-                    'Latest Added',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.nameAZ,
-                  child: Text(
-                    'Name (A-Z)',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.nameZA,
-                  child: Text(
-                    'Name (Z-A)',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.artistAZ,
-                  child: Text(
-                    'Artist (A-Z)',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.artistZA,
-                  child: Text(
-                    'Artist (Z-A)',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.durationLongest,
-                  child: Text(
-                    'Duration Longest',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-                PopupMenuItem(
-                  value: SortOption.durationShortest,
-                  child: Text(
-                    'Duration Shortest',
-                    style: montserratStyle(context: context),
-                  ),
-                ),
-              ],
-            );
-            if (selected != null) {
-              if (!context.mounted) return;
-              context.read<SongModels>().updateSortOption(selected);
-            }
-          },
-          width: 120,
-          height: 30,
+            PopupMenuItem(
+              value: SortOption.lastest,
+              child: Text(
+                'Latest Added',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.nameAZ,
+              child: Text(
+                'Name (A-Z)',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.nameZA,
+              child: Text(
+                'Name (Z-A)',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.artistAZ,
+              child: Text(
+                'Artist (A-Z)',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.artistZA,
+              child: Text(
+                'Artist (Z-A)',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.durationLongest,
+              child: Text(
+                'Duration Longest',
+                style: montserratStyle(context: context),
+              ),
+            ),
+            PopupMenuItem(
+              value: SortOption.durationShortest,
+              child: Text(
+                'Duration Shortest',
+                style: montserratStyle(context: context),
+              ),
+            ),
+          ],
         );
+        if (selected != null) {
+          if (!context.mounted) return;
+          context.read<SongModels>().updateSortOption(selected);
+        }
       },
+      width: 120,
+      height: 30,
     );
   }
 }

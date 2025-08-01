@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mpify/main.dart';
 import 'package:mpify/models/playback_models.dart';
-import 'package:mpify/models/song_models.dart';
 import 'package:mpify/utils/string_ultis.dart';
+import 'package:mpify/widgets/shared/scrollable/scrollable_song.dart';
 import 'package:mpify/widgets/shared/text_style/montserrat_style.dart';
 import 'package:mpify/widgets/song_details.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
-import 'package:path/path.dart' as p;
 
 class Player extends StatefulWidget {
   const Player({super.key});
@@ -65,7 +63,7 @@ class _PlayerState extends State<Player> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 20),
+      padding: const EdgeInsets.only(left: 10, top: 20),
       child: Selector<PlaybackModels, String?>(
         selector: (_, model) {
           return model.getCurrentIdentifier();
@@ -101,39 +99,13 @@ class _PlayerState extends State<Player> {
                 ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Consumer<SongModels>(
-                    builder: (context, value, child) {
-                      final songs = value.songsBackground;
-                      final index = context.read<PlaybackModels>().currentSongIndex;
-                      final identifier = (songs.isEmpty)
-                          ? null
-                          : songs[index].identifier;
-                      final coverPath = p.join(
-                        Directory.current.path,
-                        '..',
-                        'cover',
-                        '$identifier.png',
-                      );
-                      final imageExist = File(coverPath).existsSync();
-
+                  child: Selector<PlaybackModels, String?>(
+                    selector: (_,  models) => models.getCurrentIdentifier(),
+                    builder: (_, identifier, _) {
                       return SizedBox(
                         width: 300,
                         height: 300,
-                        child: imageExist
-                            ? Image.file(
-                                File(
-                                  p.join(
-                                    Directory.current.path,
-                                    '..',
-                                    'cover',
-                                    '$identifier.png',
-                                  ),
-                                ),
-                              )
-                            : Image.asset(
-                                'assets/placeholder.png',
-                                fit: BoxFit.contain,
-                              ),
+                        child: CoverImage(identifier: identifier)
                       );
                     },
                   ),
@@ -149,17 +121,16 @@ class _PlayerState extends State<Player> {
                     return SizedBox(height: width);
                   },
                 ),
-                Consumer<SongModels>(
-                  builder: (context, value, child) {
-                    final songs = value.songsBackground;
-                    final index = context.read<PlaybackModels>().currentSongIndex;
-                    final name = (songs.isEmpty)
-                        ? 'Song Name'
-                        : songs[index].name;
+                Selector<PlaybackModels, String>(
+                  selector: (_, models) {
+                    final String? songName = models.getCurrentSongName();
+                    return (songName == null) ? 'Song Name' : songName;
+                  },
+                  builder: (_, songName, _) {
                     return SizedBox(
                       width: 300,
                       child: Text(
-                        name,
+                        songName,
                         style: montserratStyle(
                           context: context,
                           fontWeight: FontWeight.w700,
@@ -173,13 +144,12 @@ class _PlayerState extends State<Player> {
                   },
                 ),
                 const SizedBox(height: 10),
-                Consumer<SongModels>(
-                  builder: (context, value, child) {
-                    final songs = value.songsBackground;
-                    final index = context.read<PlaybackModels>().currentSongIndex;
-                    final artist = (songs.isEmpty)
-                        ? 'Unknown'
-                        : songs[index].artist;
+                Selector<PlaybackModels, String>(
+                  selector: (_, models) {
+                    final String? artistName = models.getCurrentArtist();
+                    return (artistName == null) ? 'Unknown' : artistName;
+                  } ,
+                  builder: (_, artist, _) {
                     return SizedBox(
                       width: 300,
                       child: Text(
@@ -209,7 +179,7 @@ class _PlayerState extends State<Player> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: DurationBar(width: 240),
+                  child: const DurationBar(width: 240),
                 ),
               ],
             ),

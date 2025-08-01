@@ -22,7 +22,7 @@ class Watcher {
     );
 
     if (!playlistFile.existsSync()) {
-      debugPrint('playlist does not exist');
+      FolderUtils.writeLog('playlist does not exist');
       return;
     }
 
@@ -32,7 +32,7 @@ class Watcher {
         if (!context.mounted) return;
         songModels
             .loadSong(playlist)
-            .catchError((e) => debugPrint('Failed to load playlist: $e'));
+            .catchError((e) => FolderUtils.writeLog('Failed to load playlist: $e'));
       });
     });
   }

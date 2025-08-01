@@ -35,9 +35,9 @@ class _ConfirmationState extends State<Confirmation> {
         ),
         child: Column(
           children: [
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Center(child: Text(widget.headerText, style: montserratStyle(context: context))),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             SizedBox(
               width: 280,
               child: Text(
@@ -45,7 +45,7 @@ class _ConfirmationState extends State<Confirmation> {
                 style: montserratStyle(context: context,color: Colors.redAccent),
               ),
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: Row(
@@ -65,7 +65,7 @@ class _ConfirmationState extends State<Confirmation> {
                       child: Text('Cancel', style: montserratStyle(context: context)),
                     ),
                   ),
-                  SizedBox(width: 30),
+                  const SizedBox(width: 30),
                   HoverButton(
                     baseColor: Colors.transparent,
                     hoverColor: Colors.transparent,

@@ -8,17 +8,20 @@ import 'package:mpify/utils/folder_ultis.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 //Handle Setting Related
-
 
 enum SettingsCategory { general, audio, backup, troubleshooter, about }
 
 class SettingsModels extends ChangeNotifier {
   final SongModels songModels;
   final PlaybackModels playbackModels;
-  SettingsModels({required this.songModels, required this.playbackModels});
-  
+  final PlaylistModels playlistModels;
+  SettingsModels({
+    required this.songModels,
+    required this.playbackModels,
+    required this.playlistModels,
+  });
+
   bool _isOpenSettings = false;
   bool get isOpenSettings => _isOpenSettings;
   void flipIsOpenSetting() {
@@ -42,15 +45,14 @@ class SettingsModels extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       prefs.setBool('isDarkmode', isDark);
-    }
-    catch (e) {
+    } catch (e) {
       FolderUtils.writeLog('Error: $e. Unable To Saved Dark Mode Prefs');
     }
-    
+
     notifyListeners();
   }
 
-  Future<void> loadAllPrefs(BuildContext context) async {
+  Future<void> loadAllPrefs() async {
     SharedPreferences? prefs;
     try {
       prefs = await SharedPreferences.getInstance();
@@ -60,8 +62,7 @@ class SettingsModels extends ChangeNotifier {
     }
     final selectedPlaylist =
         prefs.getString('selectedPlaylist') ?? 'Playlist Name';
-    if (!context.mounted) return;
-    context.read<PlaylistModels>().setSelectedPlaylist(selectedPlaylist);
+    playlistModels.setSelectedPlaylist(selectedPlaylist);
     final isDark = prefs.getBool('isDarkmode') ?? true;
     toogleTheme(isDark);
 
@@ -80,22 +81,27 @@ class SettingsModels extends ChangeNotifier {
       final activeSong = songs.map((song) => Song.fromJson(song)).toList();
       //wait for ui to build first
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<SongModels>().setSongsActive(activeSong);
+        songModels.setSongsActive(activeSong);
       });
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SongModels>().applySortActivePlaylist(sortOption);
+      songModels.applySortActivePlaylist(sortOption);
     });
+    notifyListeners();
   }
+
   bool _showArtist = true;
   bool get showArtist => _showArtist;
   void setShowArtist(bool value) {
+    if (_showArtist == value) return;
     _showArtist = value;
     notifyListeners();
   }
+
   bool _showDuration = true;
   bool get showDuration => _showDuration;
   void setShowDuration(bool value) {
+    if (_showDuration == value) return;
     _showDuration = value;
     notifyListeners();
   }

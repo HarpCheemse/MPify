@@ -21,21 +21,30 @@ double maxScreenWidth = 1920;
 double maxScreenHeight = 1080;
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  final PlaylistModels playlistModels = PlaylistModels();
-  final PlaybackModels playbackModels = PlaybackModels();
-  final SongModels songModels = SongModels(playbackModels: playbackModels);
-  final SettingsModels settingsModels = SettingsModels(
-    songModels: songModels,
-    playbackModels: playbackModels,
-  );
-  final DurationModels durationModels = DurationModels(songModels: songModels);
-  playbackModels.songModels = songModels;
-
+  //debug msg
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    if (details.stack != null) {
+      debugPrint(details.stack.toString());
+    }
+  };
   runZonedGuarded(
     () async {
       await FolderUtils.clearLog();
+      WidgetsFlutterBinding.ensureInitialized();
+
+      final PlaylistModels playlistModels = PlaylistModels();
+      final PlaybackModels playbackModels = PlaybackModels();
+      final SongModels songModels = SongModels(playbackModels: playbackModels);
+      final SettingsModels settingsModels = SettingsModels(
+        songModels: songModels,
+        playbackModels: playbackModels,
+        playlistModels: playlistModels
+      );
+      final DurationModels durationModels = DurationModels(
+        songModels: songModels,
+      );
+      playbackModels.songModels = songModels;
       if (defaultTargetPlatform == TargetPlatform.linux ||
           defaultTargetPlatform == TargetPlatform.macOS ||
           defaultTargetPlatform == TargetPlatform.windows) {
@@ -44,6 +53,7 @@ void main() async {
         await windowManager.waitUntilReadyToShow();
         await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
         await windowManager.maximize();
+        await settingsModels.loadAllPrefs();
 
         windowManager.setMinimumSize(const Size(720, 720));
         maxScreenWidth = await MiscUtils.getPhysicalScreenWidth();
@@ -64,13 +74,13 @@ void main() async {
           ),
         );
       } catch (e, stack) {
-        debugPrint('error: $e');
-        debugPrint('$stack');
+        FolderUtils.writeLog('error: $e');
+        FolderUtils.writeLog('$stack');
       }
     },
     (e, stack) {
-      debugPrint('error: $e');
-      debugPrint('$stack');
+      FolderUtils.writeLog('error: $e');
+      FolderUtils.writeLog('$stack');
     },
   );
 }

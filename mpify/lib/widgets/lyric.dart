@@ -65,7 +65,7 @@ class _LyricState extends State<Lyric> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 20),
+      padding: const EdgeInsets.only(left: 10, top: 20),
       child: Selector<PlaybackModels, String?>(
         selector: (_, model) {
           return model.getCurrentIdentifier();
@@ -80,12 +80,12 @@ class _LyricState extends State<Lyric> {
             height: 600,
             width: 350,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
               color: colorList[colorIndex],
             ),
             child: Column(
               children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -107,14 +107,14 @@ class _LyricState extends State<Lyric> {
                                     ConnectionState.waiting) {
                                   return const CircularProgressIndicator();
                                 } else if (snapshot.hasError) {
-                                  return Text('Error Loading lyric');
+                                  return const Text('Error Loading lyric');
                                 } else {
                                   final lyric =
                                       snapshot.data ??
                                       'This Song Does Not Has Lyric :<. Try Add Some!';
                                   return ShaderMask(
                                     shaderCallback: (Rect bounds) {
-                                      return LinearGradient(
+                                      return const LinearGradient(
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
@@ -150,13 +150,17 @@ class _LyricState extends State<Lyric> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        OverlayController.show(context, EditLyricForm());
+                        OverlayController.show(context, EditLyricForm(onConfirm: () {
+                          setState(() {
+                            
+                          });
+                        },));
                       },
-                      icon: Icon(Icons.edit),
+                      icon: const Icon(Icons.edit),
                       iconSize: 20,
                       color: Colors.white,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                   ],
                 ),
               ],

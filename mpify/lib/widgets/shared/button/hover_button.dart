@@ -65,8 +65,8 @@ class _HoverButtonState extends State<HoverButton> {
             borderRadius: BorderRadius.circular(widget.borderRadius),
             onTap: widget.onPressed,
             child: SizedBox(
-              width: widget.width,
-              height: widget.height,
+              width: widget.width ?? double.infinity,
+              height: widget.height ?? double.minPositive,
               child: widget.childBuilder != null
                   ? widget.childBuilder!(_hovering)
                   : widget.child ??

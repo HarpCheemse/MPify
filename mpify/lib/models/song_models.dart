@@ -127,7 +127,6 @@ class SongModels extends ChangeNotifier {
     final playlistFile = File(p.join(playlistDir.path, '$playlist.json'));
 
     if (!await playlistFile.exists()) {
-      debugPrint('playlist does not exit');
       _songsActive = [];
       notifyListeners();
       return;
@@ -237,40 +236,42 @@ class SongModels extends ChangeNotifier {
     if (_songsBackground.isEmpty) return;
     String prevSongIdentifier =
         _songsBackground[playbackModels.currentSongIndex].identifier;
+    //To Trigger Selector
+    List<Song> tempSongList = [..._songsBackground];
     switch (option) {
       case SortOption.nameAZ:
-        _songsBackground.sort(
+        tempSongList.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
         );
         break;
       case SortOption.nameZA:
-        _songsBackground.sort((a, b) => b.name.compareTo(a.name));
+        tempSongList.sort((a, b) => b.name.compareTo(a.name));
         break;
       case SortOption.artistAZ:
-        _songsBackground.sort(
+        tempSongList.sort(
           (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
         );
         break;
       case SortOption.artistZA:
-        _songsBackground.sort(
+        tempSongList.sort(
           (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
         );
         break;
       case SortOption.lastest:
-        _songsBackground.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        tempSongList.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
         break;
       case SortOption.newest:
-        _songsBackground.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        tempSongList.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
         break;
       case SortOption.durationLongest:
-        _songsBackground.sort(
+        tempSongList.sort(
           (a, b) => StringUltis.getDurationFromString(
             b.duration,
           ).compareTo(StringUltis.getDurationFromString(a.duration)),
         );
         break;
       case SortOption.durationShortest:
-        _songsBackground.sort(
+        tempSongList.sort(
           (a, b) => StringUltis.getDurationFromString(
             a.duration,
           ).compareTo(StringUltis.getDurationFromString(b.duration)),
@@ -278,62 +279,68 @@ class SongModels extends ChangeNotifier {
         break;
     }
     for (int i = 0; i < _songsBackground.length; i++) {
-      if (_songsBackground[i].identifier == prevSongIdentifier) {
+      if (tempSongList[i].identifier == prevSongIdentifier) {
         playbackModels.setSongIndex(i);
         break;
       }
     }
+    _songsBackground = tempSongList;
     notifyListeners();
   }
 
   void applySortActivePlaylist(SortOption option) async {
+    if (_songsActive.isEmpty) return;
+    //To Trigger Selector
+    List<Song> tempSongList = [..._songsActive];
     switch (option) {
       case SortOption.nameAZ:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
         );
         break;
       case SortOption.nameZA:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
         );
       case SortOption.artistAZ:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
         );
         break;
       case SortOption.artistZA:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => b.artist.toLowerCase().compareTo(a.artist.toLowerCase()),
         );
         break;
       case SortOption.lastest:
-        _songsActive.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
+        tempSongList.sort((a, b) => a.dateAdded.compareTo(b.dateAdded));
         break;
       case SortOption.newest:
-        _songsActive.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
+        tempSongList.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
         break;
       case SortOption.durationLongest:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => StringUltis.getDurationFromString(
             b.duration,
           ).compareTo(StringUltis.getDurationFromString(a.duration)),
         );
         break;
       case SortOption.durationShortest:
-        _songsActive.sort(
+        tempSongList.sort(
           (a, b) => StringUltis.getDurationFromString(
             a.duration,
           ).compareTo(StringUltis.getDurationFromString(b.duration)),
         );
         break;
     }
+    _songsActive = tempSongList;
     notifyListeners();
   }
 
   void unshuffleSongs() async {
     if (_songsBackground.isEmpty) return;
-    String prevSongIdentifier = _songsBackground[playbackModels.currentSongIndex].identifier;
+    String prevSongIdentifier =
+        _songsBackground[playbackModels.currentSongIndex].identifier;
     applySortBackgroundPlaylist(_sortOption);
     for (int i = 0; i < _songsBackground.length; i++) {
       if (_songsBackground[i].identifier == prevSongIdentifier) {

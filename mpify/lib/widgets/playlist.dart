@@ -23,12 +23,12 @@ class _PlaylistState extends State<Playlist> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 10, top: 20),
+      padding: const EdgeInsets.only(left: 10, top: 20),
       child: Container(
         height: 600,
         width: 350,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         child: Stack(
@@ -48,7 +48,10 @@ class _PlaylistState extends State<Playlist> {
                 width: 320,
                 child: CustomInputBar(
                   controller: controller,
-                  onChanged: (query) {},
+                  onChanged: (query) {
+                    //TODO add filter to playlist
+                    //low piority
+                  },
                   hintText: 'Search Playlist',
                   fontColor: Theme.of(context).colorScheme.onSurface,
                   hintColor: Theme.of(context).colorScheme.onSurface,
@@ -74,7 +77,7 @@ class _PlaylistState extends State<Playlist> {
                 child: Stack(
                   children: [
                     Transform.translate(
-                      offset: Offset(65, 25),
+                      offset: const Offset(65, 25),
                       child: Text('New Playlist', style: montserratStyle(context: context)),
                     ),
                     Image.asset(

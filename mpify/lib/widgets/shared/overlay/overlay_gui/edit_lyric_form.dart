@@ -9,7 +9,8 @@ import 'package:mpify/widgets/shared/button/hover_button.dart';
 import 'package:provider/provider.dart';
 
 class EditLyricForm extends StatefulWidget {
-  const EditLyricForm({super.key});
+  final VoidCallback onConfirm;
+  const EditLyricForm({super.key, required this.onConfirm});
 
   @override
   State<EditLyricForm> createState() => _EditLyricFormState();
@@ -22,6 +23,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
     lyric.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -48,7 +50,7 @@ class _EditLyricFormState extends State<EditLyricForm> {
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   textInputAction: TextInputAction.newline,
-                  style: montserratStyle(context: context), 
+                  style: montserratStyle(context: context),
                   decoration: InputDecoration(
                     hintText: 'Pase Song Lyric Here',
                     filled: true,
@@ -56,8 +58,13 @@ class _EditLyricFormState extends State<EditLyricForm> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                    prefixIcon: Icon(Icons.music_note_outlined, color: Theme.of(context).colorScheme.onSurface),
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.music_note_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 ),
               ),
@@ -76,7 +83,10 @@ class _EditLyricFormState extends State<EditLyricForm> {
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Cancel', style: montserratStyle(context: context)),
+                  child: Text(
+                    'Cancel',
+                    style: montserratStyle(context: context),
+                  ),
                 ),
               ),
             ),
@@ -92,15 +102,19 @@ class _EditLyricFormState extends State<EditLyricForm> {
                   final index = context.read<PlaybackModels>().currentSongIndex;
                   final backgroundSong = songModel.songsBackground;
                   final identifier = backgroundSong[index].identifier;
-                  OverlayController.hideOverlay();
-                  context.read<SongModels>();
+
                   FolderUtils.writeLyricToFolder(lyric.text, identifier);
+                  widget.onConfirm.call();
+                  OverlayController.hideOverlay();
                 },
                 width: 80,
                 height: 40,
                 child: Transform.translate(
                   offset: Offset(10, 10),
-                  child: Text('Create', style: montserratStyle(context: context)),
+                  child: Text(
+                    'Create',
+                    style: montserratStyle(context: context),
+                  ),
                 ),
               ),
             ),

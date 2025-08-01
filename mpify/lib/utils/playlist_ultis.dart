@@ -222,7 +222,6 @@ class PlaylistUltis {
     }
     MiscUtils.showSuccess('Successfully Delete Song From Playlist');
     songModels.loadSong(selectedPlaylist);
-    debugPrint(selectedPlaylist);
   }
 
   static Future<void> deleteSongFromDevice(String identifier, BuildContext context) async {

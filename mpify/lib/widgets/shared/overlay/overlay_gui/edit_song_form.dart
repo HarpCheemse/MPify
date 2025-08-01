@@ -51,7 +51,7 @@ class _EditSongFormState extends State<EditSongForm> {
         _imageBytes = result.files.single.bytes;
       });
     } else {
-      debugPrint("No image selected");
+      FolderUtils.writeLog("No image selected");
     }
   }
 
@@ -62,7 +62,7 @@ class _EditSongFormState extends State<EditSongForm> {
         _imageBytes = pastedImage;
       });
     } else {
-      debugPrint("No image in clipboard");
+      FolderUtils.writeLog("No image in clipboard");
     }
   }
 
@@ -83,7 +83,7 @@ class _EditSongFormState extends State<EditSongForm> {
       p.join(playlistDir.path, '${widget.playlist}.json'),
     );
     if (!await playlistFile.exists()) {
-      debugPrint('${playlistFile.path} not found');
+      FolderUtils.writeLog('${playlistFile.path} not found');
       OverlayController.hideOverlay();
       return;
     }
@@ -97,7 +97,7 @@ class _EditSongFormState extends State<EditSongForm> {
         orElse: () => null,
       );
       if (match == null) {
-        debugPrint('${widget.identifier} couldnt be found');
+        FolderUtils.writeLog('${widget.identifier} couldnt be found');
         OverlayController.hideOverlay();
         return;
       }
@@ -106,9 +106,9 @@ class _EditSongFormState extends State<EditSongForm> {
 
       final updatedContents = jsonEncode(songs);
       await playlistFile.writeAsString(updatedContents);
-      debugPrint('Song Info Updated');
+      FolderUtils.writeLog('Song Info Updated');
     } catch (e) {
-      debugPrint('error editing file $e');
+      FolderUtils.writeLog('error editing file $e');
       return;
     }
   }
@@ -123,7 +123,7 @@ class _EditSongFormState extends State<EditSongForm> {
       await target.create(recursive: true);
     }
     await imageFile.writeAsBytes(_imageBytes!);
-    debugPrint('Saved Imaged As $fileName');
+    FolderUtils.writeLog('Saved Imaged As $fileName');
     return true;
   }
 
@@ -213,7 +213,7 @@ class _EditSongFormState extends State<EditSongForm> {
               SizedBox(
                 width: 500,
                 height: 80,
-                child: AutocompleteArtistInputBar(controller: artist,),
+                child: AutocompleteArtistInputBar(controller: artist),
               ),
               Row(
                 children: [

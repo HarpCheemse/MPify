@@ -32,7 +32,6 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-
     final playlist = context.read<PlaylistModels>().selectedPlaylist;
     context.read<SongModels>().loadSong(playlist);
   }
@@ -45,35 +44,54 @@ class _ScrollableListSongState extends State<ScrollableListSong> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: widget.color,
-      child: RawScrollbar(
-        thumbVisibility: true,
-        controller: _scrollController,
-        thumbColor: Theme.of(context).colorScheme.onSurface,
-        radius: Radius.circular(5),
-        thickness: 10,
-        trackVisibility: false,
-        child: Selector<SongModels, List<Song>>(
-          selector: (_, model) => model.songsActive,
-          builder: (context, songs, child) {
-            return ListView.builder(
-              controller: _scrollController,
-              itemCount: songs.length,
-              itemBuilder: (BuildContext content, int index) {
-                final song = songs[index];
-                return SongTitle(
-                  songName: song.name,
-                  artist: song.artist,
-                  duration: song.duration,
-                  identifier: song.identifier,
-                  index: index,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showArtist = constraints.maxWidth > 600;
+        final showDuration = constraints.maxWidth > 400;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          try {
+            if (!context.mounted) return;
+            context.read<SettingsModels>().setShowArtist(showArtist);
+            context.read<SettingsModels>().setShowDuration(showDuration);
+          } catch (e) {
+            debugPrint('$e');
+          }
+        });
+
+        return Container(
+          color: widget.color,
+          child: RawScrollbar(
+            thumbVisibility: true,
+            controller: _scrollController,
+            thumbColor: Theme.of(context).colorScheme.onSurface,
+            radius: const Radius.circular(5),
+            thickness: 10,
+            trackVisibility: false,
+            child: Selector<SongModels, List<Song>>(
+              selector: (_, model) => model.songsActive,
+              builder: (context, songs, child) {
+                return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: songs.length,
+                  itemBuilder: (BuildContext content, int index) {
+                    final song = songs[index];
+                    return SongTitle(
+                      songName: song.name,
+                      artist: song.artist,
+                      duration: song.duration,
+                      identifier: song.identifier,
+                      index: index,
+                      showArtist: showArtist,
+                      showDuration: showDuration,
+                    );
+                  },
                 );
               },
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -84,6 +102,8 @@ class SongTitle extends StatelessWidget {
   final String artist;
   final String identifier;
   final int index;
+  final bool showArtist;
+  final bool showDuration;
   const SongTitle({
     super.key,
     required this.songName,
@@ -91,6 +111,8 @@ class SongTitle extends StatelessWidget {
     required this.artist,
     required this.index,
     required this.identifier,
+    required this.showArtist,
+    required this.showDuration,
   });
 
   @override
@@ -109,104 +131,95 @@ class SongTitle extends StatelessWidget {
     final selectedPlaylist = context.select<PlaylistModels, String>(
       (model) => model.selectedPlaylist,
     );
-    final playingPlaylist = context.select<PlaylistModels, String>(
-      (model) => model.playingPlaylist,
+    final playingPlaylist = context.select<PlaylistModels, String?>(
+      (model) => model.playingPlaylist ?? 'Playlist Name',
     );
-    final String? currentSongIdentifier = context.select<PlaybackModels, String?>((model) {
-      return model.getCurrentIdentifier();
-    });
+    final String? currentSongIdentifier = context
+        .select<PlaybackModels, String?>((model) {
+          return model.getCurrentIdentifier();
+        });
     bool isSelected =
         (selectedPlaylist == playingPlaylist) &&
         (identifier == currentSongIdentifier);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final showArtist = constraints.maxWidth > 600;
-        final showDuration = constraints.maxWidth > 400;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.read<SettingsModels>().setShowArtist(showArtist);
-          context.read<SettingsModels>().setShowDuration(showDuration);
-        });
+    return HoverButton(
+      baseColor: (isSelected)
+          ? const Color.fromRGBO(158, 158, 158, 0.7)
+          : Colors.transparent,
+      hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
+      textStyle: textStyle,
+      borderRadius: 5,
+      width: 320,
+      height: 80,
+      onPressed: () async {
+        final PlaybackModels playbackModels = context.read<PlaybackModels>();
+        context.read<PlaylistModels>().setPlayingPlaylist();
+        final songModels = context.read<SongModels>();
+        await songModels
+            .loadActivePlaylistSong(); //copy activeSong to background song
 
-        return HoverButton(
-          baseColor: (isSelected)
-              ? Color.fromRGBO(158, 158, 158, 0.7)
-              : Colors.transparent,
-          hoverColor: const Color.fromRGBO(113, 113, 113, 0.412),
-          textStyle: textStyle,
-          borderRadius: 5,
-          width: 320,
-          height: 80,
-          onPressed: () async {
-            context.read<PlaylistModels>().setPlayingPlaylist();
-            final songModels = context.read<SongModels>();
-            await songModels
-                .loadActivePlaylistSong(); //copy activeSong to background song
+        final songsBackground = songModels.songsBackground;
 
-            final songsBackground = songModels.songsBackground;
-
-            context.read<PlaybackModels>().getSongIndex(identifier);
-            songModels.setIsPlaying(true);
-            try {
-              AudioUtils.playSong(
-                songsBackground[context.read<PlaybackModels>().currentSongIndex].identifier,
-              );
-            } catch (e) {
-              MiscUtils.showError('Error: Unable To Play Audio');
-              FolderUtils.writeLog('Error: $e. Unable To Play Audio');
-            }
-          },
-          child: Row(
-            children: [
-              SizedBox(
-                width: 40,
-                child: Center(child: Text('${index + 1}', style: textStyle_16)),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 20),
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CoverImage(identifier: identifier),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                flex: 10,
-                child: Text(
-                  songName,
-                  style: textStyle,
-                  overflow: TextOverflow.fade,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (showArtist)
-                Flexible(
-                  flex: 4,
-                  child: SizedBox(
-                    width: 170,
-                    height: 20,
-                    child: Text(artist, style: textStyle_12),
-                  ),
-                ),
-              const SizedBox(width: 20),
-              if (showDuration)
-                SizedBox(
-                  width: 50,
-                  height: 20,
-                  child: Text(duration, style: textStyle_12),
-                ),
-              SongOptionMenu(
-                identifier: identifier,
-                songName: songName,
-                artist: artist,
-                textStyle: textStyle,
-              ),
-            ],
-          ),
-        );
+        playbackModels.getSongIndex(identifier);
+        songModels.setIsPlaying(true);
+        try {
+          AudioUtils.playSong(
+            songsBackground[playbackModels.currentSongIndex].identifier,
+          );
+        } catch (e) {
+          MiscUtils.showError('Error: Unable To Play Audio');
+          FolderUtils.writeLog('Error: $e. Unable To Play Audio');
+        }
       },
+      child: Row(
+        children: [
+          SizedBox(
+            width: 40,
+            child: Center(child: Text('${index + 1}', style: textStyle_16)),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CoverImage(identifier: identifier),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            flex: 10,
+            child: Text(
+              songName,
+              style: textStyle,
+              overflow: TextOverflow.fade,
+              maxLines: 1,
+              softWrap: false,
+            ),
+          ),
+          const SizedBox(width: 10),
+          if (showArtist)
+            Flexible(
+              flex: 4,
+              child: SizedBox(
+                width: 170,
+                height: 20,
+                child: Text(artist, style: textStyle_12),
+              ),
+            ),
+          const SizedBox(width: 20),
+          if (showDuration)
+            SizedBox(
+              width: 50,
+              height: 20,
+              child: Text(duration, style: textStyle_12),
+            ),
+          SongOptionMenu(
+            identifier: identifier,
+            songName: songName,
+            artist: artist,
+            textStyle: textStyle,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -259,7 +272,7 @@ class SongOptionMenu extends StatelessWidget {
         PopupMenuItem<String>(
           child: Row(
             children: [
-              Icon(Icons.delete_outline, color: Colors.redAccent),
+              const Icon(Icons.delete_outline, color: Colors.redAccent),
               const SizedBox(width: 10),
               Text(
                 'Delete From Playlist',
@@ -282,7 +295,7 @@ class SongOptionMenu extends StatelessWidget {
                   function: () => PlaylistUltis.deleteSongFromPlaylist(
                     identifier,
                     selectedPlaylist,
-                    context
+                    context,
                   ),
                 ),
               );
@@ -292,7 +305,7 @@ class SongOptionMenu extends StatelessWidget {
         PopupMenuItem<String>(
           child: Row(
             children: [
-              Icon(Icons.delete, color: Colors.redAccent),
+              const Icon(Icons.delete, color: Colors.redAccent),
               const SizedBox(width: 10),
               Text(
                 'Delete From Device',
@@ -322,7 +335,7 @@ class SongOptionMenu extends StatelessWidget {
 }
 
 class CoverImage extends StatefulWidget {
-  final String identifier;
+  final String? identifier;
   const CoverImage({super.key, required this.identifier});
   @override
   State<CoverImage> createState() => _CoverImageState();
@@ -371,8 +384,6 @@ class _CoverImageState extends State<CoverImage> {
             ),
             key: UniqueKey(), //Important to clear image cached
             fit: BoxFit.cover,
-            cacheWidth: 50,
-            cacheHeight: 50,
           )
         : Image.asset('assets/placeholder.png', fit: BoxFit.contain);
   }

@@ -3,8 +3,6 @@ import 'package:mpify/models/settings_models.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-
-
 class Homebar extends StatefulWidget {
   const Homebar({super.key});
   @override
@@ -56,15 +54,15 @@ class _HomeBarState extends State<Homebar> with WindowListener {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10, top: 20),
-                child: Consumer<SettingsModels>(
-                  builder: (context, settings, child) {
+                child: Selector<SettingsModels, bool>(
+                  selector: (_, models) => models.isOpenSettings,
+                  builder: (_, settings, _) {
                     return IconButton(
-                      icon: (settings.isOpenSettings)
-                          ? Icon(Icons.close)
-                          : Icon(Icons.settings),
+                      icon: (settings)
+                          ? const Icon(Icons.close)
+                          : const Icon(Icons.settings),
                       onPressed: () {
-                        settings.flipIsOpenSetting();
-                        debugPrint('${settings.isOpenSettings}');
+                        context.read<SettingsModels>().flipIsOpenSetting();
                       },
                     );
                   },
@@ -86,9 +84,9 @@ class _HomeBarState extends State<Homebar> with WindowListener {
                 onPressed: () async {
                   windowManager.minimize();
                 },
-                icon: Icon(Icons.minimize_outlined),
+                icon: const Icon(Icons.minimize_outlined),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
                   (_isMaximized)
@@ -99,21 +97,15 @@ class _HomeBarState extends State<Homebar> with WindowListener {
                   });
                 },
                 icon: (_isMaximized)
-                    ? Icon(
-                        Icons.filter_none,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      )
-                    : Icon(
-                        Icons.rectangle_outlined,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                    ? const Icon(Icons.filter_none)
+                    : const Icon(Icons.rectangle_outlined),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               IconButton(
                 onPressed: () async {
                   await windowManager.close();
                 },
-                icon: Icon(Icons.close_outlined),
+                icon: const Icon(Icons.close_outlined),
               ),
             ],
           ),

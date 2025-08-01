@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 
-const String appVersion = "1.0.0";
+const String appVersion = "1.1.0";
 const String author = "HarpCheemse";
 const List<String> contributor = [];
 
@@ -26,7 +26,7 @@ class _SettingsState extends State<Settings> {
       case SettingsCategory.general:
         return Column(
           children: [
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

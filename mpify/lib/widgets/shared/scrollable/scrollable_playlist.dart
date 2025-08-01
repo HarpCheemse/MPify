@@ -55,15 +55,16 @@ class _ScrollableListBoxState extends State<ScrollableListPlaylist> {
       child: Scrollbar(
         thumbVisibility: true,
         controller: _scrollController,
-        child: Consumer<PlaylistModels>(
+        child: Selector<PlaylistModels, List<String>>(
+          selector: (_, models) => models.playlists,
           builder: (context, playlist, child) {
-            final length = playlist.playlists.length;
+            final length = playlist.length;
             return ListView.builder(
               controller: _scrollController,
               itemCount: length,
               itemExtent: 70,
               itemBuilder: (BuildContext content, int index) {
-                final playlistName = playlist.playlists[index];
+                final playlistName = playlist[index];
                 return PlaylistFolder(playlistName: playlistName);
               },
             );

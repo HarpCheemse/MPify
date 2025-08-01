@@ -10,8 +10,8 @@ class PlaylistModels extends ChangeNotifier{
   String _selectedPlaylist = 'Playlist Name';
   bool _isPlayerOpen = true;
 
-  String _playingPlaylist = '';
-  String get playingPlaylist => _playingPlaylist;
+  String? _playingPlaylist;
+  String? get playingPlaylist => _playingPlaylist;
   void setPlayingPlaylist() {
     _playingPlaylist = _selectedPlaylist;
     notifyListeners();

@@ -17,8 +17,29 @@ class PlaybackModels extends ChangeNotifier {
 
   String? getCurrentIdentifier() {
     if (songModels.songsBackground.isEmpty) return null;
-    if (_currentSongIndex < 0 || _currentSongIndex >= songModels.songsBackground.length) return null;
+    if (_currentSongIndex < 0 ||
+        _currentSongIndex >= songModels.songsBackground.length) {
+      return null;
+    }
     return songModels.songsBackground[_currentSongIndex].identifier;
+  }
+
+  String? getCurrentArtist() {
+    if (songModels.songsBackground.isEmpty) return null;
+    if (_currentSongIndex < 0 ||
+        _currentSongIndex >= songModels.songsBackground.length) {
+      return null;
+    }
+    return songModels.songsBackground[_currentSongIndex].artist;
+  }
+
+  String? getCurrentSongName() {
+    if (songModels.songsBackground.isEmpty) return null;
+    if (_currentSongIndex < 0 ||
+        _currentSongIndex >= songModels.songsBackground.length) {
+      return null;
+    }
+    return songModels.songsBackground[_currentSongIndex].name;
   }
 
   Future<void> getSongIndex(songIdentifier) async {
@@ -26,7 +47,7 @@ class PlaybackModels extends ChangeNotifier {
       (song) => song.identifier == songIdentifier,
     );
     if (index == -1) {
-      debugPrint('$songIdentifier does not exit in the list');
+      FolderUtils.writeLog('$songIdentifier does not exit in the list');
       return;
     }
     _currentSongIndex = index;
@@ -35,6 +56,7 @@ class PlaybackModels extends ChangeNotifier {
 
   void setSongIndex(int index) {
     _currentSongIndex = index;
+    notifyListeners();
   }
 
   void flipIsShuffle() async {
